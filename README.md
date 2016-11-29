@@ -128,3 +128,5 @@ const mapStateToProps = createSelector(
     })
 )
 ```
+
+This readme also has a living document located here: [nion documentation](https://patreon.bold.co/post/nion-network-inputoutput-dekauy) if you would like to comment on anything, or feel free to edit this directly.
