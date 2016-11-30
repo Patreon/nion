@@ -55,10 +55,13 @@ const isCircularReference = (ref, refMap) => {
 }
 
 const denormalizeHiearchy = (entityStore, ref, hierarchy, refMap) => {
-    if (isCircularReference(ref, refMap)) {
-        return hierarchy
+    if (!(ref && ref.type && ref.id)) {
+        return undefined
     }
     const entity = get(entityStore, `${ref.type}.${ref.id}`)
+    if (isCircularReference(ref, refMap) || !entity) {
+        return ref
+    }
     hierarchy = {
         'id': ref.id,
         'type': ref.type,
