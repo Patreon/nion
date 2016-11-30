@@ -118,3 +118,7 @@ export const selectData = (dataKeys) => (
         }, {})
     )
 )
+
+export const selectDataForKey = (myDataKey) => (state) => (
+    selectData([myDataKey])(state)[myDataKey]
+)
