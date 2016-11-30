@@ -3,6 +3,8 @@ const addEntityToStoreFragment = (store, entity) => {
         store[entity.type] = {}
     }
     store[entity.type][entity.id] = {
+        type: entity.type,
+        id: entity.id,
         attributes: entity.attributes,
         relationships: entity.relationships
     }
