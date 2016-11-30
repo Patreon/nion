@@ -36,7 +36,7 @@ const mapDispatchToProps = dispatch => {
         getCurrentUser: () => {
             dispatch(jsonApi.get('currentUser', {
                 resource: 'current_user,
-                includes: [],
+                include: [],
                 fields: {}
             }))
         }
@@ -97,17 +97,17 @@ If you're curious, this is what the raw json-api payload looks like for the requ
 
 ## API reference
 ### Making json-api requests
-```jsonApi.get(dataKey, {endpoint, includes=[], fields={}})```
+```jsonApi.get(dataKey, {endpoint, include=[], fields={}})```
 
-```jsonApi.post(dataKey, {endpoint, includes=[], fields={}, body={}})```
+```jsonApi.post(dataKey, {endpoint, include=[], fields={}, body={}})```
 
-```jsonApi.patch(dataKey {endpoint, includes=[], fields={}, body={}})```
+```jsonApi.patch(dataKey {endpoint, include=[], fields={}, body={}})```
 
-```jsonApi.delete(dataKey{endpoint, includes=[], fields={}})```
+```jsonApi.delete(dataKey{endpoint, include=[], fields={}})```
 
 `dataKey`: binds the request and entities together and is used to map the request data back to state.
 `endpoint`: is the relative path string of the endpoint you want to request.
-`includes`: is a list allows you to specify any entity relationships that should be included in the request.
+`include`: is a list allows you to specify any entity relationships that should be included in the request.
 `fields`: is an object that allows you to explicitly define which entity attributes you would want included in the request.
 `body`: is an object which is the payload of your request to the server.
 

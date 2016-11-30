@@ -41,13 +41,13 @@ const fetchJsonApi = (dataKey, resource, method, body) => {
     })
 }
 
-export const getJsonApi = (dataKey, { resource, includes, fields }) => {
+export const getJsonApi = (dataKey, { resource, include, fields }) => {
     return fetchJsonApi(
         dataKey,
         jsonApiUrl(
             resource,
             {
-                includes,
+                include,
                 fields
             }
         ),
@@ -55,13 +55,13 @@ export const getJsonApi = (dataKey, { resource, includes, fields }) => {
     )
 }
 
-export const postJsonApi = (dataKey, { resource, includes, fields, body }) => {
+export const postJsonApi = (dataKey, { resource, include, fields, body }) => {
     return fetchJsonApi(
         dataKey,
         jsonApiUrl(
             resource,
             {
-                includes,
+                include,
                 fields
             }
         ),
@@ -70,13 +70,13 @@ export const postJsonApi = (dataKey, { resource, includes, fields, body }) => {
     )
 }
 
-export const patchJsonApi = (dataKey, { resource, endpoint, includes, fields, body }) => {
+export const patchJsonApi = (dataKey, { resource, endpoint, include, fields, body }) => {
     return fetchJsonApi(
         dataKey,
         jsonApiUrl(
             resource,
             {
-                includes,
+                include,
                 fields
             }
         ),
@@ -85,13 +85,13 @@ export const patchJsonApi = (dataKey, { resource, endpoint, includes, fields, bo
     )
 }
 
-export const deleteJsonApi = (dataKey, { resource, includes, fields }) => {
+export const deleteJsonApi = (dataKey, { resource, include, fields }) => {
     return fetchJsonApi(
         dataKey,
         jsonApiUrl(
             resource,
             {
-                includes,
+                include,
                 fields
             }
         ),
