@@ -35,7 +35,7 @@ export default (response) => {
     // rewrite this so that we are not mutating
     let storeFragment = {}
     normalizeDataEntities(storeFragment, data)
-    normalizeIncludedEntities(storeFragment, included)
+    normalizeIncludedEntities(storeFragment, typeof included === 'undefined' ? [] : included)
     return {
         storeFragment,
         newRequestRef
