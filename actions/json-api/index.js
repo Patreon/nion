@@ -32,69 +32,18 @@ export const requestJsonApi = (dataKey, request) => {
     }
 }
 
-const fetchJsonApi = (dataKey, resource, method, body) => {
+const fetchJsonApi = (method) => (dataKey, apiCallDetails) => {
+    apiCallDetails.body = JSON.stringify(apiCallDetails.body)
     return requestJsonApi(dataKey, {
         credentials: 'include',
-        body: JSON.stringify(body),
-        endpoint: resource,
-        method
+        method,
+        ...apiCallDetails
     })
 }
 
-export const getJsonApi = (dataKey, { resource, include, fields }) => {
-    return fetchJsonApi(
-        dataKey,
-        jsonApiUrl(
-            resource,
-            {
-                include,
-                fields
-            }
-        ),
-        'GET'
-    )
-}
+export const getJsonApi = fetchJsonApi('GET')
+export const postJsonApi = fetchJsonApi('POST')
+export const patchJsonApi = fetchJsonApi('PATCH')
+export const deleteJsonApi = fetchJsonApi('DELETE')
 
-export const postJsonApi = (dataKey, { resource, include, fields, body }) => {
-    return fetchJsonApi(
-        dataKey,
-        jsonApiUrl(
-            resource,
-            {
-                include,
-                fields
-            }
-        ),
-        'POST',
-        body
-    )
-}
-
-export const patchJsonApi = (dataKey, { resource, endpoint, include, fields, body }) => {
-    return fetchJsonApi(
-        dataKey,
-        jsonApiUrl(
-            resource,
-            {
-                include,
-                fields
-            }
-        ),
-        'PATCH',
-        body
-    )
-}
-
-export const deleteJsonApi = (dataKey, { resource, include, fields }) => {
-    return fetchJsonApi(
-        dataKey,
-        jsonApiUrl(
-            resource,
-            {
-                include,
-                fields
-            }
-        ),
-        'DELETE'
-    )
-}
+export const urlBuilder = jsonApiUrl

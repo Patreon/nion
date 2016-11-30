@@ -35,9 +35,13 @@ const mapDispatchToProps = dispatch => {
     return {
         getCurrentUser: () => {
             dispatch(jsonApi.get('currentUser', {
-                resource: 'current_user,
-                include: [],
-                fields: {}
+                endpoint: jsonApi.urlBuilder(
+                    'current_user',
+                    {
+                        include: [],
+                        fields: {}
+                    }
+                )
             }))
         }
     }
@@ -97,19 +101,22 @@ If you're curious, this is what the raw json-api payload looks like for the requ
 
 ## API reference
 ### Making json-api requests
-```jsonApi.get(dataKey, {endpoint, include=[], fields={}})```
+```jsonApi.get(dataKey, {endpoint})```
 
-```jsonApi.post(dataKey, {endpoint, include=[], fields={}, body={}})```
+```jsonApi.post(dataKey, {endpoint, body={}})```
 
-```jsonApi.patch(dataKey {endpoint, include=[], fields={}, body={}})```
+```jsonApi.patch(dataKey, {endpoint, body={}})```
 
-```jsonApi.delete(dataKey{endpoint, include=[], fields={}})```
+```jsonApi.delete(dataKey, {endpoint})```
 
 `dataKey`: binds the request and entities together and is used to map the request data back to state.
-`endpoint`: is the relative path string of the endpoint you want to request.
+`endpoint`: is the relative path string of the endpoint you want to request. It is recommended that you use `jsonApi.urlBuilder` to specify `include` and `fields` query params.
+`body`: is an object which is the payload of your request to the server.
+
+```jsonApi.urlBuilder(resource, {include=[], fields={}, ...queryParams})```
 `include`: is a list allows you to specify any entity relationships that should be included in the request.
 `fields`: is an object that allows you to explicitly define which entity attributes you would want included in the request.
-`body`: is an object which is the payload of your request to the server.
+`...queryParams`: any other query params you want included in the endpoint.
 
 ```jsonApi.request(dataKey, request)```
 This function allows you to define the raw API request data. See [api-redux-middleware](https://www.npmjs.com/package/redux-api-middleware#defining-the-api-cal). for more details.

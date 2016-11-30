@@ -1,4 +1,5 @@
 import {
+    urlBuilder,
     requestJsonApi,
     getJsonApi,
     postJsonApi,
@@ -7,6 +8,7 @@ import {
 } from './json-api'
 
 export const jsonApi = {
+    urlBuilder,
     request: requestJsonApi,
     get: getJsonApi,
     post: postJsonApi,
