@@ -113,6 +113,13 @@ export const getRefWithEntities = (dataKey) => createSelector(
     }
 )
 
+export const getEntityForRef = (ref) => (store) => (
+    createSelector(
+        getEntityStore,
+        (entityStore) => (denormalizeHiearchy(entityStore, ref, {}, {}))
+    )(store)
+)
+
 export const selectData = (dataKeys) => (
     (state) => (
         dataKeys.reduce((memo, ref) => {
