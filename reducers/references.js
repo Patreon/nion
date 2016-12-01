@@ -6,6 +6,7 @@ const refsReducer = (state = initialState, action) => {
             return {
                 ...state
             }
+        case 'JSON_API_BOOTSTRAP':
         case 'JSON_API_SUCCESS':
             // If the result of a paginated nextPage request, we're going to want to append the
             // retrieved entities to the end of the current entities list
@@ -23,11 +24,6 @@ const refsReducer = (state = initialState, action) => {
                     ...state,
                     [action.meta.dataKey]: action.payload.newRequestRef
                 }
-            }
-        case 'JSON_API_BOOTSTRAP':
-            return {
-                ...state,
-                [action.meta.dataKey]: action.payload.newRequestRef
             }
         default:
             return state
