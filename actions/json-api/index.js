@@ -1,5 +1,5 @@
 import { CALL_API, getJSON } from 'redux-api-middleware'
-import jsonApiUrl from 'utilities/json-api-url'
+import { urlBuilderForDefaults } from 'utilities/json-api-url'
 import parseJsonApiResponse from './parse-json-api-response'
 
 const JSON_API_REQUEST = 'JSON_API_REQUEST'
@@ -63,4 +63,4 @@ export const bootstrapJsonApi = ({ dataKey, data }) => {
     }
 }
 
-export const urlBuilder = jsonApiUrl
+export const urlBuilder = urlBuilderForDefaults({include: []})
