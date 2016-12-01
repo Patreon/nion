@@ -1,3 +1,5 @@
+import map from 'lodash.map'
+
 const addEntityToStoreFragment = (store, entity) => {
     if (!(entity.type in store)) {
         store[entity.type] = {}
@@ -16,7 +18,7 @@ const normalizeDataEntities = (storeFragment, dataEntities) => {
 }
 
 const normalizeIncludedEntities = (storeFragment, includedEntities) => {
-    includedEntities.map((entity) => addEntityToStoreFragment(storeFragment, entity))
+    map(includedEntities, (entity) => addEntityToStoreFragment(storeFragment, entity))
 }
 
 const makeEntityReferences = (data) => {
@@ -29,13 +31,15 @@ export default (response) => {
     const newRequestRef = {
         entities: makeEntityReferences(data),
         meta,
-        links
+        links,
+        isCollection: data instanceof Array
     }
 
     // rewrite this so that we are not mutating
     let storeFragment = {}
     normalizeDataEntities(storeFragment, data)
-    normalizeIncludedEntities(storeFragment, typeof included === 'undefined' ? [] : included)
+    normalizeIncludedEntities(storeFragment, included)
+
     return {
         storeFragment,
         newRequestRef

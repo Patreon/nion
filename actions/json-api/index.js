@@ -6,44 +6,61 @@ const JSON_API_REQUEST = 'JSON_API_REQUEST'
 const JSON_API_SUCCESS = 'JSON_API_SUCCESS'
 const JSON_API_FAILURE = 'JSON_API_FAILURE'
 
-const getJsonApiRequestTypes = (dataKey) => {
+const getJsonApiRequestTypes = (dataKey, meta = {}) => {
     return [{
         type: JSON_API_REQUEST,
-        meta: { dataKey }
+        meta: { dataKey, ...meta }
     }, {
         type: JSON_API_SUCCESS,
-        meta: { dataKey },
+        meta: { dataKey, ...meta },
         payload: (action, state, res) => {
-            return getJSON(res).then((json) => json && parseJsonApiResponse(json))
+            return getJSON(res).then((json) => json && parseJsonApiResponse(json, meta))
         }
     }, {
         type: JSON_API_FAILURE,
-        meta: { dataKey }
+        meta: { dataKey, ...meta }
     }]
 }
 
-export const requestJsonApi = (dataKey, request) => {
+export const requestJsonApi = (dataKey, request, meta) => {
     return {
         [CALL_API]: {
-            types: getJsonApiRequestTypes(dataKey),
+            types: getJsonApiRequestTypes(dataKey, meta),
             headers: { 'Content-Type': 'application/vnd.api+json' },
             ...request
         }
     }
 }
 
-const fetchJsonApi = (method) => (dataKey, apiCallDetails) => {
-    apiCallDetails.body = JSON.stringify(apiCallDetails.body)
+const fetchJsonApi = (method) => (dataKey, { endpoint, body, meta }) => {
     return requestJsonApi(dataKey, {
         credentials: 'include',
-        method,
-        ...apiCallDetails
-    })
+        body: JSON.stringify(body),
+        endpoint,
+        method
+    }, { ...meta, method, endpoint })
 }
 
 export const getJsonApi = fetchJsonApi('GET')
 export const postJsonApi = fetchJsonApi('POST')
 export const patchJsonApi = fetchJsonApi('PATCH')
 export const deleteJsonApi = fetchJsonApi('DELETE')
+
+export const getNextJsonApi = ({ dataKey, next }) => {
+    return getJsonApi(dataKey, {
+        endpoint: `https://${next}`,
+        meta: {
+            isNextPage: true
+        }
+    })
+}
+
+export const bootstrapJsonApi = ({ dataKey, data }) => {
+    return {
+        type: 'JSON_API_BOOTSTRAP',
+        meta: { dataKey },
+        payload: parseJsonApiResponse(data)
+    }
+}
 
 export const urlBuilder = jsonApiUrl

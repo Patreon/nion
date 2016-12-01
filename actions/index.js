@@ -1,17 +1,21 @@
 import {
-    urlBuilder,
-    requestJsonApi,
+    bootstrapJsonApi,
+    deleteJsonApi,
     getJsonApi,
-    postJsonApi,
+    getNextJsonApi,
     patchJsonApi,
-    deleteJsonApi
+    postJsonApi,
+    requestJsonApi,
+    urlBuilder
 } from './json-api'
 
 export const jsonApi = {
-    urlBuilder,
-    request: requestJsonApi,
+    bootstrap: bootstrapJsonApi,
+    delete: deleteJsonApi,
     get: getJsonApi,
-    post: postJsonApi,
+    next: getNextJsonApi,
     patch: patchJsonApi,
-    delete: deleteJsonApi
+    post: postJsonApi,
+    request: requestJsonApi,
+    urlBuilder
 }

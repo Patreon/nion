@@ -7,6 +7,24 @@ const refsReducer = (state = initialState, action) => {
                 ...state
             }
         case 'JSON_API_SUCCESS':
+            // If the result of a paginated nextPage request, we're going to want to append the
+            // retrieved entities to the end of the current entities list
+            if (action.meta.isNextPage) {
+                const nextPageRef = action.payload.newRequestRef
+                return {
+                    ...state,
+                    [action.meta.dataKey]: {
+                        ...nextPageRef,
+                        entities: state[action.meta.dataKey].entities.concat(nextPageRef.entities)
+                    }
+                }
+            } else {
+                return {
+                    ...state,
+                    [action.meta.dataKey]: action.payload.newRequestRef
+                }
+            }
+        case 'JSON_API_BOOTSTRAP':
             return {
                 ...state,
                 [action.meta.dataKey]: action.payload.newRequestRef
