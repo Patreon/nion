@@ -1,5 +1,7 @@
 import get from 'lodash.get'
 import map from 'lodash.map'
+import { camelizeKeys, camelize } from 'humps'
+
 const initialState = {}
 
 // The core reducer for maintaining a normalized entity store of entities that are fetched / updated
@@ -11,6 +13,9 @@ const entitiesReducer = (state = initialState, action) => {
         }
 
         map(action.payload.storeFragment, (entities, type) => {
+
+            type = camelize(type)
+
             newState[type] = {
                 ...get(newState, type, {})
             }
@@ -21,11 +26,11 @@ const entitiesReducer = (state = initialState, action) => {
                     id,
                     attributes: {
                         ...get(newState[type][id], 'attributes', {}),
-                        ...get(entity, 'attributes', {})
+                        ...camelizeKeys(get(entity, 'attributes', {}))
                     },
                     relationships: {
                         ...get(newState[type][id], 'relationships', {}),
-                        ...get(entity, 'relationships', {})
+                        ...camelizeKeys(get(entity, 'relationships', {}))
                     }
                 }
             })
