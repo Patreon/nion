@@ -1,9 +1,9 @@
-import { getData } from './selectors'
+import { selectData } from './selectors'
 
 export default function initializeNionDevTool(store) {
     window.nion = {
-        getData(key) {
-            return getData(key)(store.getState())
+        selectData(key) {
+            return selectData(key)(store.getState())
         }
     }
 }
