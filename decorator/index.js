@@ -10,7 +10,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 import { jsonApi } from '../actions'
-import { selectDataForKeys } from 'libs/nion/selectors'
+import { selectResourcesForKeys } from 'libs/nion/selectors'
 
 const defaultOptions = {
     // Component / API Lifecycle methods
@@ -56,8 +56,8 @@ const processDirectives = (directives) => {
 
     // Construct the JSON API selector to map to props
     const mapStateToProps = createSelector(
-        selectDataForKeys(dataKeys),
-        (selectedData) => {
+        selectResourcesForKeys(dataKeys),
+        (selectedResources) => {
             const data = {}
             const requests = {}
             const actions = {}
@@ -65,16 +65,16 @@ const processDirectives = (directives) => {
             const meta = {}
 
             // Now map back over the dataKeys to their original keys
-            map(selectedData, (selected, selectedDataKey) => {
+            map(selectedResources, (selected, selectedDataKey) => {
                 const key = keysByDataKey[selectedDataKey]
 
                 // We want the passed in data to be flat attributes
-                if (selected.ref instanceof Array) {
-                    data[key] = [ ...selected.ref ]
-                } else if (selected.ref === null) {
+                if (selected.obj instanceof Array) {
+                    data[key] = [ ...selected.obj ]
+                } else if (selected.obj === null || selected.obj === undefined) {
                     data[key] = null
                 } else {
-                    data[key] = { ...selected.ref }
+                    data[key] = { ...selected.obj }
                 }
 
                 requests[key] = selected.request
@@ -97,8 +97,7 @@ const processDirectives = (directives) => {
     const mapDispatchToProps = (dispatch) => {
         const dispatchProps = {}
 
-        // Helper method to construct a JSON API url endpoint from supplied directive and params.
-        // This will be used to build the endpoints for the various method actions
+        // Helper method to construct a JSON API url endpoint from supplied directive and params. This will be userd to build the endpoints for the various method actions
         function makeJsonApiEndpoint(directive, params) {
             const endpoint = get(directive, 'endpoint')
             const include = get(directive, 'include', [])
@@ -143,9 +142,11 @@ const processDirectives = (directives) => {
 
             if (directive.paginated) {
                 dispatchProps[key]['NEXT'] = ({ next }) => {
-                    dispatch(jsonApi.next({
-                        dataKey,
-                        next
+                    dispatch(jsonApi.get(dataKey, {
+                        endpoint: next,
+                        meta: {
+                            isNextPage: true
+                        }
                     }))
                 }
             }
@@ -246,8 +247,7 @@ const connectComponent = (directives, WrappedComponent) => { // eslint-disable-l
 // JSON API decorator function for wrapping connected components to the new JSON API redux system
 const nion = (directives, options) => (WrappedComponent) => {
 
-    // If a static object of directives is passed in, process it immediately, otherwise, pass the
-    // incoming props to the directives function to generate a directives object
+    // If a static object of directives is passed in, process it immediately, otherwise, pass the incoming props to the directives function to generate a directives object
     if (directives instanceof Function) {
         return props => {
             const ConnectedComponent = connectComponent(directives(props), WrappedComponent)
