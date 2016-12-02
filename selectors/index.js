@@ -1,10 +1,9 @@
 import { createSelector, createStructuredSelector } from 'reselect'
 import get from 'lodash.get'
-import map from 'lodash.map'
-import omit from 'lodash.omit'
+import denormalize from './denormalize'
 
 const getNion = (state) => state.nion
-const getEntityStore = (state) => get(getNion(state), 'entities')
+const getEntities = (state) => get(getNion(state), 'entities')
 const getRequests = (state) => get(getNion(state), 'requests')
 const getReferences = (state) => get(getNion(state), 'references')
 
@@ -18,113 +17,56 @@ const defaultRequest = {
     status: 'not called'
 }
 
-export const getRequest = (dataKey) => createSelector(
-    getRequests,
-    (dataRequests) => {
-        return get(dataRequests, dataKey)
-    }
-)
-
 export const getRef = (dataKey) => createSelector(
     getReferences,
-    (refs) => {
-        return get(refs, dataKey)
+    (refs) => get(refs, dataKey)
+)
+
+export const getEntity = (type, id) => createSelector(
+    getEntities,
+    (entities) => get(entities, [type, id])
+)
+
+export const getEntityFromKey = (key) => createSelector(
+    getRef(key),
+    getEntities,
+    (ref, entityStore) => {
+        const { isCollection } = ref
+        const entities = ref.entities.map(entity => {
+            return get(entityStore, [entity.type, entity.id])
+        })
+        return isCollection ? entities : entities[0]
     }
 )
 
-const getRefEntityTypeCount = (ref, type) => {
-    return ref.entities.reduce((count, entity) => entity.type === type ? count += 1 : count = 1, 0)
-}
-
-const isCircularReference = (ref, refMap) => {
-    // // Specially handle the case of rewards, where the id is shared between many different campaign
-    // // rewards and thus might collide
-    // if (ref.id === '-1' || ref.id === '0') {
-    //     return false
-    // }
-    if (ref === null) {
-        return false
-    }
-    if (refMap[`${ref.type}-${ref.id}`]) {
-        return true
-    } else {
-        refMap[`${ref.type}-${ref.id}`] = true
-    }
-    return false
-}
-
-const denormalizeHierarchy = (entityStore, ref, hierarchy, refMap) => {
-    if (!(ref && ref.type && ref.id)) {
-        return undefined
-    }
-    const entity = get(entityStore, [ref.type, ref.id])
-    if (isCircularReference(ref, refMap) || !entity) {
-        return ref
-    }
-
-    hierarchy = {
-        'id': ref.id,
-        'type': ref.type,
-        ...entity.attributes
-    }
-    const relationships = get(entity, 'relationships') || {}
-
-    map(relationships, (relationship, relationshipRef) => {
-        const relRef = relationship.data
-
-        if (relRef === null) {
-            hierarchy[relationshipRef] = null
-        } else if (!Array.isArray(relRef)) {
-            hierarchy[relationshipRef] = denormalizeHierarchy(entityStore, relRef, hierarchy[relationshipRef], refMap)
-        } else {
-            hierarchy[relationshipRef] = relRef.map((r) => {
-                return denormalizeHierarchy(entityStore, r, hierarchy[relationshipRef], refMap)
-            })
-        }
-    })
-    return hierarchy
-}
-
-export const selectRef = (key) => createSelector(
+export const getObject = (key) => createSelector(
     getReferences,
-    getEntityStore,
-    (refs, entityStore) => {
-        const ref = get(refs, key) || defaultRef
+    getEntities,
+    (references, entityStore) => {
+        const ref = get(references, key) || defaultRef
         const { isCollection } = ref
 
-        const refEntities = ref.entities.reduce((memo, entityRef) => {
-            const refCount = getRefEntityTypeCount(ref, entityRef.type)
-            const denormalized = denormalizeHierarchy(entityStore, entityRef, {}, {})
+        const denormalized = ref.entities.map(entityRef => {
+            return denormalize(entityRef, entityStore)
+        })
 
-            const isPlural = refCount > 1 || isCollection
-
-            const e = {
-                ...denormalized
-            }
-
-            if (!memo) {
-                memo = isPlural ? [] : {}
-            }
-
-            if (isPlural) {
-                memo.push(e)
-            } else {
-                memo = e
-            }
-            return memo
-        }, null)
-        return refEntities
+        return isCollection ? denormalized : denormalized[0]
     }
 )
 
-export const selectLinks = (key) => createSelector(
+const getLinks = (key) => createSelector(
     getReferences,
-    (refs) => get(refs, [key, 'links'])
+    (references) => get(references, [key, 'links'])
 )
 
-export const selectRequest = (key) => createSelector(
+const getMeta = (key) => createSelector(
+    getReferences,
+    (refs) => get(refs, [key, 'meta'])
+)
+
+export const getRequest = (key) => createSelector(
     getRequests,
-    selectLinks(key),
+    getLinks(key),
     (apiRequests, links) => {
         const request = get(apiRequests, key, defaultRequest)
         const canLoadMore = get(links, 'next') && !request.isLoading
@@ -132,46 +74,48 @@ export const selectRequest = (key) => createSelector(
     }
 )
 
-export const selectMeta = (key) => createSelector(
-    getReferences,
-    (refs) => get(refs, [key, 'meta'])
-)
-
-export const selectRefWithAllData = (key) => createStructuredSelector({
-    ref: selectRef(key),
-    request: selectRequest(key),
-    links: selectLinks(key),
-    meta: selectMeta(key)
+export const getObjectWithRequest = (key) => createStructuredSelector({
+    obj: getObject(key),
+    request: getRequest(key),
+    links: getLinks(key),
+    meta: getMeta(key)
 })
 
-export const selectRefWithRequest = (key) => createSelector(
-    selectRefWithAllData(key),
-    (data) => omit(data, val => val === undefined)
-)
-
-export const getEntityForRef = (ref) => createSelector(
-    getEntityStore,
-    (entityStore) => denormalizeHierarchy(entityStore, ref, {}, {})
-)
-
-export const selectDataForKeys = (dataKeys) => {
+export const selectResourcesForKeys = (dataKeys) => {
     return (state) => {
         return dataKeys.reduce((memo, key) => {
-            memo[key] = selectRefWithRequest(key)(state)
+            memo[key] = getObjectWithRequest(key)(state)
             return memo
         }, {})
     }
 }
 
-export const selectDataForKey = (dataKey) => createSelector(
-    selectDataForKeys([dataKey]),
+export const selectResourceForKey = (dataKey) => createSelector(
+    selectResourcesForKeys([dataKey]),
     (data) => data[dataKey]
 )
 
-export const selectData = (keyOrKeys) => {
+export const selectResource = (keyOrKeys) => {
     if (keyOrKeys instanceof Array) {
-        return selectDataForKeys(keyOrKeys)
+        return selectResourcesForKeys(keyOrKeys)
     } else {
-        return selectDataForKey(keyOrKeys)
+        return selectResourceForKey(keyOrKeys)
     }
+}
+
+// Use the _.get syntax to pass in an address string (ie <dataKey>.<attributeName>), and default
+// value
+export const getData = (key, defaultValue) => {
+    const splitKeys = key instanceof Array ? key : key.split('.')
+    const dataKey = splitKeys[0]
+    return createSelector(
+        getObject(dataKey),
+        obj => {
+            if (splitKeys.length === 1) {
+                return obj === undefined ? defaultValue : obj
+            } else {
+                return get(obj, splitKeys.slice(1, splitKeys.length), defaultValue)
+            }
+        }
+    )
 }
