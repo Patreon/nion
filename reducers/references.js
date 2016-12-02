@@ -1,4 +1,26 @@
+import get from 'lodash.get'
+
 const initialState = {}
+
+const deleteRefFromEntities = (refToDelete, state) => {
+    if (!(get(refToDelete, 'type') && get(refToDelete, 'id'))) {
+        return state
+    }
+    return Object.keys(state).reduce((memo, dataKey) => {
+        const oldEntites = state[dataKey].entities;
+        if (Array.isArray(oldEntites)) {
+            memo[dataKey] = {
+                ...state[dataKey],
+                entities: oldEntites.filter((entity) => (
+                    !(entity.type === refToDelete.type && entity.id === refToDelete.id)
+                ))
+            }
+        } else {
+            memo[dataKey] = state[dataKey]
+        }
+        return memo
+    }, {})
+}
 
 const refsReducer = (state = initialState, action) => {
     switch (action.type) {
@@ -21,7 +43,8 @@ const refsReducer = (state = initialState, action) => {
                 }
             } else {
                 return {
-                    ...state,
+                    // if there's no ref to delete, this is a no-op
+                    ...deleteRefFromEntities(get(action, 'meta.refToDelete'), state),
                     [action.meta.dataKey]: action.payload.newRequestRef
                 }
             }

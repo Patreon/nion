@@ -1,6 +1,9 @@
 import map from 'lodash.map'
 
 const addEntityToStoreFragment = (store, entity) => {
+    if (!entity) {
+        return
+    }
     if (!(entity.type in store)) {
         store[entity.type] = {}
     }
@@ -22,6 +25,9 @@ const normalizeIncludedEntities = (storeFragment, includedEntities) => {
 }
 
 const makeEntityReferences = (data) => {
+    if (!data) {
+        return []
+    }
     const dataList = Array.isArray(data) ? data : [data]
     return dataList.map((entity) => ({id: entity.id, type: entity.type}))
 }
