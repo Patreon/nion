@@ -2,12 +2,17 @@ import get from 'lodash.get'
 import map from 'lodash.map'
 import { camelizeKeys, camelize } from 'humps'
 
+import {
+    JSON_API_SUCCESS,
+    JSON_API_BOOTSTRAP
+} from '../actions/types'
+
 const initialState = {}
 
 // The core reducer for maintaining a normalized entity store of entities that are fetched / updated
 // between different JSON API actions
 const entitiesReducer = (state = initialState, action) => {
-    if (action.type === 'JSON_API_SUCCESS' || action.type === 'JSON_API_BOOTSTRAP') {
+    if (action.type === JSON_API_SUCCESS || action.type === JSON_API_BOOTSTRAP) {
         const newState = {
             ...state
         }

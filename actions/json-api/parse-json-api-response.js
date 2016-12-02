@@ -1,17 +1,19 @@
 import map from 'lodash.map'
+import every from 'lodash.every'
 
 const addEntityToStoreFragment = (store, entity) => {
+    const { type, id, attributes, relationships } = entity
     if (!entity) {
         return
     }
-    if (!(entity.type in store)) {
-        store[entity.type] = {}
+    if (!(type in store)) {
+        store[type] = {}
     }
-    store[entity.type][entity.id] = {
-        type: entity.type,
-        id: entity.id,
-        attributes: entity.attributes,
-        relationships: entity.relationships
+    store[type][id] = {
+        type: type,
+        id: id,
+        attributes: attributes,
+        relationships: relationships
     }
 }
 
@@ -32,8 +34,15 @@ const makeEntityReferences = (data) => {
     return dataList.map((entity) => ({id: entity.id, type: entity.type}))
 }
 
-export default (response) => {
+export const isJsonApiResponse = ({ data }) => {
+    const dataList = Array.isArray(data) ? data : [data]
+    return data && every(dataList, ref => ref.id !== undefined && ref.type !== undefined)
+}
+
+export default function parseJsonApiResponse(response) {
     const { data, included, meta, links } = response
+
+    // Create the new ref to pass to the entities reducer.
     const newRequestRef = {
         entities: makeEntityReferences(data),
         meta,
@@ -41,7 +50,8 @@ export default (response) => {
         isCollection: data instanceof Array
     }
 
-    // rewrite this so that we are not mutating
+    // Create a store fragment map of normalized entities to pass to the entity reducer
+    // This will take the shape of { [type] : { [id]: ... } }
     let storeFragment = {}
     normalizeDataEntities(storeFragment, data)
     normalizeIncludedEntities(storeFragment, included)

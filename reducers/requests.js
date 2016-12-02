@@ -1,5 +1,11 @@
 import get from 'lodash.get'
 
+import {
+    JSON_API_REQUEST,
+    JSON_API_SUCCESS,
+    JSON_API_FAILURE
+} from '../actions/types'
+
 const initialState = {}
 
 const requestsReducer = (state = initialState, action) => {
@@ -22,7 +28,7 @@ const requestsReducer = (state = initialState, action) => {
     }
 
     switch (action.type) {
-        case 'JSON_API_REQUEST':
+        case JSON_API_REQUEST:
             return {
                 ...state,
                 [action.meta.dataKey]: {
@@ -32,7 +38,7 @@ const requestsReducer = (state = initialState, action) => {
                     pending: action.meta.method
                 }
             }
-        case 'JSON_API_SUCCESS':
+        case JSON_API_SUCCESS:
 
             return {
                 ...state,
@@ -45,7 +51,7 @@ const requestsReducer = (state = initialState, action) => {
                     isLoading: false
                 }
             }
-        case 'JSON_API_FAILURE':
+        case JSON_API_FAILURE:
             return {
                 ...state,
                 [action.meta.dataKey]: {

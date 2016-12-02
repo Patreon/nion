@@ -1,14 +1,21 @@
 import get from 'lodash.get'
 import map from 'lodash.map'
-import { jsonApi } from './actions/index'
+import { jsonApi, generic } from './actions/index'
 
-const bootstrap = (store, toBootstrap) => {
+import { isJsonApiResponse } from './actions/json-api/parse-json-api-response'
+
+const bootstrap = (store) => {
     const bootstrapObj = get(window, 'patreon.bootstrap', {})
 
-    // Iterate over the toBootstrap object with format { [ref]: <bootstrapKey> }
-    map(toBootstrap, (bootstrapKey, dataKey) => {
-        const data = bootstrapObj[bootstrapKey]
-        store.dispatch(jsonApi.bootstrap({ dataKey, data }))
+    // Iterate over the bootstrap object with format { [dataKey]: <data> }
+    map(bootstrapObj, (data, dataKey) => {
+
+        // Only dispatch data that is JSON-API compliant using the jsonApi action creators
+        if (isJsonApiResponse(data)) {
+            store.dispatch(jsonApi.bootstrap({ dataKey, data }))
+        } else {
+            store.dispatch(generic.bootstrap({ dataKey, data }))
+        }
     })
 }
 

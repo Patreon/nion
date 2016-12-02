@@ -10,7 +10,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 import { jsonApi } from '../actions'
-import { getResourcesForKeys } from 'libs/nion/selectors'
+import { selectResourcesForKeys } from 'libs/nion/selectors'
 
 const defaultOptions = {
     // Component / API Lifecycle methods
@@ -56,7 +56,7 @@ const processDirectives = (directives) => {
 
     // Construct the JSON API selector to map to props
     const mapStateToProps = createSelector(
-        getResourcesForKeys(dataKeys),
+        selectResourcesForKeys(dataKeys),
         (selectedResources) => {
             const data = {}
             const requests = {}

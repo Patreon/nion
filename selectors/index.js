@@ -17,6 +17,11 @@ const defaultRequest = {
     status: 'not called'
 }
 
+const isGeneric = (ref) => {
+    // This may not be the best way to check if something is a ref to entities or not
+    return get(ref, 'entities') === undefined
+}
+
 export const selectRef = (dataKey) => createSelector(
     selectReferences,
     (refs) => get(refs, dataKey)
@@ -43,9 +48,14 @@ export const selectObject = (key) => createSelector(
     selectReferences,
     selectEntities,
     (references, entityStore) => {
-        const ref = get(references, key) || defaultRef
-        const { isCollection } = ref
+        const ref = get(references, key)
 
+        // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
+        if (isGeneric(ref)) {
+            return ref
+        }
+
+        const { isCollection } = ref
         const denormalized = ref.entities.map(entityRef => {
             return denormalize(entityRef, entityStore)
         })
@@ -74,6 +84,7 @@ export const selectRequest = (key) => createSelector(
     }
 )
 
+// Selects the denormalized object plus all relevant request data from the store
 export const selectObjectWithRequest = (key) => createStructuredSelector({
     obj: selectObject(key),
     request: selectRequest(key),
@@ -81,6 +92,7 @@ export const selectObjectWithRequest = (key) => createStructuredSelector({
     meta: selectMeta(key)
 })
 
+// Selects a keyed map of { obj, request } resources from the store taking an array of dataKeys
 export const selectResourcesForKeys = (dataKeys) => {
     return (state) => {
         return dataKeys.reduce((memo, key) => {
@@ -90,11 +102,14 @@ export const selectResourcesForKeys = (dataKeys) => {
     }
 }
 
+// Selects the combination { obj, request } resource from the store taking a dataKey
 export const selectResourceForKey = (dataKey) => createSelector(
     selectResourcesForKeys([dataKey]),
     (data) => data[dataKey]
 )
 
+// Selects the combination { obj, request } resource from the store, taking either a dataKey or
+// array of dataKeys
 export const selectResource = (keyOrKeys) => {
     if (keyOrKeys instanceof Array) {
         return selectResourcesForKeys(keyOrKeys)

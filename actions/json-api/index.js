@@ -2,9 +2,12 @@ import { CALL_API, getJSON } from 'redux-api-middleware'
 import { urlBuilderForDefaults } from 'utilities/json-api-url'
 import parseJsonApiResponse from './parse-json-api-response'
 
-const JSON_API_REQUEST = 'JSON_API_REQUEST'
-const JSON_API_SUCCESS = 'JSON_API_SUCCESS'
-const JSON_API_FAILURE = 'JSON_API_FAILURE'
+import {
+    JSON_API_REQUEST,
+    JSON_API_SUCCESS,
+    JSON_API_FAILURE,
+    JSON_API_BOOTSTRAP
+} from '../types'
 
 const getJsonApiRequestTypes = (dataKey, meta = {}) => {
     return [{
@@ -57,7 +60,7 @@ export const deleteJsonApi = (dataKey, ref, options) => {
 
 export const bootstrapJsonApi = ({ dataKey, data }) => {
     return {
-        type: 'JSON_API_BOOTSTRAP',
+        type: JSON_API_BOOTSTRAP,
         meta: { dataKey },
         payload: parseJsonApiResponse(data)
     }

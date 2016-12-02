@@ -2,6 +2,16 @@ import get from 'lodash.get'
 
 const initialState = {}
 
+import {
+    JSON_API_REQUEST,
+    JSON_API_BOOTSTRAP,
+    JSON_API_SUCCESS,
+    GENERIC_BOOTSTRAP
+} from '../actions/types'
+
+// Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
+const clone = (input) => JSON.parse(JSON.stringify(input))
+
 const deleteRefFromEntities = (refToDelete, state) => {
     if (!(get(refToDelete, 'type') && get(refToDelete, 'id'))) {
         return state
@@ -24,12 +34,10 @@ const deleteRefFromEntities = (refToDelete, state) => {
 
 const refsReducer = (state = initialState, action) => {
     switch (action.type) {
-        case 'JSON_API_REQUEST':
-            return {
-                ...state
-            }
-        case 'JSON_API_BOOTSTRAP':
-        case 'JSON_API_SUCCESS':
+        case JSON_API_REQUEST:
+            return state
+        case JSON_API_BOOTSTRAP:
+        case JSON_API_SUCCESS:
             // If the result of a paginated nextPage request, we're going to want to append the
             // retrieved entities to the end of the current entities list
             if (action.meta.isNextPage) {
@@ -47,6 +55,13 @@ const refsReducer = (state = initialState, action) => {
                     ...deleteRefFromEntities(get(action, 'meta.refToDelete'), state),
                     [action.meta.dataKey]: action.payload.newRequestRef
                 }
+            }
+
+        // Handle generic refs to non json-api data
+        case GENERIC_BOOTSTRAP:
+            return {
+                ...state,
+                [action.meta.dataKey]: clone(action.payload)
             }
         default:
             return state

@@ -9,6 +9,10 @@ import {
     urlBuilder
 } from './json-api'
 
+import {
+    bootstrapGeneric
+} from './generic'
+
 export const jsonApi = {
     bootstrap: bootstrapJsonApi,
     delete: deleteJsonApi,
@@ -18,4 +22,8 @@ export const jsonApi = {
     post: postJsonApi,
     request: requestJsonApi,
     urlBuilder
+}
+
+export const generic = {
+    bootstrap: bootstrapGeneric
 }
