@@ -97,7 +97,8 @@ const processDirectives = (directives) => {
     const mapDispatchToProps = (dispatch) => {
         const dispatchProps = {}
 
-        // Helper method to construct a JSON API url endpoint from supplied directive and params. This will be userd to build the endpoints for the various method actions
+        // Helper method to construct a JSON API url endpoint from supplied directive and params.
+        // This will be user to build the endpoints for the various method actions
         function makeJsonApiEndpoint(directive, params) {
             const endpoint = get(directive, 'endpoint')
             const include = get(directive, 'include', [])
@@ -247,7 +248,8 @@ const connectComponent = (directives, WrappedComponent) => { // eslint-disable-l
 // JSON API decorator function for wrapping connected components to the new JSON API redux system
 const nion = (directives, options) => (WrappedComponent) => {
 
-    // If a static object of directives is passed in, process it immediately, otherwise, pass the incoming props to the directives function to generate a directives object
+    // If a static object of directives is passed in, process it immediately, otherwise, pass the
+    // incoming props to the directives function to generate a directives object
     if (directives instanceof Function) {
         return props => {
             const ConnectedComponent = connectComponent(directives(props), WrappedComponent)
