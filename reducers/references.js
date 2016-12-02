@@ -7,7 +7,7 @@ const deleteRefFromEntities = (refToDelete, state) => {
         return state
     }
     return Object.keys(state).reduce((memo, dataKey) => {
-        const oldEntites = state[dataKey].entities;
+        const oldEntites = state[dataKey].entities
         if (Array.isArray(oldEntites)) {
             memo[dataKey] = {
                 ...state[dataKey],
