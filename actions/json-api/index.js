@@ -44,7 +44,16 @@ const fetchJsonApi = (method) => (dataKey, { endpoint, body, meta }) => {
 export const getJsonApi = fetchJsonApi('GET')
 export const postJsonApi = fetchJsonApi('POST')
 export const patchJsonApi = fetchJsonApi('PATCH')
-export const deleteJsonApi = fetchJsonApi('DELETE')
+
+export const deleteJsonApi = (dataKey, ref, options) => {
+    return fetchJsonApi('DELETE')(dataKey, {
+        ...options,
+        meta: {
+            ...options.meta,
+            refToDelete: ref
+        }
+    })
+}
 
 export const getNextJsonApi = ({ dataKey, next }) => {
     return getJsonApi(dataKey, {

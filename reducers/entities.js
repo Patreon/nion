@@ -11,14 +11,14 @@ const entitiesReducer = (state = initialState, action) => {
         }
 
         map(action.payload.storeFragment, (entities, type) => {
-
             newState[type] = {
                 ...get(newState, type, {})
             }
 
             map(entities, (entity, id) => {
-
                 newState[type][id] = {
+                    type,
+                    id,
                     attributes: {
                         ...get(newState[type][id], 'attributes', {}),
                         ...get(entity, 'attributes', {})
@@ -30,6 +30,11 @@ const entitiesReducer = (state = initialState, action) => {
                 }
             })
         })
+
+        const entityToDelete = get(action, 'meta.refToDelete')
+        if (entityToDelete) {
+            delete newState[entityToDelete.type][entityToDelete.id]
+        }
         return newState
     }
     return state
