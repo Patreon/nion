@@ -81,7 +81,7 @@ export const getObjectWithRequest = (key) => createStructuredSelector({
     meta: getMeta(key)
 })
 
-export const selectResourcesForKeys = (dataKeys) => {
+export const getResourcesForKeys = (dataKeys) => {
     return (state) => {
         return dataKeys.reduce((memo, key) => {
             memo[key] = getObjectWithRequest(key)(state)
@@ -90,16 +90,16 @@ export const selectResourcesForKeys = (dataKeys) => {
     }
 }
 
-export const selectResourceForKey = (dataKey) => createSelector(
-    selectResourcesForKeys([dataKey]),
+export const getResourceForKey = (dataKey) => createSelector(
+    getResourcesForKeys([dataKey]),
     (data) => data[dataKey]
 )
 
-export const selectResource = (keyOrKeys) => {
+export const getResource = (keyOrKeys) => {
     if (keyOrKeys instanceof Array) {
-        return selectResourcesForKeys(keyOrKeys)
+        return getResourcesForKeys(keyOrKeys)
     } else {
-        return selectResourceForKey(keyOrKeys)
+        return getResourceForKey(keyOrKeys)
     }
 }
 

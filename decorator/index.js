@@ -10,7 +10,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
 import { jsonApi } from '../actions'
-import { selectResourcesForKeys } from 'libs/nion/selectors'
+import { getResourcesForKeys } from 'libs/nion/selectors'
 
 const defaultOptions = {
     // Component / API Lifecycle methods
@@ -56,7 +56,7 @@ const processDirectives = (directives) => {
 
     // Construct the JSON API selector to map to props
     const mapStateToProps = createSelector(
-        selectResourcesForKeys(dataKeys),
+        getResourcesForKeys(dataKeys),
         (selectedResources) => {
             const data = {}
             const requests = {}
@@ -98,7 +98,7 @@ const processDirectives = (directives) => {
         const dispatchProps = {}
 
         // Helper method to construct a JSON API url endpoint from supplied directive and params.
-        // This will be user to build the endpoints for the various method actions
+        // This will be used to build the endpoints for the various method actions
         function makeJsonApiEndpoint(directive, params) {
             const endpoint = get(directive, 'endpoint')
             const include = get(directive, 'include', [])
