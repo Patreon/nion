@@ -55,15 +55,6 @@ export const deleteJsonApi = (dataKey, ref, options) => {
     })
 }
 
-export const getNextJsonApi = ({ dataKey, next }) => {
-    return getJsonApi(dataKey, {
-        endpoint: `https://${next}`,
-        meta: {
-            isNextPage: true
-        }
-    })
-}
-
 export const bootstrapJsonApi = ({ dataKey, data }) => {
     return {
         type: 'JSON_API_BOOTSTRAP',
