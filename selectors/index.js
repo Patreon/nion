@@ -2,10 +2,10 @@ import { createSelector, createStructuredSelector } from 'reselect'
 import get from 'lodash.get'
 import denormalize from './denormalize'
 
-const getNion = (state) => state.nion
-const getEntities = (state) => get(getNion(state), 'entities')
-const getRequests = (state) => get(getNion(state), 'requests')
-const getReferences = (state) => get(getNion(state), 'references')
+const selectNion = (state) => state.nion
+const selectEntities = (state) => get(selectNion(state), 'entities')
+const selectRequests = (state) => get(selectNion(state), 'requests')
+const selectReferences = (state) => get(selectNion(state), 'references')
 
 const defaultRef = {
     entities: [],
@@ -17,19 +17,19 @@ const defaultRequest = {
     status: 'not called'
 }
 
-export const getRef = (dataKey) => createSelector(
-    getReferences,
+export const selectRef = (dataKey) => createSelector(
+    selectReferences,
     (refs) => get(refs, dataKey)
 )
 
-export const getEntity = (type, id) => createSelector(
-    getEntities,
+export const selectEntity = (type, id) => createSelector(
+    selectEntities,
     (entities) => get(entities, [type, id])
 )
 
-export const getEntityFromKey = (key) => createSelector(
-    getRef(key),
-    getEntities,
+export const selectEntityFromKey = (key) => createSelector(
+    selectRef(key),
+    selectEntities,
     (ref, entityStore) => {
         const { isCollection } = ref
         const entities = ref.entities.map(entity => {
@@ -39,9 +39,9 @@ export const getEntityFromKey = (key) => createSelector(
     }
 )
 
-export const getObject = (key) => createSelector(
-    getReferences,
-    getEntities,
+export const selectObject = (key) => createSelector(
+    selectReferences,
+    selectEntities,
     (references, entityStore) => {
         const ref = get(references, key) || defaultRef
         const { isCollection } = ref
@@ -54,19 +54,19 @@ export const getObject = (key) => createSelector(
     }
 )
 
-const getLinks = (key) => createSelector(
-    getReferences,
+const selectLinks = (key) => createSelector(
+    selectReferences,
     (references) => get(references, [key, 'links'])
 )
 
-const getMeta = (key) => createSelector(
-    getReferences,
+const selectMeta = (key) => createSelector(
+    selectReferences,
     (refs) => get(refs, [key, 'meta'])
 )
 
-export const getRequest = (key) => createSelector(
-    getRequests,
-    getLinks(key),
+export const selectRequest = (key) => createSelector(
+    selectRequests,
+    selectLinks(key),
     (apiRequests, links) => {
         const request = get(apiRequests, key, defaultRequest)
         const canLoadMore = get(links, 'next') && !request.isLoading
@@ -74,42 +74,42 @@ export const getRequest = (key) => createSelector(
     }
 )
 
-export const getObjectWithRequest = (key) => createStructuredSelector({
-    obj: getObject(key),
-    request: getRequest(key),
-    links: getLinks(key),
-    meta: getMeta(key)
+export const selectObjectWithRequest = (key) => createStructuredSelector({
+    obj: selectObject(key),
+    request: selectRequest(key),
+    links: selectLinks(key),
+    meta: selectMeta(key)
 })
 
-export const getResourcesForKeys = (dataKeys) => {
+export const selectResourcesForKeys = (dataKeys) => {
     return (state) => {
         return dataKeys.reduce((memo, key) => {
-            memo[key] = getObjectWithRequest(key)(state)
+            memo[key] = selectObjectWithRequest(key)(state)
             return memo
         }, {})
     }
 }
 
-export const getResourceForKey = (dataKey) => createSelector(
-    getResourcesForKeys([dataKey]),
+export const selectResourceForKey = (dataKey) => createSelector(
+    selectResourcesForKeys([dataKey]),
     (data) => data[dataKey]
 )
 
-export const getResource = (keyOrKeys) => {
+export const selectResource = (keyOrKeys) => {
     if (keyOrKeys instanceof Array) {
-        return getResourcesForKeys(keyOrKeys)
+        return selectResourcesForKeys(keyOrKeys)
     } else {
-        return getResourceForKey(keyOrKeys)
+        return selectResourceForKey(keyOrKeys)
     }
 }
 
 // Use the _.get syntax to pass in an address string (ie <dataKey>.<attributeName>), and default
 // value
-export const getData = (key, defaultValue) => {
+export const selectData = (key, defaultValue) => {
     const splitKeys = key instanceof Array ? key : key.split('.')
     const dataKey = splitKeys[0]
     return createSelector(
-        getObject(dataKey),
+        selectObject(dataKey),
         obj => {
             if (splitKeys.length === 1) {
                 return obj === undefined ? defaultValue : obj
