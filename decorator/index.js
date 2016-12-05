@@ -4,8 +4,6 @@ import set from 'lodash.set'
 import some from 'lodash.some'
 import map from 'lodash.map'
 
-import jsonApiUrl from 'utilities/json-api-url'
-
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
@@ -101,16 +99,8 @@ const processDirectives = (directives) => {
         // This will be used to build the endpoints for the various method actions
         function makeJsonApiEndpoint(directive, params) {
             const endpoint = get(directive, 'endpoint')
-            const include = get(directive, 'include', [])
-            const fields = get(directive, 'fields', {})
 
-            return jsonApiUrl(
-                callOrPass(endpoint, params),
-                {
-                    include: callOrPass(include, params),
-                    fields: callOrPass(fields, params)
-                }
-            )
+            return callOrPass(endpoint, params)
         }
 
         // Map over the supplied directives to build out the 4 main methods to add to the actions
@@ -156,10 +146,9 @@ const processDirectives = (directives) => {
         return dispatchProps
     }
 
-    // The endpoint / include / fields params can be either a basic parameter (string /
-    // arrray / object) or a method that returns the corresponding type based on the
-    // component's props. We use callOrPass to either pass the value back or call the
-    // method
+    // The endpoint param can be either a basic parameter (string / arrray / object) or a method
+    // that returns the corresponding type based on the component's props. We use callOrPass to
+    // either pass the value back or call the method
     function callOrPass(param, props) {
         return param instanceof Function ? param(props) : param
     }
