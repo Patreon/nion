@@ -133,8 +133,9 @@ const processDirectives = (directives) => {
 
             if (directive.paginated) {
                 dispatchProps[key]['NEXT'] = ({ next }) => {
+                    const endpoint = next.indexOf('http') === 0 ? next : `https://${next}`
                     dispatch(jsonApi.get(dataKey, {
-                        endpoint: next,
+                        endpoint,
                         meta: {
                             isNextPage: true
                         }
