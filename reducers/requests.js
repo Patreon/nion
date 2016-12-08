@@ -11,22 +11,6 @@ const initialState = {}
 const requestsReducer = (state = initialState, action) => {
     const existing = get(state, 'action.meta.dataKey')
 
-    if (action.error) {
-        return {
-            ...state,
-            [action.meta.dataKey]: {
-                ...existing,
-                status: 'error',
-                name: action.payload.name,
-                errors: [action.payload.message],
-                isError: true,
-                isLoading: false,
-                isLoaded: false,
-                pending: undefined
-            }
-        }
-    }
-
     switch (action.type) {
         case JSON_API_REQUEST:
             return {
@@ -57,11 +41,13 @@ const requestsReducer = (state = initialState, action) => {
                 [action.meta.dataKey]: {
                     ...existing,
                     status: 'error',
-                    name: 'PatreonApiError',
-                    errors: get(action, 'errors') || [],
+                    name: action.payload.name,
+                    errors: [action.payload.message],
                     fetchedAt: Date.now(),
                     isError: true,
-                    isLoading: false
+                    isLoaded: false,
+                    isLoading: false,
+                    pending: undefined
                 }
             }
         default:

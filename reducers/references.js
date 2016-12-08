@@ -1,29 +1,33 @@
-import get from 'lodash.get'
-
 const initialState = {}
 
 import {
     JSON_API_REQUEST,
     JSON_API_BOOTSTRAP,
     JSON_API_SUCCESS,
-    GENERIC_BOOTSTRAP
+    GENERIC_BOOTSTRAP,
+    INITIALIZE_DATAKEY
 } from '../actions/types'
 
 // Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
 const clone = (input) => JSON.parse(JSON.stringify(input))
 
-const deleteRefFromEntities = (refToDelete, state) => {
-    if (!(get(refToDelete, 'type') && get(refToDelete, 'id'))) {
+const deleteRefFromEntities = (refToDelete = {}, state = {}) => {
+    const { type, id } = refToDelete
+    if (!id || !type) {
         return state
     }
+
+    // Iterate over all dataKeys on state to remove all instance of the
+    // ref to be deleted
     return Object.keys(state).reduce((memo, dataKey) => {
         const oldEntites = state[dataKey].entities
+
         if (Array.isArray(oldEntites)) {
             memo[dataKey] = {
                 ...state[dataKey],
-                entities: oldEntites.filter((entity) => (
-                    !(entity.type === refToDelete.type && entity.id === refToDelete.id)
-                ))
+                entities: oldEntites.filter((entity) => {
+                    return !(entity.type === type && entity.id === id)
+                })
             }
         } else {
             memo[dataKey] = state[dataKey]
@@ -49,10 +53,18 @@ const refsReducer = (state = initialState, action) => {
                         entities: state[action.meta.dataKey].entities.concat(nextPageRef.entities)
                     }
                 }
-            } else {
+            }
+            // Else, if the result of a DELETE request, we must process delete corresponding refs
+            // off of the references state
+            else if (action.meta.refToDelete) {
                 return {
                     // if there's no ref to delete, this is a no-op
-                    ...deleteRefFromEntities(get(action, 'meta.refToDelete'), state),
+                    ...deleteRefFromEntities(action.meta.refToDelete, state)
+                }
+            // Otherwise, append the new ref to the state
+            } else {
+                return {
+                    ...state,
                     [action.meta.dataKey]: action.payload.newRequestRef
                 }
             }
@@ -63,6 +75,14 @@ const refsReducer = (state = initialState, action) => {
                 ...state,
                 [action.meta.dataKey]: clone(action.payload)
             }
+
+        // Initialize a new dataKey from a ref passed to a child component
+        case INITIALIZE_DATAKEY:
+            return {
+                ...state,
+                [action.payload.dataKey]: clone(action.payload.ref)
+            }
+
         default:
             return state
     }

@@ -1,44 +1,49 @@
 import React, { Component } from 'react'
 import get from 'lodash.get'
 import set from 'lodash.set'
-import some from 'lodash.some'
 import map from 'lodash.map'
+import merge from 'lodash.merge'
+import promiseActions from '../actions/promises'
+import { buildUrl, deconstructUrl } from 'libs/nion/url'
 
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { jsonApi } from '../actions'
+import { INITIALIZE_DATAKEY, UPDATE_ENTITY } from '../actions/types'
 import { selectResourcesForKeys } from 'libs/nion/selectors'
 
-const defaultOptions = {
+const defaultDeclarativeOptions = {
     // Component / API Lifecycle methods
-    onMount: true, // Should the component load the data when it mounts?
+    onMount: false, // Should the component load the data when it mounts?
     once: true, // Should the component only load the data once on mount?
+
+    // Manual ref initialization, for parent/child data management relationships
+    initialRef: null,
 
     // Special request type parameters
     paginated: false
 }
 
-const processDefaultOptions = (directives) => {
-    map(directives, (directive, key) => {
-        map(defaultOptions, (defaultState, defaultKey) => {
-            const option = get(directive, defaultKey, defaultState)
-            directive[defaultKey] = option
+function processDefaultOptions(declaratives) {
+    map(declaratives, (declarative, key) => {
+        map(defaultDeclarativeOptions, (defaultState, defaultKey) => {
+            const option = get(declarative, defaultKey, defaultState)
+            declarative[defaultKey] = option
         })
     })
 }
 
-const processDirectives = (directives) => {
-    // Apply default options to the directives
-    processDefaultOptions(directives)
+function processDeclaratives(declaratives) {
+    // Apply default options to the declaratives
+    processDefaultOptions(declaratives)
 
-    // The passed in directives object is a map of dataKeys to fetch and their corresponding params.
-    // We need to handle both the component-scoped key (the key of the object passed to the
+    // The passed in declaratives object is a map of dataKeys to fetch and their corresponding
+    // params. We need to handle both the component-scoped key (the key of the object passed to the
     // decorator) as well as the dataKey that points to where the ref / request is stored on the
     // state tree
-    const mapDirectives = (fn) => (
-        map(directives, (directive, key) => (
-            fn(directive, key, directive.dataKey || key)
+    const mapDeclaratives = (fn) => (
+        map(declaratives, (declarative, key) => (
+            fn(declarative, key, declarative.dataKey || key)
         ))
     )
 
@@ -47,153 +52,199 @@ const processDirectives = (directives) => {
     // We'll need to make a map from dataKey to key to handle passing the props more semantically to
     // the wrapped component. We'll need these dataKeys for creating our selector as well.
     const keysByDataKey = {}
-    const dataKeys = mapDirectives((directive, key, dataKey) => {
+    const dataKeys = mapDeclaratives((declarative, key, dataKey) => {
         keysByDataKey[dataKey] = key
+
+        // Ensure the dataKey is set properly on the declarative
+        declarative.dataKey = declarative.dataKey || key
+
         return dataKey
     })
+
+    function defineDataProperty(obj, key, value){
+        Object.defineProperty(obj, key, {
+            value,
+            enumerable: false
+        })
+    }
 
     // Construct the JSON API selector to map to props
     const mapStateToProps = createSelector(
         selectResourcesForKeys(dataKeys),
         (selectedResources) => {
-            const data = {}
-            const requests = {}
-            const actions = {}
-            const links = {}
-            const meta = {}
+            const nion = {}
 
             // Now map back over the dataKeys to their original keys
             map(selectedResources, (selected, selectedDataKey) => {
                 const key = keysByDataKey[selectedDataKey]
 
-                // We want the passed in data to be flat attributes
-                if (selected.obj instanceof Array) {
-                    data[key] = [ ...selected.obj ]
-                } else if (selected.obj === null || selected.obj === undefined) {
-                    data[key] = null
-                } else {
-                    data[key] = { ...selected.obj }
-                }
+                // If the ref doesn't yet exist, we need to ensure we can pass an object with
+                // 'request' and 'actions' props to the child component so it can manage loading the
+                // data. Therefore, we'll create a "NonExistentObject" (an empty object with a
+                // hidden property) to pass down to the child component. This can interface with the
+                // "exists" function to tell if the data exists yet
+                const refDoesNotExist = selected.obj === undefined
+                nion[key] = refDoesNotExist ?
+                    makeNonExistingObject() : makeExistingObject(selected.obj)
 
-                requests[key] = selected.request
-                links[key] = selected.links
-                meta[key] = selected.meta
-                actions[key] = {}
+                // Define the nion-specific properties as non-enumerable properties on the dataKey
+                // prop
+                defineDataProperty(nion[key], 'request', { ...selected.request })
+                defineDataProperty(nion[key], 'links', { ...selected.links })
+                defineDataProperty(nion[key], 'actions', {})
             })
 
-            return { nion: { data, requests, actions, links, meta } }
+            return { nion }
         }
     )
-
-    // Decide whether or not the wrapped component should handle the request lifecycle automatically
-    const shouldHandleLifecycle = some(mapDirectives((directive) => {
-        const { onMount } = directive
-        return onMount
-    }))
 
     // Construct the dispatch methods to pass action creators to the component
     const mapDispatchToProps = (dispatch) => {
         const dispatchProps = {}
 
-        // Helper method to construct a JSON API url endpoint from supplied directive and params.
+        // Helper method to construct a JSON API url endpoint from supplied declarative and params.
         // This will be used to build the endpoints for the various method actions
-        function makeJsonApiEndpoint(directive, params) {
-            const endpoint = get(directive, 'endpoint')
-
-            return callOrPass(endpoint, params)
+        function getJsonApiUrl(declarative, params) {
+            const endpoint = get(declarative, 'endpoint')
+            // Use if a fully-formed url, otherwise pass to buildUrl
+            return endpoint.indexOf('https://') === 0 ? endpoint : buildUrl(endpoint, params)
         }
 
-        // Map over the supplied directives to build out the 4 main methods to add to the actions
+        // Map over the supplied declaratives to build out the 4 main methods to add to the actions
         // subprop, as well as the special case next method for paginated resources
-        mapDirectives((directive, key, dataKey) => {
+        mapDeclaratives((declarative, key, dataKey) => {
             dispatchProps[key] = {}
 
-            const methodsWithBody = ['PATCH', 'POST']
-            methodsWithBody.forEach(method => {
-                dispatchProps[key][method] = (data = {}, params) => {
-                    const jsonApiEndpoint = makeJsonApiEndpoint(directive, params)
+            dispatchProps[key]['POST'] = (data = {}, params) => {
+                const endpoint = getJsonApiUrl(declarative, params)
+                return promiseActions.post(dataKey, {
+                    endpoint,
+                    body: { data }
+                })(dispatch)
+            }
 
-                    dispatch(jsonApi[method.toLowerCase()](dataKey, {
-                        endpoint: jsonApiEndpoint,
-                        body: { data }
-                    }))
+            dispatchProps[key]['PATCH'] = (data = {}, params) => {
+                const endpoint = getJsonApiUrl(declarative, params)
+                return promiseActions.patch(dataKey, {
+                    endpoint,
+                    body: { data }
+                })(dispatch)
+            }
+
+            dispatchProps[key]['GET'] = (params) => {
+                const endpoint = getJsonApiUrl(declarative, params)
+                return promiseActions.get(dataKey, { endpoint })(dispatch)
+            }
+
+            dispatchProps[key]['DELETE'] = (ref = {}, params) => {
+                const endpoint = getJsonApiUrl(declarative, params)
+                return promiseActions.delete(dataKey, ref, { endpoint })(dispatch)
+            }
+
+            if (declarative.paginated) {
+                dispatchProps[key]['NEXT'] = ({ next }, params) => {
+                    const nextUrl = next.indexOf('http') === 0 ? next : `https://${next}`
+                    const { pathname, options: nextUrlOptions } = deconstructUrl(nextUrl)
+
+                    // Since the nextUrl doesn't necessarily return the correct includes / fields,
+                    // we'll need to manually override those fields if supplied
+                    const suppliedUrl = getJsonApiUrl(declarative, params)
+                    const { options: suppliedUrlOptions } = deconstructUrl(suppliedUrl)
+
+                    const newOptions = merge(nextUrlOptions, suppliedUrlOptions)
+
+                    const newEndpoint = buildUrl(pathname, {
+                        ...newOptions
+                    })
+
+                    return promiseActions.next(dataKey, { endpoint: newEndpoint })(dispatch)
                 }
-            })
+            }
 
-            const methodsWithoutBody = ['GET', 'DELETE']
-            methodsWithoutBody.forEach(method => {
-                dispatchProps[key][method] = (data = {}, params) => {
-                    const jsonApiEndpoint = makeJsonApiEndpoint(directive, params)
-
-                    dispatch(jsonApi[method.toLowerCase()](dataKey, {
-                        endpoint: jsonApiEndpoint
-                    }))
-                }
-            })
-
-            if (directive.paginated) {
-                dispatchProps[key]['NEXT'] = ({ next }) => {
-                    const endpoint = next.indexOf('http') === 0 ? next : `https://${next}`
-                    dispatch(jsonApi.get(dataKey, {
-                        endpoint,
-                        meta: {
-                            isNextPage: true
-                        }
-                    }))
+            if (declarative.initialRef) {
+                // Private, internal nion data manipulating actions
+                dispatchProps[key].initializeDataKey = (ref) => {
+                    dispatch({
+                        type: INITIALIZE_DATAKEY,
+                        payload: { dataKey, ref }
+                    })
                 }
             }
         })
+
+        // Exposed, general nion data manipulating actions
+        dispatchProps.updateEntity = ({ type, id }, attributes) => {
+            return new Promise((resolve, reject) => {
+                dispatch({
+                    type: UPDATE_ENTITY,
+                    payload: { type, id, attributes }
+                })
+                resolve()
+            })
+        }
 
         return dispatchProps
     }
 
-    // The endpoint param can be either a basic parameter (string / arrray / object) or a method
-    // that returns the corresponding type based on the component's props. We use callOrPass to
-    // either pass the value back or call the method
-    function callOrPass(param, props) {
-        return param instanceof Function ? param(props) : param
-    }
+    // Now, transform the dispatch props (<ref>Request) into methods on the nion.action prop
+    function mergeProps(stateProps, dispatchProps, ownProps) {
 
-    // Now, transform the dispatch props (<ref>Request) into a 'call' method on the
-    // data[ref][request] prop
-    const mergeProps = (stateProps, dispatchProps, ownProps) => {
         const nextProps = { ...stateProps, ...ownProps }
-        mapDirectives((directive, key, dataKey) => {
+
+        mapDeclaratives((declarative, key, dataKey) => {
+            const data = get(stateProps.nion, key)
+            const ref = data ? { id: data.id, type: data.type } : null
+
             // Add each method's corresponding request handler to the nextProps[key].request
             // object
-            const methods = ['GET', 'PATCH', 'POST', 'DELETE']
+            const methods = ['GET', 'PATCH', 'POST']
             methods.forEach(method => {
-                if (dispatchProps[key][method]) {
-                    const dispatchFn = dispatchProps[key][method]
-                    set(nextProps.nion, ['actions', key, method.toLowerCase()], dispatchFn)
-                }
+                const dispatchFn = dispatchProps[key][method]
+                set(nextProps.nion, [key, 'actions', method.toLowerCase()], dispatchFn)
             })
 
-            // Handle the special NEXT submethod, for paginated directives
+            // Handle deletion, where we're passing in the ref attached to the dataKey to be deleted
+            const deleteDispatchFn = dispatchProps[key]['DELETE']
+            const deleteFn = (props) => deleteDispatchFn(ref, props)
+            set(nextProps.nion, [key, 'actions', 'delete'], deleteFn)
+
+            // Handle the special NEXT submethod, for paginated declaratives
             if (dispatchProps[key]['NEXT']) {
                 const { nion } = stateProps
-                const next = get(nion, ['links', key, 'next'])
+                const next = get(nion, [key, 'links', 'next'])
 
                 const dispatchFn = dispatchProps[key]['NEXT']
                 if (next) {
                     const nextFn = () => dispatchFn({ next })
-                    set(nextProps.nion, ['actions', key, 'next'], nextFn)
+                    set(nextProps.nion, [key, 'actions', 'next'], nextFn)
                 }
             }
+
+            if (dispatchProps[key].initializeDataKey) {
+                const fn = dispatchProps[key].initializeDataKey
+                set(nextProps.nion, [key, 'actions', '_initializeDataKey'], fn)
+            }
         })
+
+        // Pass along the global nion action creators
+        nextProps.nion.updateEntity = dispatchProps.updateEntity
+
         return nextProps
     }
 
-    return { mapStateToProps, mapDispatchToProps, mergeProps, shouldHandleLifecycle }
+    return {
+        mapStateToProps,
+        mapDispatchToProps,
+        mergeProps
+    }
 }
 
-const connectComponent = (directives, WrappedComponent) => { // eslint-disable-line no-shadow
+function connectComponent(declaratives, options, WrappedComponent) { // eslint-disable-line no-shadow
     const {
         mapStateToProps,
         mapDispatchToProps,
-        mergeProps,
-        shouldHandleLifecycle
-    } = processDirectives(directives)
+        mergeProps
+    } = processDeclaratives(declaratives, options)
 
     class WithJsonApi extends Component {
         static displayName = `WithJsonApi(${getDisplayName(WrappedComponent)})`
@@ -201,23 +252,34 @@ const connectComponent = (directives, WrappedComponent) => { // eslint-disable-l
         componentDidMount() {
             const { nion } = this.props // eslint-disable-line no-shadow
 
-            if (!shouldHandleLifecycle) {
-                return
-            }
-
-            // Iterate over the directives provided to the component, deciding how to manage the
+            // Iterate over the declaratives provided to the component, deciding how to manage the
             // load state of each one
-            map(directives, (directive, key) => { // eslint-disable-line no-shadow
-                const fetch = nion.actions[key].get
+            map(declaratives, (declarative, key) => { // eslint-disable-line no-shadow
+                const fetch = nion[key].actions.get
+
+                // If we're supplying a ref to be managed by nion, we'll want to attach it to the
+                // state tree ahead of time (maybe not? maybe we want to have a "virtual" ref...
+                // this is interesting)
+                if (declarative.initialRef) {
+                    // If a ref has already been attached to the dataKey, don't dispatch it again...
+                    // this triggers a cascading rerender which will cause an infinite loop
+                    if (exists(nion[key])) {
+                        return
+                    }
+
+                    const ref = declarative.initialRef
+                    const initializeDataKey = nion[key].actions._initializeDataKey
+                    return initializeDataKey(ref)
+                }
 
                 // If not loading on mount, don't do anything
-                if (!directive.onMount) {
+                if (!declarative.onMount) {
                     return
                 }
 
                 // If the load is only to be performed once, don't fetch if the data has been loaded
-                if (directive.once) {
-                    const status = nion.requests[key].status
+                if (declarative.once) {
+                    const status = nion[key].request.status
                     if (isNotLoaded(status)) {
                         fetch(this.props)
                     }
@@ -236,23 +298,54 @@ const connectComponent = (directives, WrappedComponent) => { // eslint-disable-l
 
 
 // JSON API decorator function for wrapping connected components to the new JSON API redux system
-const nion = (directives, options) => (WrappedComponent) => {
+const nion = (declaratives = {}, options = {}) => (WrappedComponent) => {
 
-    // If a static object of directives is passed in, process it immediately, otherwise, pass the
-    // incoming props to the directives function to generate a directives object
-    if (directives instanceof Function) {
+    // If a static object of declaratives is passed in, process it immediately, otherwise, pass the
+    // incoming props to the declaratives function to generate a declaratives object
+    if (declaratives instanceof Function) {
         return props => {
-            const ConnectedComponent = connectComponent(directives(props), WrappedComponent)
+            const ConnectedComponent = connectComponent(declaratives(props), options, WrappedComponent)
             return <ConnectedComponent { ...props } />
         }
-    } else if (directives instanceof Object) {
-        return connectComponent(directives, WrappedComponent)
+    } else if (declaratives instanceof Object) {
+        return connectComponent(declaratives, options, WrappedComponent)
     }
 }
 
 export default nion
 
-// Helper functions
+// ----------------------------- Helper functions
+
+// Test for the existence of a nion[key] object. If we don't yet have any data attached to a
+// dataKey, nion will still pass down an empty object with "request" and "actions" props in order to
+// manage loading the corresponding data. This method tests to see if that object has data
+// associated with it.
+export function exists(input = {}) {
+    if (!input._exists) {
+        return false
+    }
+
+    const testExists = (obj) => !!(obj.id && obj.type)
+
+    if (input instanceof Array) {
+        return input.filter(testExists).length
+    } else {
+        return testExists(input)
+    }
+}
+
+function makeNonExistingObject() {
+    const obj = {}
+    Object.defineProperty(obj, '_exists', { value: false, enumerable: false })
+    return obj
+}
+
+function makeExistingObject(input) {
+    const output = input instanceof Array ? [ ...input ] : { ...input }
+    Object.defineProperty(output, '_exists', { value: true, enumerable: false })
+    return output
+}
+
 function getDisplayName(WrappedComponent) {
     return WrappedComponent.displayName || WrappedComponent.name || 'Component'
 }

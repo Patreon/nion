@@ -4,7 +4,8 @@ import { camelizeKeys, camelize } from 'humps'
 
 import {
     JSON_API_SUCCESS,
-    JSON_API_BOOTSTRAP
+    JSON_API_BOOTSTRAP,
+    UPDATE_ENTITY
 } from '../actions/types'
 
 const initialState = {}
@@ -12,42 +13,68 @@ const initialState = {}
 // The core reducer for maintaining a normalized entity store of entities that are fetched / updated
 // between different JSON API actions
 const entitiesReducer = (state = initialState, action) => {
-    if (action.type === JSON_API_SUCCESS || action.type === JSON_API_BOOTSTRAP) {
-        const newState = {
-            ...state
-        }
-
-        map(action.payload.storeFragment, (entities, type) => {
-
-            type = camelize(type)
-
-            newState[type] = {
-                ...get(newState, type, {})
+    switch(action.type) {
+        case JSON_API_SUCCESS:
+        case JSON_API_BOOTSTRAP: {
+            const newState = {
+                ...state
             }
 
-            map(entities, (entity, id) => {
-                newState[type][id] = {
-                    type,
-                    id,
-                    attributes: {
-                        ...get(newState[type][id], 'attributes', {}),
-                        ...camelizeKeys(get(entity, 'attributes', {}))
-                    },
-                    relationships: {
-                        ...get(newState[type][id], 'relationships', {}),
-                        ...camelizeKeys(get(entity, 'relationships', {}))
-                    }
-                }
-            })
-        })
+            const storeFragment = get(action, 'payload.storeFragment', {})
+            map(storeFragment, (entities, type) => {
 
-        const entityToDelete = get(action, 'meta.refToDelete')
-        if (entityToDelete) {
-            delete newState[entityToDelete.type][entityToDelete.id]
+                type = camelize(type)
+
+                newState[type] = {
+                    ...get(newState, type, {})
+                }
+
+                map(entities, (entity, id) => {
+                    newState[type][id] = {
+                        type,
+                        id,
+                        attributes: {
+                            ...get(newState[type][id], 'attributes', {}),
+                            ...camelizeKeys(get(entity, 'attributes', {}))
+                        },
+                        relationships: {
+                            ...get(newState[type][id], 'relationships', {}),
+                            ...camelizeKeys(get(entity, 'relationships', {}))
+                        }
+                    }
+                })
+            })
+
+            const entityToDelete = get(action, 'meta.refToDelete')
+            if (entityToDelete && entityToDelete.id !== undefined && entityToDelete.type) {
+                delete newState[entityToDelete.type][entityToDelete.id]
+            }
+            return newState
         }
-        return newState
+        case UPDATE_ENTITY: {
+            const { type, id, attributes } = action.payload
+            const entity = state[type][id]
+            const newEntity = {
+                ...entity,
+                attributes: {
+                    ...entity.attributes,
+                    ...attributes
+                }
+            }
+
+            const newState = {
+                ...state,
+                [type]: {
+                    ...state[type],
+                    [id]: newEntity
+                }
+            }
+
+            return newState
+        }
+        default:
+            return state
     }
-    return state
 }
 
 export default entitiesReducer

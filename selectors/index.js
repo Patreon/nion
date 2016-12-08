@@ -1,6 +1,6 @@
 import { createSelector, createStructuredSelector } from 'reselect'
 import get from 'lodash.get'
-import denormalize from './denormalize'
+import denormalize from '../denormalize'
 
 const selectNion = (state) => state.nion
 const selectEntities = (state) => get(selectNion(state), 'entities')
@@ -113,9 +113,22 @@ export const selectResource = (keyOrKeys) => {
 }
 
 // Use the _.get syntax to pass in an address string (ie <dataKey>.<attributeName>), and default
-// value
+// value. If the provided argument is an object with the signature { type, id }, then select and
+// denormalize the corresponding entity
 export const selectData = (key, defaultValue) => {
-    const splitKeys = key instanceof Array ? key : key.split('.')
+    // If we pass in an object of { type, id } signature, denormalize the corresponding entity
+    if (typeof key === 'object' && key.type && key.id !== undefined) {
+        const entityRef = key
+        return createSelector(
+            selectEntities,
+            (entityStore) => {
+                return denormalize(entityRef, entityStore)
+            }
+        )
+    }
+
+    // Otherwise, use the _.get syntax to select the data
+    const splitKeys = key instanceof Array ? key : key.replace(']', '').split(/[.|[]/g)
     const dataKey = splitKeys[0]
     return createSelector(
         selectObject(dataKey),

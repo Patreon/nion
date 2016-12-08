@@ -5,8 +5,7 @@ import {
     getNextJsonApi,
     patchJsonApi,
     postJsonApi,
-    requestJsonApi,
-    urlBuilder
+    requestJsonApi
 } from './json-api'
 
 import {
@@ -20,8 +19,7 @@ export const jsonApi = {
     next: getNextJsonApi,
     patch: patchJsonApi,
     post: postJsonApi,
-    request: requestJsonApi,
-    urlBuilder
+    request: requestJsonApi
 }
 
 export const generic = {
