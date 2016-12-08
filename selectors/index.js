@@ -7,12 +7,6 @@ const selectEntities = (state) => get(selectNion(state), 'entities')
 const selectRequests = (state) => get(selectNion(state), 'requests')
 const selectReferences = (state) => get(selectNion(state), 'references')
 
-const defaultRef = {
-    entities: [],
-    meta: {},
-    links: {}
-}
-
 const defaultRequest = {
     status: 'not called'
 }
