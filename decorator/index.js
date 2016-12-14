@@ -281,10 +281,10 @@ function connectComponent(declaratives, options, WrappedComponent) { // eslint-d
                 if (declarative.once) {
                     const status = nion[key].request.status
                     if (isNotLoaded(status)) {
-                        fetch(this.props)
+                        fetch()
                     }
                 } else {
-                    fetch(this.props)
+                    fetch()
                 }
             })
         }
