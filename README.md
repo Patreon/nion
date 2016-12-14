@@ -1,139 +1,103 @@
-# Nion: network input/output normalizer
+# nion
 
-## Introduction
-Nion is a redux data caching solution with a client library for making API requests.
+Redux is awesome. It's an extremely elegant solution to the central problem facing frontend web developers - how to manage complex application state. However, there are two fundamental issues with redux that have made themselves more and more apparent as both our application and development team have grown.
 
-Essentially though, nion is a set of redux compliant functions and utilities that automatically normalizes API entity data into a predictable state tree. Right now we have an interface for making requests json-api compliant json-api servers, but the client is modular to support other transport layers.
+##### Problem 1: Data Fetching
+Data Fetching is hard. Managing network requests and the data that comes back is hard enough, but doing it using redux can be downright maddening. This is because redux, at it's core, is a system that relies on **pure functions** - functions that always return the same thing given the same input. By their very nature, network requests are **impure** - they can return errors, for instance. In order to accommodate these **side effects**, the redux ecosystem has come up with a [number](https://github.com/agraboso/redux-api-middleware) of [solutions](https://github.com/yelouafi/redux-saga). However, using these tools can be anything but straightforward due to difficult syntax, complexity, and lack of community consensus.
 
-### features
-* Client defined  data mapping through `dataKeys`. This allows the us to define application specific context to API requests (ex. `currentUser`) and can be shared to all component containers that need this data.
-* Network i/o data automatically bound to `dataKeys`. Makes it easy to see whether your request is loading, or has errors.
-* Entity relationships are automatically resolved when selected from state.
-* Generic entity cache which means it's extensible to support other transport protocols or other formats.
+##### Problem 2: Conventions / Patterns
+Since redux is so low level, much of an app's redux implementation is left up to the developer. While certain practices have become *de rigeur*, there really isn't anything close to an opinionated framework that developers can use as a guide. Because of this, code conventions and patterns become **extremely** important as an application grows.
 
-## Usage
-### Making an API request and mapping the request to component state
-In this container example we create a dispatch action that makes an API request to the current_user endpoint and defined the `dataKey` currentUser to reference it. Then we select the `dataKey` which maps the result into our container state.
+### Thus, Nion
+nion is our best attempt at addressing the main issues that come with developing a complex redux web application. It's an **opinionated** solution to the problems we face **at Patreon**. nion was designed with the specific purpose of making the development experience **predictable** and **clear**. nion always emphasizes the pragmatic solution over the theoretical, and aims to expose the minimum surface area possible to the developer. In short, nion aims to **simplify** the process of managing data in our React app.
 
+nion is heavily inspired by [Apollo](http://www.apollodata.com/http://www.apollodata.com/) and [GraphQL](http://graphql.org/).
+
+## How it works
+
+nion is best used as a **decorator function** which declares what data will be managed by the decorated component and passes in props for managing that data.
+
+```javascript
+@nion({
+    currentUser: {
+        endpoint: '/current_user',
+    }
+})
+class UserContainer extends Component {
+    render() {
+        const { currentUser } = this.props.nion
+        const { request, actions } = currentUser
+
+        const loadButton = <Button onClick={() => actions.get()}>Load</Button>
+
+        return (
+            <Card>
+                { request.isLoading ? <LoadingSpinner /> : loadButton }
+                { exists(currentUser) ? <UserCard user={currentUser} /> : null }
+            </Card>
+        )
+    }
+}
 ```
-import { connect } from 'react-redux'
-import { createSelector } from 'reselect'
 
-import { jsonApi } from 'libs/nion/actions'
-import { selectData } from 'libs/nion/reducers'
+We simply pass in an object with a special `directive` that tells nion **what** to fetch, and nion automatically handles fetching the data and passing both it and the corresponding request status in as props to the decorated component.
 
-import Page from '../components/Page'
+Nion significantly reduces the complexity of managing data by both abstracting away all of the logic and code needed to select data and handle requests, and by offering a clear and consistent pattern for doing so. As we'll see later, nion offers simple solutions for nearly every type of common application scenario, including component/request lifecycles, updates, multiple requests, and pagination.
 
-const mapStateToProps = createSelector(
-    selectData(['currentUser']),
-    (data) => ({
-        data
-    })
-)
+The central component to understanding nion is the `dataKey`. In the above example, the `dataKey` is `"currentUser"`. The `dataKey` is the address on the state tree with which nion manages a given resource. A resource is composed of both the data and corresponding network request status for a given piece of application state.
 
-const mapDispatchToProps = dispatch => {
-    return {
-        getCurrentUser: () => {
-            dispatch(jsonApi.get('currentUser', {
-                endpoint: jsonApi.urlBuilder(
-                    'current_user',
-                    {
-                        include: [],
-                        fields: {}
-                    }
-                )
-            }))
+Let's take a look at what the corresponding redux state tree  looks like (after the data has been fetched) to better understand what nion is doing under the hood.
+
+```javascript
+nion: {
+    entities: {
+        user: {
+            '3803025': {
+                attributes: {...},
+                relationships: {},
+            }
+        }
+    },
+    references: {
+        currentUser: {
+            entities: [{
+                type: 'user',
+                id: '3803025'
+            }],
+            isCollection: false,
+    },
+        requests: {
+            currentUser: {
+                fetchedAt: 1480617638990,
+                isError: false,
+                isLoaded: true,
+                isLoading: false,
+                status: 'success',
+            }
         }
     }
 }
-
-export default connect(mapStateToProps, mapDispatchToProps)(Page)
 ```
 
-In the example above it's important to understand the `dataKey` interface. Not only are `dataKeys` used to link data internally across reducers. They give context to requests such as `currentUser`. Any component that now need this request data may select the `currentUser` key. This allows us to define higher level meaning to our requests in a dynamic way. Furthermore, if a component selects `dataKey` that was already fetched, or is fetching, we will return the same result without making additional network calls (unless we force it).
+Nion manages three internal reducers that handle data fetching and management across the application:
 
+##### Entities
+The entities reducer keeps a **normalized** map of all given entities in the system, keyed by `type` and `id`. This means that all data is kept consistent regardless of where it's being accessed from.
 
-### How to initialize nion
-In your application you may use `configureStore()` which is a convenience function to enable our middleware. Simply pass `nion: true` into `configureStore()` which to enable this middleware. Underneath all that is happening is we are adding a top level `nion` reducer to our state tree.
+##### References
+The references reducer maintains a map of `dataKeys` pointing to the corresponding entities (as an object with `type` and `id` fields).
 
-```
-import React from 'react'
-import ReactDOM from 'react-dom'
-import { Provider } from 'react-redux'
+##### Requests
+The requests reducer maintains a map of `dataKeys` that tracks all network request details around fetching / updating data.
 
-import configureStore from 'shared/configure-store'
-import ReactWrapper from 'components/ReactWrapper'
-import AppContainer from './containers/AppContainer'
+Internally, the nion suite of redux tools handles everything necessary to maintain application state and provide a clear interface to the higher-level component tooling.
 
-const storeOptions = {
-    nion: true
-}
+### Learn More
 
-const store = configureStore({}, storeOptions)
+[examples](docs/examples.md)
 
-ReactDOM.render(
-    <ReactWrapper>
-        <Provider store={ store }>
-            <AppContainer />
-        </Provider>
-    </ReactWrapper>,
-    document.getElementById('reactTarget')
-)
-```
+[api](docs/api.md)
 
-## Core details
-### Actions
-Interface for making API requests. The `jsonApi` object exposes each action to make a json-api request. More information outlined below in API reference section. If you would like to read more about underlying API request library please see their documentation: [api-redux-middleware](https://www.npmjs.com/package/redux-api-middleware#defining-the-api-cal).
+[nion-core](docs/core.md)
 
-### Reducers
-Nion can be broken down to 3 reducers: `entities`, `references`, and `requests`. Breaking the reducers down, entities is the model cache which is a object keyed by the model type and ID. Models across all requests are normalized and stored within the entities reducer. The references reducer maps the top level request information along with the top level entity or entities. Finally, requests holds lifecycle information of a given API request including any error information.
-
-### Normalizers / Denormalizers
-Entities that are stored must be normalized into the entity cache. Once a json-api response is successfully returned we parse out all included entities and meta information before it is dispatched. Reciprocally when selectData is called the entity hierarchy is denormalized making consumption in your components much nicer.
-
-The screenshot below, from left to right, show the action request, then the normalized reducer state, and finally what the selected denormalized data looks like. You may also use our internal tool to make nion requests and see the data results for yourself: [json-api-tool](https://www.patreon.com/internal/json-api).
-
-![data flow image](https://s3.amazonaws.com/patreon_public_assets/internal/transformations2.jpg "State Example")
-
-If you're curious, this is what the raw json-api payload looks like for the request. If you're curious about the schema, you may read more at [json api](http://jsonapi.org/).
-
-![json api image](https://s3.amazonaws.com/patreon_public_assets/internal/json-api.png "Json-api Example")
-
-## API reference
-### Making json-api requests
-```jsonApi.get(dataKey, {endpoint})```
-
-```jsonApi.post(dataKey, {endpoint, body={}})```
-
-```jsonApi.patch(dataKey, {endpoint, body={}})```
-
-```jsonApi.delete(dataKey, {endpoint})```
-
-`dataKey`: binds the request and entities together and is used to map the request data back to state.
-`endpoint`: is the relative path string of the endpoint you want to request. It is recommended that you use `jsonApi.urlBuilder` to specify `include` and `fields` query params.
-`body`: is an object which is the payload of your request to the server.
-
-```jsonApi.urlBuilder(resource, {include=[], fields={}, ...queryParams})```
-`include`: is a list allows you to specify any entity relationships that should be included in the request.
-`fields`: is an object that allows you to explicitly define which entity attributes you would want included in the request.
-`...queryParams`: any other query params you want included in the endpoint.
-
-```jsonApi.request(dataKey, request)```
-This function allows you to define the raw API request data. See [api-redux-middleware](https://www.npmjs.com/package/redux-api-middleware#defining-the-api-cal). for more details.
-
-## Selecting data
-```selectData([key1, key2, key3, ...])```
-List of `dataKeys` to select from nion state. This binds all relevant data for the a request into a single object. This includes request lifecycle information as well as the entity hierarchy.
-
-Example of selecting data and mapping to state props.
-
-```
-const mapStateToProps = createSelector(
-    selectData(['currentUser', 'currentCreator']),
-    (data) => ({
-        data
-    })
-)
-```
-
-This readme also has a living document located here: [nion documentation](https://patreon.bold.co/post/nion-network-inputoutput-dekauy) if you would like to comment on anything, or feel free to edit this directly.
+[definitions](docs/definitions.md)
