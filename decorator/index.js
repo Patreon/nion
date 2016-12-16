@@ -89,9 +89,10 @@ function processDeclaratives(declaratives) {
 
                 // Define the nion-specific properties as non-enumerable properties on the dataKey
                 // prop
-                defineDataProperty(nion[key], 'request', { ...selected.request })
-                defineDataProperty(nion[key], 'links', { ...selected.links })
                 defineDataProperty(nion[key], 'actions', {})
+                defineDataProperty(nion[key], 'links', { ...selected.links })
+                defineDataProperty(nion[key], 'meta', { ...selected.meta })
+                defineDataProperty(nion[key], 'request', { ...selected.request })
             })
 
             return { nion }
