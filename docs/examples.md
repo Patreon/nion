@@ -24,11 +24,11 @@ class UserContainer extends Component {
     }
 }
 ```
-The above example is a fully functional nion-wrapped component. Let's begin by looking at the nion decorator function, which wraps the child component in logic to create nion action creators and selectors, injecting the results in as props. The nion decorator takes a map of declaratives - objects that declare what the data requirements of a component are and how they'll be managed.
+The above example is a fully functional nion-wrapped component. Let's begin by looking at the nion decorator function, which wraps the child component in logic to create nion action creators and selectors, injecting the results in as props. The nion decorator takes a map of declarations - objects that declare what the data requirements of a component are and how they'll be managed.
 
 The keys of the map correspond to the `dataKeys` that will be tied to the component. Recall that the `dataKey` is the key on the redux state tree on which references to the normalized data and the corresponding network request status is stored. So, in the above example, the `dataKey` is `currentUser`. The second piece of interest is the `endpoint` property. This tells nion what API endpoint to fetch the data from. `endpoint` can be either a pathname snippet (which will be automatically converted to a full url), or a fully-formed JSON-API url, including options such as `include` and `fields`.
 
-The nion decorator passes in a `nion` prop, with keys corresponding to the keys of the supplied declaratives - This means that the above example passes in a `nion` property with the shape `{ currentUser : {...} }`, which we'll call a `dataProp`. The `dataProp` is an object representation of the fully-denormalized data corresponding to that `dataKey`, along with some special hidden properties - `request` and `actions`. `request` is an object containing all of the current network request information for that `dataKey`, and `actions` is an object containing all four REST method action creators (`get`, `post`, `patch`, and `delete`). This means that all relevant information and methods for managing data are passed in under the namespace of the `dataProp`. If all this seems like a mouthful, let's take a quick look at what the `currentUser` `dataProp` looks like in the example above (after the data's been fetched, of course):
+The nion decorator passes in a `nion` prop, with keys corresponding to the keys of the supplied declarations - This means that the above example passes in a `nion` property with the shape `{ currentUser : {...} }`, which we'll call a `dataProp`. The `dataProp` is an object representation of the fully-denormalized data corresponding to that `dataKey`, along with some special hidden properties - `request` and `actions`. `request` is an object containing all of the current network request information for that `dataKey`, and `actions` is an object containing all four REST method action creators (`get`, `post`, `patch`, and `delete`). This means that all relevant information and methods for managing data are passed in under the namespace of the `dataProp`. If all this seems like a mouthful, let's take a quick look at what the `currentUser` `dataProp` looks like in the example above (after the data's been fetched, of course):
 
 ```javascript
 {
@@ -93,11 +93,11 @@ class UserContainer extends Component {
     }
 }
 ```
-An extremely common pattern for managing data is fetching data from an endpoint that we don't know ahead of time, or that's dependent on data provided to the child component. The nion decorator, in place of a map of declaratives, can also accept a function that takes in props and returns a map of declaratives. In this way, we can manage data that's dependent on parent data clearly and concisely.
+An extremely common pattern for managing data is fetching data from an endpoint that we don't know ahead of time, or that's dependent on data provided to the child component. The nion decorator, in place of a map of declarations, can also accept a function that takes in props and returns a map of declarations. In this way, we can manage data that's dependent on parent data clearly and concisely.
 
-There are a few things to note about the example above - First, we're passing in a prop `userId` into the nion decorator from the parent component. This prop is used by the nion decorator to create the declarative which determines how this component's data will be managed. In order to manage this data correctly, we have to create both an `endpoint` corresponding to the passed in `userId`, as well as a new `dataKey` specific to the current user being managed. In the first example, the `dataKey` corresponds to the key of the provided declarative, but this can be overridden by creating a custom `dataKey` property when building the declarative. Remember, the `dataKey` is the key on the redux state tree where the data and corresponding request will be managed, so it needs to be unique to the user data being managed. We'll use the convention `<type>:<id>` moving forward, but this can be any unique identifier for the given resource.
+There are a few things to note about the example above - First, we're passing in a prop `userId` into the nion decorator from the parent component. This prop is used by the nion decorator to create the declaration which determines how this component's data will be managed. In order to manage this data correctly, we have to create both an `endpoint` corresponding to the passed in `userId`, as well as a new `dataKey` specific to the current user being managed. In the first example, the `dataKey` corresponds to the key of the provided declaration, but this can be overridden by creating a custom `dataKey` property when building the declaration. Remember, the `dataKey` is the key on the redux state tree where the data and corresponding request will be managed, so it needs to be unique to the user data being managed. We'll use the convention `<type>:<id>` moving forward, but this can be any unique identifier for the given resource.
 
-Conveniently, the nion decorator passes in the `dataProp` under the key of the declarative, so the component will access all data under the key `user`, even though the underlying data is attached to the redux state tree as `user:<userId>`.
+Conveniently, the nion decorator passes in the `dataProp` under the key of the declaration, so the component will access all data under the key `user`, even though the underlying data is attached to the redux state tree as `user:<userId>`.
 
 ## Include / Fields
 ```javascript
@@ -114,9 +114,9 @@ Conveniently, the nion decorator passes in the `dataProp` under the key of the d
 })
 class UserContainer extends Component { ... }
 ```
-Since JSON-API allows for us to manually request included fields and relationships, a nion declarative can use a fully formed JSON API url as its `endpoint` property. nion exposes a `buildUrl` utility function for creating fully-formed JSON-API urls, with all relevant query-string options provided as a second `options` parameter. In the previous examples, we provide just the shorthand pathname to the `endpoint` property - This is a convenience, since nion uses `buildUrl` under the hood to construct a fully-formed JSON-API url.
+Since JSON-API allows for us to manually request included fields and relationships, a nion declaration can use a fully formed JSON API url as its `endpoint` property. nion exposes a `buildUrl` utility function for creating fully-formed JSON-API urls, with all relevant query-string options provided as a second `options` parameter. In the previous examples, we provide just the shorthand pathname to the `endpoint` property - This is a convenience, since nion uses `buildUrl` under the hood to construct a fully-formed JSON-API url.
 
-Note that since the declarative can also be constructed as a function of the passed-in props, we can easily add in dynamic query string parameters to our endpoint as well.
+Note that since the declaration can also be constructed as a function of the passed-in props, we can easily add in dynamic query string parameters to our endpoint as well.
 
 ```javascript
 @nion(({ filterType }) => ({
@@ -332,7 +332,7 @@ class Paginated extends Component {
 }
 ```
 
-Paginated resources are managed by simply passing in the parameter `paginated: true` into the declarative, which tells the nion decorator to expose a few pagination-related properties to the child component. The main focus is the `next` action method, which is simply a `get` action method curried with the next page cursor returned from the initial request to the paginated resource's endpoint. In addition to dispatching this curried `get` request, the `next` method also dispatches the underlying `JSON_API_SUCCESS` redux action with a special `isNextPage` meta property, which tells the internal reducers to append the result of the `next` request to the existing `reference` rather than overwriting it.
+Paginated resources are managed by simply passing in the parameter `paginated: true` into the declaration, which tells the nion decorator to expose a few pagination-related properties to the child component. The main focus is the `next` action method, which is simply a `get` action method curried with the next page cursor returned from the initial request to the paginated resource's endpoint. In addition to dispatching this curried `get` request, the `next` method also dispatches the underlying `JSON_API_SUCCESS` redux action with a special `isNextPage` meta property, which tells the internal reducers to append the result of the `next` request to the existing `reference` rather than overwriting it.
 
 In addition to the `next` action method, the nion decorator also exposes a `canLoadMore` property to the `request` property - This is a convenience property indicating whether or not a `next` link  exists on the given ref's links object.
 
@@ -344,7 +344,7 @@ A common, but more advanced, use case in data management is the creation of new 
 
 nion provides an elegant solution for handling the above use case. In earlier examples, we've learned how to create a `dataKey` per-component. Recall that this `dataKey` is the key on which the underlying `reference` and `request` is managed on the nion state. However, when the new `dataKey` is created and the `reference` is initialized, the actual pointer to the underlying data will be empty since nion will not yet have loaded any data under that `dataKey`.
 
-If the data that is to be managed by the child component already exists, we'll need some way to initialize this new `reference` under the supplied `dataKey` with that existing data. We do this by providing the child component with an initial ref using the `initialRef` property of the declarative. Let's take a look at this in code.
+If the data that is to be managed by the child component already exists, we'll need some way to initialize this new `reference` under the supplied `dataKey` with that existing data. We do this by providing the child component with an initial ref using the `initialRef` property of the declaration. Let's take a look at this in code.
 
 ```javascript
 // The parent Stream container
@@ -395,7 +395,7 @@ class Post extends Component {
 }
 ```
 
-In the example above, we're providing the child component with an **initial ref** via the `initialRef` declarative property, which will automatically be inserted into the `references` state. This allows us to seamlessly pass responsiblity of managing a given piece of data to the child component. Let's take a quick look at the redux store to see exactly what's going on here
+In the example above, we're providing the child component with an **initial ref** via the `initialRef` declaration property, which will automatically be inserted into the `references` state. This allows us to seamlessly pass responsiblity of managing a given piece of data to the child component. Let's take a quick look at the redux store to see exactly what's going on here
 
 ```javascript
 {
@@ -431,7 +431,7 @@ In the example above, we're providing the child component with an **initial ref*
 
 Notice that the `references` have been automatically populated with their given `refs`, or pointers to the underlying entities - now the `reference` corresponding to the given dataKey has all of the information necessary to manage the data for a given post. It's almost as if we're "preloading" the references with pointers to the corresponding data.
 
-We use the `makeRef` function to provide an initial ref to the declarative - In order for nion to attach a ref to the state tree we need to create a ref in the shape that nion expects - The most basic function of `makeRef` is to transform the input data by selecting off the `id` and `type` parameters to construct a ref. However, there's some extremely useful functionality baked into the `makeRef` function that allows us to handle much more complex use cases.
+We use the `makeRef` function to provide an initial ref to the declaration - In order for nion to attach a ref to the state tree we need to create a ref in the shape that nion expects - The most basic function of `makeRef` is to transform the input data by selecting off the `id` and `type` parameters to construct a ref. However, there's some extremely useful functionality baked into the `makeRef` function that allows us to handle much more complex use cases.
 
 Let's take this a step further to understand how we'd manage the corresponding comments for each post, which could themselves be paginated. First, let's look at the nion state tree for this situation, in order to understand what's happening at the data level.
 

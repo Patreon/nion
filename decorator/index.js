@@ -24,26 +24,26 @@ const defaultDeclarativeOptions = {
     paginated: false
 }
 
-function processDefaultOptions(declaratives) {
-    map(declaratives, (declarative, key) => {
+function processDefaultOptions(declarations) {
+    map(declarations, (declaration, key) => {
         map(defaultDeclarativeOptions, (defaultState, defaultKey) => {
-            const option = get(declarative, defaultKey, defaultState)
-            declarative[defaultKey] = option
+            const option = get(declaration, defaultKey, defaultState)
+            declaration[defaultKey] = option
         })
     })
 }
 
-function processDeclaratives(declaratives) {
-    // Apply default options to the declaratives
-    processDefaultOptions(declaratives)
+function processDeclaratives(declarations) {
+    // Apply default options to the declarations
+    processDefaultOptions(declarations)
 
-    // The passed in declaratives object is a map of dataKeys to fetch and their corresponding
+    // The passed in declarations object is a map of dataKeys to fetch and their corresponding
     // params. We need to handle both the component-scoped key (the key of the object passed to the
     // decorator) as well as the dataKey that points to where the ref / request is stored on the
     // state tree
     const mapDeclaratives = (fn) => (
-        map(declaratives, (declarative, key) => (
-            fn(declarative, key, declarative.dataKey || key)
+        map(declarations, (declaration, key) => (
+            fn(declaration, key, declaration.dataKey || key)
         ))
     )
 
@@ -52,11 +52,11 @@ function processDeclaratives(declaratives) {
     // We'll need to make a map from dataKey to key to handle passing the props more semantically to
     // the wrapped component. We'll need these dataKeys for creating our selector as well.
     const keysByDataKey = {}
-    const dataKeys = mapDeclaratives((declarative, key, dataKey) => {
+    const dataKeys = mapDeclaratives((declaration, key, dataKey) => {
         keysByDataKey[dataKey] = key
 
-        // Ensure the dataKey is set properly on the declarative
-        declarative.dataKey = declarative.dataKey || key
+        // Ensure the dataKey is set properly on the declaration
+        declaration.dataKey = declaration.dataKey || key
 
         return dataKey
     })
@@ -103,21 +103,21 @@ function processDeclaratives(declaratives) {
     const mapDispatchToProps = (dispatch) => {
         const dispatchProps = {}
 
-        // Helper method to construct a JSON API url endpoint from supplied declarative and params.
+        // Helper method to construct a JSON API url endpoint from supplied declaration and params.
         // This will be used to build the endpoints for the various method actions
-        function getJsonApiUrl(declarative, params) {
-            const endpoint = get(declarative, 'endpoint')
+        function getJsonApiUrl(declaration, params) {
+            const endpoint = get(declaration, 'endpoint')
             // Use if a fully-formed url, otherwise pass to buildUrl
             return endpoint.indexOf('https://') === 0 ? endpoint : buildUrl(endpoint, params)
         }
 
-        // Map over the supplied declaratives to build out the 4 main methods to add to the actions
+        // Map over the supplied declarations to build out the 4 main methods to add to the actions
         // subprop, as well as the special case next method for paginated resources
-        mapDeclaratives((declarative, key, dataKey) => {
+        mapDeclaratives((declaration, key, dataKey) => {
             dispatchProps[key] = {}
 
             dispatchProps[key]['POST'] = (data = {}, params) => {
-                const endpoint = getJsonApiUrl(declarative, params)
+                const endpoint = getJsonApiUrl(declaration, params)
                 return promiseActions.post(dataKey, {
                     endpoint,
                     body: { data }
@@ -125,7 +125,7 @@ function processDeclaratives(declaratives) {
             }
 
             dispatchProps[key]['PATCH'] = (data = {}, params) => {
-                const endpoint = getJsonApiUrl(declarative, params)
+                const endpoint = getJsonApiUrl(declaration, params)
                 return promiseActions.patch(dataKey, {
                     endpoint,
                     body: { data }
@@ -133,23 +133,23 @@ function processDeclaratives(declaratives) {
             }
 
             dispatchProps[key]['GET'] = (params) => {
-                const endpoint = getJsonApiUrl(declarative, params)
+                const endpoint = getJsonApiUrl(declaration, params)
                 return promiseActions.get(dataKey, { endpoint })(dispatch)
             }
 
             dispatchProps[key]['DELETE'] = (ref = {}, params) => {
-                const endpoint = getJsonApiUrl(declarative, params)
+                const endpoint = getJsonApiUrl(declaration, params)
                 return promiseActions.delete(dataKey, ref, { endpoint })(dispatch)
             }
 
-            if (declarative.paginated) {
+            if (declaration.paginated) {
                 dispatchProps[key]['NEXT'] = ({ next }, params) => {
                     const nextUrl = next.indexOf('http') === 0 ? next : `https://${next}`
                     const { pathname, options: nextUrlOptions } = deconstructUrl(nextUrl)
 
                     // Since the nextUrl doesn't necessarily return the correct includes / fields,
                     // we'll need to manually override those fields if supplied
-                    const suppliedUrl = getJsonApiUrl(declarative, params)
+                    const suppliedUrl = getJsonApiUrl(declaration, params)
                     const { options: suppliedUrlOptions } = deconstructUrl(suppliedUrl)
 
                     const newOptions = merge(nextUrlOptions, suppliedUrlOptions)
@@ -162,7 +162,7 @@ function processDeclaratives(declaratives) {
                 }
             }
 
-            if (declarative.initialRef) {
+            if (declaration.initialRef) {
                 // Private, internal nion data manipulating actions
                 dispatchProps[key].initializeDataKey = (ref) => {
                     dispatch({
@@ -192,7 +192,7 @@ function processDeclaratives(declaratives) {
 
         const nextProps = { ...stateProps, ...ownProps }
 
-        mapDeclaratives((declarative, key, dataKey) => {
+        mapDeclaratives((declaration, key, dataKey) => {
             const data = get(stateProps.nion, key)
             const ref = data ? { id: data.id, type: data.type } : null
 
@@ -209,7 +209,7 @@ function processDeclaratives(declaratives) {
             const deleteFn = (props) => deleteDispatchFn(ref, props)
             set(nextProps.nion, [key, 'actions', 'delete'], deleteFn)
 
-            // Handle the special NEXT submethod, for paginated declaratives
+            // Handle the special NEXT submethod, for paginated declarations
             if (dispatchProps[key]['NEXT']) {
                 const { nion } = stateProps
                 const next = get(nion, [key, 'links', 'next'])
@@ -240,12 +240,12 @@ function processDeclaratives(declaratives) {
     }
 }
 
-function connectComponent(declaratives, options, WrappedComponent) { // eslint-disable-line no-shadow
+function connectComponent(declarations, options, WrappedComponent) { // eslint-disable-line no-shadow
     const {
         mapStateToProps,
         mapDispatchToProps,
         mergeProps
-    } = processDeclaratives(declaratives, options)
+    } = processDeclaratives(declarations, options)
 
     class WithJsonApi extends Component {
         static displayName = `WithJsonApi(${getDisplayName(WrappedComponent)})`
@@ -253,33 +253,33 @@ function connectComponent(declaratives, options, WrappedComponent) { // eslint-d
         componentDidMount() {
             const { nion } = this.props // eslint-disable-line no-shadow
 
-            // Iterate over the declaratives provided to the component, deciding how to manage the
+            // Iterate over the declarations provided to the component, deciding how to manage the
             // load state of each one
-            map(declaratives, (declarative, key) => { // eslint-disable-line no-shadow
+            map(declarations, (declaration, key) => { // eslint-disable-line no-shadow
                 const fetch = nion[key].actions.get
 
                 // If we're supplying a ref to be managed by nion, we'll want to attach it to the
                 // state tree ahead of time (maybe not? maybe we want to have a "virtual" ref...
                 // this is interesting)
-                if (declarative.initialRef) {
+                if (declaration.initialRef) {
                     // If a ref has already been attached to the dataKey, don't dispatch it again...
                     // this triggers a cascading rerender which will cause an infinite loop
                     if (exists(nion[key])) {
                         return
                     }
 
-                    const ref = declarative.initialRef
+                    const ref = declaration.initialRef
                     const initializeDataKey = nion[key].actions._initializeDataKey
                     return initializeDataKey(ref)
                 }
 
                 // If not loading on mount, don't do anything
-                if (!declarative.onMount) {
+                if (!declaration.onMount) {
                     return
                 }
 
                 // If the load is only to be performed once, don't fetch if the data has been loaded
-                if (declarative.once) {
+                if (declaration.once) {
                     const status = nion[key].request.status
                     if (isNotLoaded(status)) {
                         fetch()
@@ -299,17 +299,17 @@ function connectComponent(declaratives, options, WrappedComponent) { // eslint-d
 
 
 // JSON API decorator function for wrapping connected components to the new JSON API redux system
-const nion = (declaratives = {}, options = {}) => (WrappedComponent) => {
+const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
 
-    // If a static object of declaratives is passed in, process it immediately, otherwise, pass the
-    // incoming props to the declaratives function to generate a declaratives object
-    if (declaratives instanceof Function) {
+    // If a static object of declarations is passed in, process it immediately, otherwise, pass the
+    // incoming props to the declarations function to generate a declarations object
+    if (declarations instanceof Function) {
         return props => {
-            const ConnectedComponent = connectComponent(declaratives(props), options, WrappedComponent)
+            const ConnectedComponent = connectComponent(declarations(props), options, WrappedComponent)
             return <ConnectedComponent { ...props } />
         }
-    } else if (declaratives instanceof Object) {
-        return connectComponent(declaratives, options, WrappedComponent)
+    } else if (declarations instanceof Object) {
+        return connectComponent(declarations, options, WrappedComponent)
     }
 }
 

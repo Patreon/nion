@@ -40,7 +40,7 @@ class UserContainer extends Component {
 }
 ```
 
-We simply pass in an object with a special `directive` that tells nion **what** to fetch, and nion automatically handles fetching the data and passing both it and the corresponding request status in as props to the decorated component.
+We simply pass in an object with a special `declaration` that tells nion **what** to fetch, and nion automatically handles fetching the data and passing both it and the corresponding request status in as props to the decorated component.
 
 Nion significantly reduces the complexity of managing data by both abstracting away all of the logic and code needed to select data and handle requests, and by offering a clear and consistent pattern for doing so. As we'll see later, nion offers simple solutions for nearly every type of common application scenario, including component/request lifecycles, updates, multiple requests, and pagination.
 
