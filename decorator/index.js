@@ -322,7 +322,7 @@ export default nion
 // manage loading the corresponding data. This method tests to see if that object has data
 // associated with it.
 export function exists(input = {}) {
-    if (!input._exists) {
+    if (input._exists === false) {
         return false
     }
 
