@@ -247,8 +247,8 @@ function connectComponent(declarations, options, WrappedComponent) { // eslint-d
         mergeProps
     } = processDeclaratives(declarations, options)
 
-    class WithJsonApi extends Component {
-        static displayName = `WithJsonApi(${getDisplayName(WrappedComponent)})`
+    class WithNion extends Component {
+        static displayName = `WithNion(${getDisplayName(WrappedComponent)})`
 
         componentDidMount() {
             const { nion } = this.props // eslint-disable-line no-shadow
@@ -294,7 +294,7 @@ function connectComponent(declarations, options, WrappedComponent) { // eslint-d
         }
     }
 
-    return connect(mapStateToProps, mapDispatchToProps, mergeProps)(WithJsonApi)
+    return connect(mapStateToProps, mapDispatchToProps, mergeProps)(WithNion)
 }
 
 
