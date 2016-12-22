@@ -11,7 +11,7 @@ const bootstrap = (store) => {
     map(bootstrapObj, (data, dataKey) => {
 
         // Only dispatch data that is JSON-API compliant using the jsonApi action creators
-        if (isJsonApiResponse(data)) {
+        if (data && isJsonApiResponse(data)) {
             store.dispatch(jsonApi.bootstrap({ dataKey, data }))
         } else {
             store.dispatch(generic.bootstrap({ dataKey, data }))
