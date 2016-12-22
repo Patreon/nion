@@ -1,3 +1,5 @@
+import { camelizeKeys } from 'humps'
+
 const initialState = {}
 
 import {
@@ -73,7 +75,7 @@ const refsReducer = (state = initialState, action) => {
         case GENERIC_BOOTSTRAP:
             return {
                 ...state,
-                [action.meta.dataKey]: clone(action.payload)
+                [action.meta.dataKey]: camelizeKeys(clone(action.payload))
             }
 
         // Initialize a new dataKey from a ref passed to a child component
