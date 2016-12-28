@@ -13,7 +13,7 @@ import { createSelector } from 'reselect'
 import { INITIALIZE_DATAKEY, UPDATE_ENTITY, UPDATE_REF } from '../actions/types'
 import { selectResourcesForKeys } from 'libs/nion/selectors'
 
-const defaultDeclarativeOptions = {
+const defaultDeclarationOptions = {
     // Component / API Lifecycle methods
     onMount: false, // Should the component load the data when it mounts?
     once: true, // Should the component only load the data once on mount?
@@ -27,14 +27,14 @@ const defaultDeclarativeOptions = {
 
 function processDefaultOptions(declarations) {
     map(declarations, (declaration, key) => {
-        map(defaultDeclarativeOptions, (defaultState, defaultKey) => {
+        map(defaultDeclarationOptions, (defaultState, defaultKey) => {
             const option = get(declaration, defaultKey, defaultState)
             declaration[defaultKey] = option
         })
     })
 }
 
-function processDeclaratives(declarations) {
+function processDeclarations(declarations) {
     // Apply default options to the declarations
     processDefaultOptions(declarations)
 
@@ -42,7 +42,7 @@ function processDeclaratives(declarations) {
     // params. We need to handle both the component-scoped key (the key of the object passed to the
     // decorator) as well as the dataKey that points to where the ref / request is stored on the
     // state tree
-    const mapDeclaratives = (fn) => (
+    const mapDeclarations = (fn) => (
         map(declarations, (declaration, key) => (
             fn(declaration, key, declaration.dataKey || key)
         ))
@@ -53,7 +53,7 @@ function processDeclaratives(declarations) {
     // We'll need to make a map from dataKey to key to handle passing the props more semantically to
     // the wrapped component. We'll need these dataKeys for creating our selector as well.
     const keysByDataKey = {}
-    const dataKeys = mapDeclaratives((declaration, key, dataKey) => {
+    const dataKeys = mapDeclarations((declaration, key, dataKey) => {
         // If the dataKey already exists in this group of declarations, throw an error!
         if (keysByDataKey[dataKey]) {
             throw new Error('Duplicate dataKeys detected in this nion decorator')
@@ -125,7 +125,7 @@ function processDeclaratives(declarations) {
 
         // Map over the supplied declarations to build out the 4 main methods to add to the actions
         // subprop, as well as the special case next method for paginated resources
-        mapDeclaratives((declaration, key, dataKey) => {
+        mapDeclarations((declaration, key, dataKey) => {
             dispatchProps[key] = {}
 
             dispatchProps[key]['POST'] = (data = {}, params) => {
@@ -215,7 +215,7 @@ function processDeclaratives(declarations) {
 
         const nextProps = { ...stateProps, ...ownProps }
 
-        mapDeclaratives((declaration, key, dataKey) => {
+        mapDeclarations((declaration, key, dataKey) => {
             const data = get(stateProps.nion, key)
             const ref = data ? { id: data.id, type: data.type } : null
 
@@ -270,7 +270,7 @@ function connectComponent(declarations, options, WrappedComponent) { // eslint-d
         mapStateToProps,
         mapDispatchToProps,
         mergeProps
-    } = processDeclaratives(declarations, options)
+    } = processDeclarations(declarations, options)
 
     class WithNion extends Component {
         static displayName = `WithNion(${getDisplayName(WrappedComponent)})`
