@@ -7,7 +7,8 @@ import {
     JSON_API_BOOTSTRAP,
     JSON_API_SUCCESS,
     GENERIC_BOOTSTRAP,
-    INITIALIZE_DATAKEY
+    INITIALIZE_DATAKEY,
+    UPDATE_REF
 } from '../actions/types'
 
 // Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
@@ -80,6 +81,13 @@ const refsReducer = (state = initialState, action) => {
 
         // Initialize a new dataKey from a ref passed to a child component
         case INITIALIZE_DATAKEY:
+            return {
+                ...state,
+                [action.payload.dataKey]: clone(action.payload.ref)
+            }
+
+        // Update a reference attacherd to a dataKey explicitly
+        case UPDATE_REF:
             return {
                 ...state,
                 [action.payload.dataKey]: clone(action.payload.ref)

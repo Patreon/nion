@@ -4,12 +4,13 @@ import set from 'lodash.set'
 import map from 'lodash.map'
 import merge from 'lodash.merge'
 import promiseActions from '../actions/promises'
-import { buildUrl, deconstructUrl } from 'libs/nion/url'
+import { buildUrl, deconstructUrl } from '../url'
+import { makeRef } from '../transforms'
 
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { INITIALIZE_DATAKEY, UPDATE_ENTITY } from '../actions/types'
+import { INITIALIZE_DATAKEY, UPDATE_ENTITY, UPDATE_REF } from '../actions/types'
 import { selectResourcesForKeys } from 'libs/nion/selectors'
 
 const defaultDeclarativeOptions = {
@@ -167,9 +168,20 @@ function processDeclaratives(declarations) {
                 dispatchProps[key].initializeDataKey = (ref) => {
                     dispatch({
                         type: INITIALIZE_DATAKEY,
-                        payload: { dataKey, ref }
+                        payload: { dataKey, ref: makeRef(ref) }
                     })
                 }
+            }
+
+            // Exposed, general nion data manipulating actions
+            dispatchProps[key].updateRef = (ref) => {
+                return new Promise((resolve, reject) => {
+                    dispatch({
+                        type: UPDATE_REF,
+                        payload: { dataKey: declaration.dataKey, ref: makeRef(ref) }
+                    })
+                    resolve()
+                })
             }
         })
 
@@ -225,6 +237,8 @@ function processDeclaratives(declarations) {
                 const fn = dispatchProps[key].initializeDataKey
                 set(nextProps.nion, [key, 'actions', '_initializeDataKey'], fn)
             }
+
+            set(nextProps.nion, [key, 'actions', 'updateRef'], dispatchProps[key].updateRef)
         })
 
         // Pass along the global nion action creators

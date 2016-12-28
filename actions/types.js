@@ -1,6 +1,7 @@
 export const namespace = (actionType) => `nion/${actionType}`
 
 export const UPDATE_ENTITY = namespace('UPDATE_ENTITY')
+export const UPDATE_REF = namespace('UPDATE_REF')
 export const INITIALIZE_DATAKEY = namespace('INITIALIZE_DATAKEY')
 
 export const JSON_API_REQUEST = namespace('JSON_API_REQUEST')
