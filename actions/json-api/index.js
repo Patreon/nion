@@ -36,7 +36,7 @@ const getJsonApiRequestTypes = (dataKey, meta = {}, promiseHandler) => {
             // it's being used, ie, there exist _deferred methods (promise-polyfill specific) field.
             // This is to avoid uncaught exceptions being raised in addition to the error being
             // raised in middleware
-            if (get(promiseHandler.promise, '_deferreds.length')) {
+            if (get(promiseHandler, 'promise._deferreds.length')) {
                 promiseHandler && promiseHandler.reject && promiseHandler.reject(error)
             }
             return error
