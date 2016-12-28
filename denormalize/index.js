@@ -48,7 +48,7 @@ export default function denormalize(ref, entities, existingObjects = {}) {
 
         // Establish a "_ref" property on the relationship object, that acts as a pointer to the
         // original entity
-        if (!obj[key]._ref) {
+        if (obj[key] && !obj[key]._ref) {
             Object.defineProperty(obj[key], '_ref', { value: merge({}, relationship) })
         }
     })
