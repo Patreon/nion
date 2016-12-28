@@ -54,6 +54,11 @@ function processDeclaratives(declarations) {
     // the wrapped component. We'll need these dataKeys for creating our selector as well.
     const keysByDataKey = {}
     const dataKeys = mapDeclaratives((declaration, key, dataKey) => {
+        // If the dataKey already exists in this group of declarations, throw an error!
+        if (keysByDataKey[dataKey]) {
+            throw new Error('Duplicate dataKeys detected in this nion decorator')
+        }
+
         keysByDataKey[dataKey] = key
 
         // Ensure the dataKey is set properly on the declaration
