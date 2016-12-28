@@ -107,7 +107,13 @@ function processDeclaratives(declarations) {
         // Helper method to construct a JSON API url endpoint from supplied declaration and params.
         // This will be used to build the endpoints for the various method actions
         function getJsonApiUrl(declaration, params) {
-            const endpoint = get(declaration, 'endpoint')
+            let endpoint = get(declaration, 'endpoint')
+
+            // If supplied endpoint override at call time, then use the supplied endpoint
+            if (get(params, 'endpoint')) {
+                endpoint = params.endpoint
+            }
+
             // Use if a fully-formed url, otherwise pass to buildUrl
             return endpoint.indexOf('https://') === 0 ? endpoint : buildUrl(endpoint, params)
         }
