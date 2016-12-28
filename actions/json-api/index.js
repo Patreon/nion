@@ -20,7 +20,12 @@ const getJsonApiRequestTypes = (dataKey, meta = {}, promiseHandler) => {
         payload: (action, state, res) => {
             return getJSON(res).then((json) => {
                 // Resolve the passed in promise, if supplied
-                promiseHandler && promiseHandler.resolve && promiseHandler.resolve()
+                if (get(promiseHandler, 'promise._deferreds.length')) {
+                    // We need to ensure that the promise resolves AFTER the redux store has been
+                    // updated, so pass it off to the next tick
+                    const shouldResolve = promiseHandler && promiseHandler.resolve
+                    shouldResolve && setImmediate(() => promiseHandler.resolve())
+                }
 
                 return json && parseJsonApiResponse(json, meta)
             })
