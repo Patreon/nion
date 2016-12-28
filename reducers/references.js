@@ -65,10 +65,16 @@ const refsReducer = (state = initialState, action) => {
                     ...deleteRefFromEntities(action.meta.refToDelete, state)
                 }
             // Otherwise, append the new ref to the state
-            } else {
+            } else if (action.payload) {
                 return {
                     ...state,
                     [action.meta.dataKey]: action.payload.newRequestRef
+                }
+            // Otherwise, the data returned was undefined
+            } else {
+                return {
+                    ...state,
+                    [action.meta.dataKey]: undefined
                 }
             }
 
