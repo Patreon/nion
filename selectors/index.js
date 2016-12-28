@@ -7,9 +7,9 @@ const selectEntities = (state) => get(selectNion(state), 'entities')
 const selectRequests = (state) => get(selectNion(state), 'requests')
 const selectReferences = (state) => get(selectNion(state), 'references')
 
-const defaultRequest = {
+const makeDefaultRequest = () => ({
     status: 'not called'
-}
+})
 
 const isGeneric = (ref) => {
     // This may not be the best way to check if something is a ref to entities or not
@@ -72,7 +72,7 @@ export const selectRequest = (key) => createSelector(
     selectRequests,
     selectLinks(key),
     (apiRequests, links) => {
-        const request = get(apiRequests, key, defaultRequest)
+        const request = get(apiRequests, key, makeDefaultRequest())
         const canLoadMore = get(links, 'next') && !request.isLoading
         return { ...request, canLoadMore }
     }
