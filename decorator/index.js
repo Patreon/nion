@@ -4,15 +4,16 @@ import set from 'lodash.set'
 import map from 'lodash.map'
 import merge from 'lodash.merge'
 import promiseActions from '../actions/promises'
-import { buildUrl, deconstructUrl } from 'libs/nion/url'
+import { buildUrl, deconstructUrl } from '../url'
+import { makeRef } from '../transforms'
 
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { INITIALIZE_DATAKEY, UPDATE_ENTITY } from '../actions/types'
+import { INITIALIZE_DATAKEY, UPDATE_ENTITY, UPDATE_REF } from '../actions/types'
 import { selectResourcesForKeys } from 'libs/nion/selectors'
 
-const defaultDeclarativeOptions = {
+const defaultDeclarationOptions = {
     // Component / API Lifecycle methods
     onMount: false, // Should the component load the data when it mounts?
     once: true, // Should the component only load the data once on mount?
@@ -26,14 +27,14 @@ const defaultDeclarativeOptions = {
 
 function processDefaultOptions(declarations) {
     map(declarations, (declaration, key) => {
-        map(defaultDeclarativeOptions, (defaultState, defaultKey) => {
+        map(defaultDeclarationOptions, (defaultState, defaultKey) => {
             const option = get(declaration, defaultKey, defaultState)
             declaration[defaultKey] = option
         })
     })
 }
 
-function processDeclaratives(declarations) {
+function processDeclarations(declarations) {
     // Apply default options to the declarations
     processDefaultOptions(declarations)
 
@@ -41,7 +42,7 @@ function processDeclaratives(declarations) {
     // params. We need to handle both the component-scoped key (the key of the object passed to the
     // decorator) as well as the dataKey that points to where the ref / request is stored on the
     // state tree
-    const mapDeclaratives = (fn) => (
+    const mapDeclarations = (fn) => (
         map(declarations, (declaration, key) => (
             fn(declaration, key, declaration.dataKey || key)
         ))
@@ -52,7 +53,12 @@ function processDeclaratives(declarations) {
     // We'll need to make a map from dataKey to key to handle passing the props more semantically to
     // the wrapped component. We'll need these dataKeys for creating our selector as well.
     const keysByDataKey = {}
-    const dataKeys = mapDeclaratives((declaration, key, dataKey) => {
+    const dataKeys = mapDeclarations((declaration, key, dataKey) => {
+        // If the dataKey already exists in this group of declarations, throw an error!
+        if (keysByDataKey[dataKey]) {
+            throw new Error('Duplicate dataKeys detected in this nion decorator')
+        }
+
         keysByDataKey[dataKey] = key
 
         // Ensure the dataKey is set properly on the declaration
@@ -106,14 +112,20 @@ function processDeclaratives(declarations) {
         // Helper method to construct a JSON API url endpoint from supplied declaration and params.
         // This will be used to build the endpoints for the various method actions
         function getJsonApiUrl(declaration, params) {
-            const endpoint = get(declaration, 'endpoint')
+            let endpoint = get(declaration, 'endpoint')
+
+            // If supplied endpoint override at call time, then use the supplied endpoint
+            if (get(params, 'endpoint')) {
+                endpoint = params.endpoint
+            }
+
             // Use if a fully-formed url, otherwise pass to buildUrl
             return endpoint.indexOf('https://') === 0 ? endpoint : buildUrl(endpoint, params)
         }
 
         // Map over the supplied declarations to build out the 4 main methods to add to the actions
         // subprop, as well as the special case next method for paginated resources
-        mapDeclaratives((declaration, key, dataKey) => {
+        mapDeclarations((declaration, key, dataKey) => {
             dispatchProps[key] = {}
 
             dispatchProps[key]['POST'] = (data = {}, params) => {
@@ -167,9 +179,20 @@ function processDeclaratives(declarations) {
                 dispatchProps[key].initializeDataKey = (ref) => {
                     dispatch({
                         type: INITIALIZE_DATAKEY,
-                        payload: { dataKey, ref }
+                        payload: { dataKey, ref: makeRef(ref) }
                     })
                 }
+            }
+
+            // Exposed, general nion data manipulating actions
+            dispatchProps[key].updateRef = (ref) => {
+                return new Promise((resolve, reject) => {
+                    dispatch({
+                        type: UPDATE_REF,
+                        payload: { dataKey: declaration.dataKey, ref: makeRef(ref) }
+                    })
+                    resolve()
+                })
             }
         })
 
@@ -192,7 +215,7 @@ function processDeclaratives(declarations) {
 
         const nextProps = { ...stateProps, ...ownProps }
 
-        mapDeclaratives((declaration, key, dataKey) => {
+        mapDeclarations((declaration, key, dataKey) => {
             const data = get(stateProps.nion, key)
             const ref = data ? { id: data.id, type: data.type } : null
 
@@ -225,6 +248,8 @@ function processDeclaratives(declarations) {
                 const fn = dispatchProps[key].initializeDataKey
                 set(nextProps.nion, [key, 'actions', '_initializeDataKey'], fn)
             }
+
+            set(nextProps.nion, [key, 'actions', 'updateRef'], dispatchProps[key].updateRef)
         })
 
         // Pass along the global nion action creators
@@ -245,7 +270,7 @@ function connectComponent(declarations, options, WrappedComponent) { // eslint-d
         mapStateToProps,
         mapDispatchToProps,
         mergeProps
-    } = processDeclaratives(declarations, options)
+    } = processDeclarations(declarations, options)
 
     class WithNion extends Component {
         static displayName = `WithNion(${getDisplayName(WrappedComponent)})`

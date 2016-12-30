@@ -1,3 +1,4 @@
+import { camelize } from 'humps'
 import get from 'lodash.get'
 import set from 'lodash.set'
 import map from 'lodash.map'
@@ -8,7 +9,8 @@ export default function denormalize(ref, entities, existingObjects = {}) {
         return undefined
     }
 
-    const { type, id } = ref
+    let { type, id } = ref
+    type = camelize(type)
 
     // Check the existing object to see if a reference to the denormalized object already exists,
     // if so, use the existing denormalized object
