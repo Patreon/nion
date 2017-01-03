@@ -8,7 +8,6 @@ import { buildUrl, deconstructUrl } from '../url'
 import { makeRef } from '../transforms'
 
 import { connect } from 'react-redux'
-import { createSelector } from 'reselect'
 
 import { INITIALIZE_DATAKEY, UPDATE_ENTITY, UPDATE_REF } from '../actions/types'
 import { selectResourcesForKeys } from 'libs/nion/selectors'
@@ -34,39 +33,7 @@ function processDefaultOptions(declarations) {
     })
 }
 
-function processDeclarations(declarations) {
-    // Apply default options to the declarations
-    processDefaultOptions(declarations)
-
-    // The passed in declarations object is a map of dataKeys to fetch and their corresponding
-    // params. We need to handle both the component-scoped key (the key of the object passed to the
-    // decorator) as well as the dataKey that points to where the ref / request is stored on the
-    // state tree
-    const mapDeclarations = (fn) => (
-        map(declarations, (declaration, key) => (
-            fn(declaration, key, declaration.dataKey || key)
-        ))
-    )
-
-    // We want to pass in the selected data to the wrapped component by the key (ie pledge), even
-    // though we may be storing the data on the store by an id-specific dataKey (ie pledge:1234).
-    // We'll need to make a map from dataKey to key to handle passing the props more semantically to
-    // the wrapped component. We'll need these dataKeys for creating our selector as well.
-    const keysByDataKey = {}
-    const dataKeys = mapDeclarations((declaration, key, dataKey) => {
-        // If the dataKey already exists in this group of declarations, throw an error!
-        if (keysByDataKey[dataKey]) {
-            throw new Error('Duplicate dataKeys detected in this nion decorator')
-        }
-
-        keysByDataKey[dataKey] = key
-
-        // Ensure the dataKey is set properly on the declaration
-        declaration.dataKey = declaration.dataKey || key
-
-        return dataKey
-    })
-
+function processDeclarations(declarations, options) {
     function defineDataProperty(obj, key, value){
         Object.defineProperty(obj, key, {
             value,
@@ -74,39 +41,77 @@ function processDeclarations(declarations) {
         })
     }
 
-    // Construct the JSON API selector to map to props
-    const mapStateToProps = createSelector(
-        selectResourcesForKeys(dataKeys),
-        (selectedResources) => {
-            const nion = {}
-
-            // Now map back over the dataKeys to their original keys
-            map(selectedResources, (selected, selectedDataKey) => {
-                const key = keysByDataKey[selectedDataKey]
-
-                // If the ref doesn't yet exist, we need to ensure we can pass an object with
-                // 'request' and 'actions' props to the child component so it can manage loading the
-                // data. Therefore, we'll create a "NonExistentObject" (an empty object with a
-                // hidden property) to pass down to the child component. This can interface with the
-                // "exists" function to tell if the data exists yet
-                const refDoesNotExist = selected.obj === undefined
-                nion[key] = refDoesNotExist ?
-                    makeNonExistingObject() : makeExistingObject(selected.obj)
-
-                // Define the nion-specific properties as non-enumerable properties on the dataKey
-                // prop
-                defineDataProperty(nion[key], 'actions', {})
-                defineDataProperty(nion[key], 'links', { ...selected.links })
-                defineDataProperty(nion[key], 'meta', { ...selected.meta })
-                defineDataProperty(nion[key], 'request', { ...selected.request })
-            })
-
-            return { nion }
-        }
+    // The passed in declarations object is a map of dataKeys to fetch and their corresponding
+    // params. We need to handle both the component-scoped key (the key of the object passed to
+    // the decorator) as well as the dataKey that points to where the ref / request is stored on
+    // the state tree
+    const mapDeclarations = (fn) => (
+        map(declarations, (declaration, key) => (
+            fn(declaration, key, declaration.dataKey || key)
+        ))
     )
 
+    // Construct the JSON API selector to map to props
+    const mapStateToProps = (state, ownProps) => {
+
+        if (declarations instanceof Function) {
+            declarations = declarations(ownProps)
+        }
+
+        // Apply default options to the declarations
+        processDefaultOptions(declarations)
+
+        // We want to pass in the selected data to the wrapped component by the key (ie pledge),
+        // even though we may be storing the data on the store by an id-specific dataKey (ie
+        // pledge:1234). We'll need to make a map from dataKey to key to handle passing the props
+        // more semantically to the wrapped component. We'll need these dataKeys for creating our
+        // selector as well.
+        const keysByDataKey = {}
+        const dataKeys = mapDeclarations((declaration, key, dataKey) => {
+
+            // If the dataKey already exists in this group of declarations, throw an error!
+            if (keysByDataKey[dataKey]) {
+                throw new Error('Duplicate dataKeys detected in this nion decorator')
+            }
+
+            keysByDataKey[dataKey] = key
+
+            // Ensure the dataKey is set properly on the declaration
+            declaration.dataKey = declaration.dataKey || key
+
+            return dataKey
+        })
+
+        const selectedResources = selectResourcesForKeys(dataKeys)(state)
+
+        const nion = {}
+
+        // Now map back over the dataKeys to their original keys
+        map(selectedResources, (selected, selectedDataKey) => {
+            const key = keysByDataKey[selectedDataKey]
+
+            // If the ref doesn't yet exist, we need to ensure we can pass an object with
+            // 'request' and 'actions' props to the child component so it can manage loading the
+            // data. Therefore, we'll create a "NonExistentObject" (an empty object with a
+            // hidden property) to pass down to the child component. This can interface with the
+            // "exists" function to tell if the data exists yet
+            const refDoesNotExist = selected.obj === undefined
+            nion[key] = refDoesNotExist ?
+                makeNonExistingObject() : makeExistingObject(selected.obj)
+
+            // Define the nion-specific properties as non-enumerable properties on the dataKey
+            // prop
+            defineDataProperty(nion[key], 'actions', {})
+            defineDataProperty(nion[key], 'links', { ...selected.links })
+            defineDataProperty(nion[key], 'meta', { ...selected.meta })
+            defineDataProperty(nion[key], 'request', { ...selected.request })
+        })
+
+        return { nion }
+    }
+
     // Construct the dispatch methods to pass action creators to the component
-    const mapDispatchToProps = (dispatch) => {
+    const mapDispatchToProps = (dispatch, ownProps) => {
         const dispatchProps = {}
 
         // Helper method to construct a JSON API url endpoint from supplied declaration and params.
@@ -254,6 +259,7 @@ function processDeclarations(declarations) {
 
         // Pass along the global nion action creators
         nextProps.nion.updateEntity = dispatchProps.updateEntity
+        nextProps.nion._declarations = declarations
 
         return nextProps
     }
@@ -265,7 +271,8 @@ function processDeclarations(declarations) {
     }
 }
 
-function connectComponent(declarations, options, WrappedComponent) { // eslint-disable-line no-shadow
+// JSON API decorator function for wrapping connected components to the new JSON API redux system
+const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
     const {
         mapStateToProps,
         mapDispatchToProps,
@@ -280,7 +287,7 @@ function connectComponent(declarations, options, WrappedComponent) { // eslint-d
 
             // Iterate over the declarations provided to the component, deciding how to manage the
             // load state of each one
-            map(declarations, (declaration, key) => { // eslint-disable-line no-shadow
+            map(nion._declarations, (declaration, key) => { // eslint-disable-line no-shadow
                 const fetch = nion[key].actions.get
 
                 // If we're supplying a ref to be managed by nion, we'll want to attach it to the
@@ -320,22 +327,6 @@ function connectComponent(declarations, options, WrappedComponent) { // eslint-d
     }
 
     return connect(mapStateToProps, mapDispatchToProps, mergeProps)(WithNion)
-}
-
-
-// JSON API decorator function for wrapping connected components to the new JSON API redux system
-const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
-
-    // If a static object of declarations is passed in, process it immediately, otherwise, pass the
-    // incoming props to the declarations function to generate a declarations object
-    if (declarations instanceof Function) {
-        return props => {
-            const ConnectedComponent = connectComponent(declarations(props), options, WrappedComponent)
-            return <ConnectedComponent { ...props } />
-        }
-    } else if (declarations instanceof Object) {
-        return connectComponent(declarations, options, WrappedComponent)
-    }
 }
 
 export default nion
