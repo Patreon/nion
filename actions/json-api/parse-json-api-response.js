@@ -39,7 +39,7 @@ export const isJsonApiResponse = ({ data }) => {
     return data && every(dataList, ref => ref.id !== undefined && ref.type !== undefined)
 }
 
-export default function parseJsonApiResponse(response) {
+export const parseJsonApiResponse = (response) => {
     const { data, included, meta, links } = response
 
     // Create the new ref to pass to the entities reducer.
@@ -61,3 +61,5 @@ export default function parseJsonApiResponse(response) {
         newRequestRef
     }
 }
+
+export default parseJsonApiResponse

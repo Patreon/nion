@@ -10,3 +10,4 @@ export const JSON_API_FAILURE = namespace('JSON_API_FAILURE')
 export const JSON_API_BOOTSTRAP = namespace('JSON_API_BOOTSTRAP')
 
 export const GENERIC_BOOTSTRAP = namespace('GENERIC_BOOTSTRAP')
+export const GENERIC_API = namespace('GENERIC_API')
