@@ -1,4 +1,5 @@
 import { CALL_API, getJSON } from 'redux-api-middleware'
+import { genericApiResponse } from '../generic'
 import parseJsonApiResponse, { isJsonApiResponse } from './parse-json-api-response'
 import { PatreonApiError } from 'utilities/extend-api-error'
 import get from 'lodash.get'
@@ -27,7 +28,19 @@ const getJsonApiRequestTypes = (dataKey, meta = {}, promiseHandler) => {
                     shouldResolve && setImmediate(() => promiseHandler.resolve())
                 }
 
-                return json && isJsonApiResponse(json) && parseJsonApiResponse(json, meta)
+                // If we've detected a json-api payload we'll parse it as such
+                if (json && isJsonApiResponse(json)) {
+                    return {
+                        responseType: 'json-api',
+                        data: parseJsonApiResponse(json)
+                    }
+                }
+
+                // If not we return the raw response
+                return {
+                    responseType: 'generic',
+                    data: genericApiResponse(json)
+                }
             })
         }
     }, {
