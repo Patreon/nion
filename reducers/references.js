@@ -3,9 +3,9 @@ import { camelizeKeys } from 'humps'
 const initialState = {}
 
 import {
-    JSON_API_REQUEST,
-    JSON_API_BOOTSTRAP,
-    JSON_API_SUCCESS,
+    NION_API_REQUEST,
+    NION_API_BOOTSTRAP,
+    NION_API_SUCCESS,
     GENERIC_BOOTSTRAP,
     INITIALIZE_DATAKEY,
     UPDATE_REF
@@ -41,14 +41,14 @@ const deleteRefFromEntities = (refToDelete = {}, state = {}) => {
 
 const refsReducer = (state = initialState, action) => {
     switch (action.type) {
-        case JSON_API_REQUEST:
+        case NION_API_REQUEST:
             return state
-        case JSON_API_BOOTSTRAP:
-        case JSON_API_SUCCESS:
+        case NION_API_BOOTSTRAP:
+        case NION_API_SUCCESS:
             // If the result of a paginated nextPage request, we're going to want to append the
             // retrieved entities to the end of the current entities list
             if (action.meta.isNextPage) {
-                const nextPageRef = action.payload.newRequestRef
+                const nextPageRef = action.payload.responseData.entryRef
                 return {
                     ...state,
                     [action.meta.dataKey]: {
@@ -68,7 +68,7 @@ const refsReducer = (state = initialState, action) => {
             } else if (action.payload) {
                 return {
                     ...state,
-                    [action.meta.dataKey]: action.payload.newRequestRef
+                    [action.meta.dataKey]: action.payload.responseData.entryRef
                 }
             // Otherwise, the data returned was undefined
             } else {
@@ -92,7 +92,7 @@ const refsReducer = (state = initialState, action) => {
                 [action.payload.dataKey]: clone(action.payload.ref)
             }
 
-        // Update a reference attacherd to a dataKey explicitly
+        // Update a reference attached to a dataKey explicitly
         case UPDATE_REF:
             return {
                 ...state,

@@ -2,7 +2,7 @@
 // in the API middleware - we need to know whether or not to reject the promises that are
 // tied to the request lifecycle
 import Promise from 'promise-polyfill'
-import { jsonApi } from './index'
+import { getApi } from './index'
 import { selectData } from '../selectors'
 
 // Create an "inside out" promise (with resolve and reject exposed) in order to pass down to the API
@@ -26,22 +26,22 @@ function makePromiseHandler(dataKey) {
     return promiseHandler
 }
 
-const getAction = (dataKey, { endpoint }) => (dispatch) => {
+const getAction = (dataKey, { endpoint, requestType }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(jsonApi.get(dataKey, {
+        _dispatch(getApi(requestType).get(dataKey, {
             endpoint
         }, promiseHandler))
     })
     return promiseHandler.promise
 }
 
-const patchAction = (dataKey, { endpoint, body }) => (dispatch) => {
+const patchAction = (dataKey, { endpoint, body, requestType }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(jsonApi.patch(dataKey, {
+        _dispatch(getApi(requestType).patch(dataKey, {
             endpoint,
             body
         }, promiseHandler))
@@ -49,11 +49,11 @@ const patchAction = (dataKey, { endpoint, body }) => (dispatch) => {
     return promiseHandler.promise
 }
 
-const postAction = (dataKey, { endpoint, body }) => (dispatch) => {
+const postAction = (dataKey, { endpoint, body, requestType }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(jsonApi.post(dataKey, {
+        _dispatch(getApi(requestType).post(dataKey, {
             endpoint,
             body
         }, promiseHandler))
@@ -61,22 +61,22 @@ const postAction = (dataKey, { endpoint, body }) => (dispatch) => {
     return promiseHandler.promise
 }
 
-const deleteAction = (dataKey, ref, { endpoint }) => (dispatch) => {
+const deleteAction = (dataKey, ref, { endpoint, requestType }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(jsonApi.delete(dataKey, ref, {
+        _dispatch(getApi(requestType).delete(dataKey, ref, {
             endpoint
         }, promiseHandler))
     })
     return promiseHandler.promise
 }
 
-const nextAction = (dataKey, { endpoint }) => (dispatch) => {
+const nextAction = (dataKey, { endpoint, requestType }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(jsonApi.get(dataKey, {
+        _dispatch(getApi(requestType)(dataKey, {
             endpoint,
             meta: {
                 isNextPage: true

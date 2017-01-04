@@ -9,8 +9,13 @@ import {
 } from './json-api'
 
 import {
-    bootstrapGeneric
-} from './generic'
+    bootstrapGeneric,
+    deleteApi,
+    getApi,
+    patchApi,
+    postApi,
+    requestApi
+} from './api'
 
 export const jsonApi = {
     bootstrap: bootstrapJsonApi,
@@ -22,6 +27,11 @@ export const jsonApi = {
     request: requestJsonApi
 }
 
-export const generic = {
-    bootstrap: bootstrapGeneric
+export const api = {
+    bootstrap: bootstrapGeneric,
+    delete: deleteApi,
+    get: getApi,
+    patch: patchApi,
+    post: postApi,
+    request: requestApi
 }

@@ -1,9 +1,9 @@
 import get from 'lodash.get'
 
 import {
-    JSON_API_REQUEST,
-    JSON_API_SUCCESS,
-    JSON_API_FAILURE
+    NION_API_REQUEST,
+    NION_API_SUCCESS,
+    NION_API_FAILURE
 } from '../actions/types'
 
 const initialState = {}
@@ -12,7 +12,7 @@ const requestsReducer = (state = initialState, action) => {
     const existing = get(state, 'action.meta.dataKey')
 
     switch (action.type) {
-        case JSON_API_REQUEST:
+        case NION_API_REQUEST:
             return {
                 ...state,
                 [action.meta.dataKey]: {
@@ -22,7 +22,7 @@ const requestsReducer = (state = initialState, action) => {
                     pending: action.meta.method
                 }
             }
-        case JSON_API_SUCCESS:
+        case NION_API_SUCCESS:
 
             return {
                 ...state,
@@ -35,7 +35,7 @@ const requestsReducer = (state = initialState, action) => {
                     isLoading: false
                 }
             }
-        case JSON_API_FAILURE:
+        case NION_API_FAILURE:
             return {
                 ...state,
                 [action.meta.dataKey]: {

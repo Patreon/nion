@@ -43,7 +43,7 @@ export const parseJsonApiResponse = (response) => {
     const { data, included, meta, links } = response
 
     // Create the new ref to pass to the entities reducer.
-    const newRequestRef = {
+    const entryRef = {
         entities: makeEntityReferences(data),
         meta,
         links,
@@ -58,7 +58,7 @@ export const parseJsonApiResponse = (response) => {
 
     return {
         storeFragment,
-        newRequestRef
+        entryRef
     }
 }
 

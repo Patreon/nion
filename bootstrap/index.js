@@ -1,6 +1,6 @@
 import get from 'lodash.get'
 import map from 'lodash.map'
-import { jsonApi, generic } from '../actions/index'
+import { jsonApi, genericApi } from '../actions/index'
 
 import { isJsonApiResponse } from '../actions/json-api/parse-json-api-response'
 
@@ -14,7 +14,7 @@ const bootstrap = (store) => {
         if (isJsonApiResponse(data)) {
             store.dispatch(jsonApi.bootstrap({ dataKey, data }))
         } else {
-            store.dispatch(generic.bootstrap({ dataKey, data }))
+            store.dispatch(genericApi.bootstrap({ dataKey, data }))
         }
     })
 }

@@ -24,7 +24,8 @@ const defaultDeclarationOptions = {
     paginated: false,
 
     // Specify that this is not a json-api request
-    generic: true
+    requestType: 'jsonApi',
+    responseParser: null
 }
 
 function processDefaultOptions(declarations) {
@@ -128,10 +129,7 @@ function processDeclarations(declarations, options) {
             }
 
             // Use if a fully-formed url, otherwise pass to buildUrl
-            return (
-                endpoint.indexOf('https://') === 0 ||
-                endpoint.indexOf('http://' === 0)
-            ) ? endpoint : buildUrl(endpoint, params)
+            return endpoint.indexOf('https://') === 0 ? endpoint : buildUrl(endpoint, params)
         }
 
         // Map over the supplied declarations to build out the 4 main methods to add to the actions
@@ -143,7 +141,9 @@ function processDeclarations(declarations, options) {
                 const endpoint = getJsonApiUrl(declaration, params)
                 return promiseActions.post(dataKey, {
                     endpoint,
-                    body: { data }
+                    body: { data },
+                    requestType: declaration.requestType,
+                    responseParser: declaration.responseParser
                 })(dispatch)
             }
 
@@ -151,18 +151,28 @@ function processDeclarations(declarations, options) {
                 const endpoint = getJsonApiUrl(declaration, params)
                 return promiseActions.patch(dataKey, {
                     endpoint,
-                    body: { data }
+                    body: { data },
+                    requestType: declaration.requestType,
+                    responseParser: declaration.responseParser
                 })(dispatch)
             }
 
             dispatchProps[key]['GET'] = (params) => {
                 const endpoint = getJsonApiUrl(declaration, params)
-                return promiseActions.get(dataKey, { endpoint })(dispatch)
+                return promiseActions.get(dataKey, {
+                    endpoint,
+                    requestType: declaration.requestType,
+                    responseParser: declaration.responseParser
+                })(dispatch)
             }
 
             dispatchProps[key]['DELETE'] = (ref = {}, params) => {
                 const endpoint = getJsonApiUrl(declaration, params)
-                return promiseActions.delete(dataKey, ref, { endpoint })(dispatch)
+                return promiseActions.delete(dataKey, ref, {
+                    endpoint,
+                    requestType: declaration.requestType,
+                    responseParser: declaration.responseParser
+                })(dispatch)
             }
 
             if (declaration.paginated) {
@@ -181,7 +191,10 @@ function processDeclarations(declarations, options) {
                         ...newOptions
                     })
 
-                    return promiseActions.next(dataKey, { endpoint: newEndpoint })(dispatch)
+                    return promiseActions.next(dataKey, {
+                        endpoint: newEndpoint,
+                        requestType: declaration.requestType
+                    })(dispatch)
                 }
             }
 

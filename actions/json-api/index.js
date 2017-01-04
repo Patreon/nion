@@ -1,71 +1,15 @@
-import { CALL_API, getJSON } from 'redux-api-middleware'
-import { genericApiResponse } from '../generic'
-import parseJsonApiResponse, { isJsonApiResponse } from './parse-json-api-response'
-import { PatreonApiError } from 'utilities/extend-api-error'
-import get from 'lodash.get'
+import { CALL_API } from 'redux-api-middleware'
+import parseJsonApiResponse from './parse-json-api-response'
+import getRequestTypes from '../request-types'
 
 import {
-    JSON_API_REQUEST,
-    JSON_API_SUCCESS,
-    JSON_API_FAILURE,
-    JSON_API_BOOTSTRAP
+    NION_API_BOOTSTRAP
 } from '../types'
 
-const getJsonApiRequestTypes = (dataKey, meta = {}, promiseHandler) => {
-    return [{
-        type: JSON_API_REQUEST,
-        meta: { dataKey, ...meta }
-    }, {
-        type: JSON_API_SUCCESS,
-        meta: { dataKey, ...meta },
-        payload: (action, state, res) => {
-            return getJSON(res).then((json) => {
-                // Resolve the passed in promise, if supplied
-                if (get(promiseHandler, 'promise._deferreds.length')) {
-                    // We need to ensure that the promise resolves AFTER the redux store has been
-                    // updated, so pass it off to the next tick
-                    const shouldResolve = promiseHandler && promiseHandler.resolve
-                    shouldResolve && setImmediate(() => promiseHandler.resolve())
-                }
-
-                // If we've detected a json-api payload we'll parse it as such
-                if (json && isJsonApiResponse(json)) {
-                    return {
-                        responseType: 'json-api',
-                        data: parseJsonApiResponse(json)
-                    }
-                }
-
-                // If not we return the raw response
-                return {
-                    responseType: 'generic',
-                    data: genericApiResponse(json)
-                }
-            })
-        }
-    }, {
-        type: JSON_API_FAILURE,
-        meta: { dataKey, ...meta },
-        payload: (action, state, res) => {
-            // Mannually handle the error here, rather than passing off to error middleware
-            const error = new PatreonApiError(res)
-
-            // Reject the passed in promise, if supplied. Note we only want to reject the promise if
-            // it's being used, ie, there exist _deferred methods (promise-polyfill specific) field.
-            // This is to avoid uncaught exceptions being raised in addition to the error being
-            // raised in middleware
-            if (get(promiseHandler, 'promise._deferreds.length')) {
-                promiseHandler && promiseHandler.reject && promiseHandler.reject(error)
-            }
-            return error
-        }
-    }]
-}
-
-export const requestJsonApi = (dataKey, request, meta, promiseHandler) => {
+export const requestJsonApi = (dataKey, request, meta, promiseHandler, dataParser) => {
     return {
         [CALL_API]: {
-            types: getJsonApiRequestTypes(dataKey, meta, promiseHandler),
+            types: getRequestTypes(dataKey, meta, promiseHandler, dataParser),
             headers: { 'Content-Type': 'application/vnd.api+json' },
             ...request
         }
@@ -78,7 +22,7 @@ const fetchJsonApi = (method) => (dataKey, { endpoint, body, meta }, promiseHand
         body: JSON.stringify(body),
         endpoint,
         method
-    }, { ...meta, method, endpoint }, promiseHandler)
+    }, { ...meta, method, endpoint }, promiseHandler, parseJsonApiResponse)
 }
 
 export const getJsonApi = fetchJsonApi('GET')
@@ -97,8 +41,11 @@ export const deleteJsonApi = (dataKey, ref, options, promiseHandler) => {
 
 export const bootstrapJsonApi = ({ dataKey, data }) => {
     return {
-        type: JSON_API_BOOTSTRAP,
+        type: NION_API_BOOTSTRAP,
         meta: { dataKey },
-        payload: parseJsonApiResponse(data)
+        payload: {
+            requestType: 'jsonApi',
+            responseData: parseJsonApiResponse(data)
+        }
     }
 }

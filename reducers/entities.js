@@ -3,8 +3,8 @@ import map from 'lodash.map'
 import { camelizeKeys, camelize } from 'humps'
 
 import {
-    JSON_API_SUCCESS,
-    JSON_API_BOOTSTRAP,
+    NION_API_SUCCESS,
+    NION_API_BOOTSTRAP,
     UPDATE_ENTITY
 } from '../actions/types'
 
@@ -14,13 +14,13 @@ const initialState = {}
 // between different JSON API actions
 const entitiesReducer = (state = initialState, action) => {
     switch(action.type) {
-        case JSON_API_SUCCESS:
-        case JSON_API_BOOTSTRAP: {
+        case NION_API_SUCCESS:
+        case NION_API_BOOTSTRAP: {
             const newState = {
                 ...state
             }
 
-            const storeFragment = get(action, 'payload.storeFragment', {})
+            const storeFragment = get(action, 'payload.responseData.storeFragment', {})
             map(storeFragment, (entities, type) => {
 
                 type = camelize(type)
@@ -52,7 +52,7 @@ const entitiesReducer = (state = initialState, action) => {
             return newState
         }
         case UPDATE_ENTITY: {
-            const { type, id, attributes } = action.payload
+            const { type, id, attributes } = action.payload.responseData
             const entity = state[type][id]
             const newEntity = {
                 ...entity,
