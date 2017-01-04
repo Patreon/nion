@@ -33,7 +33,9 @@ function processDefaultOptions(declarations) {
     })
 }
 
-function processDeclarations(declarations, options) {
+function processDeclarations(inputDeclarations, options) {
+    let declarations
+
     function defineDataProperty(obj, key, value){
         Object.defineProperty(obj, key, {
             value,
@@ -54,9 +56,10 @@ function processDeclarations(declarations, options) {
     // Construct the JSON API selector to map to props
     const mapStateToProps = (state, ownProps) => {
 
-        if (declarations instanceof Function) {
-            declarations = declarations(ownProps)
-        }
+        // Process the input declarations, ensuring we make a copy of the original argument to
+        // prevent object reference bugs between instances of the decorated class
+        declarations = inputDeclarations instanceof Function ?
+            inputDeclarations(ownProps) : clone(inputDeclarations)
 
         // Apply default options to the declarations
         processDefaultOptions(declarations)
@@ -369,4 +372,9 @@ function getDisplayName(WrappedComponent) {
 
 function isNotLoaded(status) {
     return status === 'not called'
+}
+
+// Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
+function clone(input) {
+    return JSON.parse(JSON.stringify(input))
 }
