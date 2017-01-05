@@ -352,7 +352,13 @@ const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
         }
 
         render() {
-            return <WrappedComponent { ...this.props } />
+            // Filter out internally used props to not expose them in the wrapped component
+            const nextProps = {
+                ...this.props,
+                nion: filterInternalProps(this.props.nion)
+            }
+
+            return <WrappedComponent { ...nextProps } />
         }
     }
 
@@ -403,6 +409,22 @@ function isNotLoading(status) {
 
 function isNotLoaded(status) {
     return status === 'not called'
+}
+
+// Filter out hidden props from the nion dataProp, including _declarations (at the nion dataProp
+// root) and actions._initializeDataKey, which are only used internally in the wrapper component
+function filterInternalProps (dataProp) {
+    const output = {}
+    map(dataProp, (obj, key) => {
+        if (key === '_declarations') {
+            return
+        }
+        if (get(obj.actions, '_initializeDataKey')) {
+            delete obj.actions._initializeDataKey
+        }
+        output[key] = obj
+    })
+    return output
 }
 
 // Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
