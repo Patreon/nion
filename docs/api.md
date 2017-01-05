@@ -41,7 +41,7 @@ property | type | description | required
 -------- | ---- | ----------- | --------
 **endpoint** | `string` | The pathname or json-api url from which to fetch / manage the dataKeys. This can be either a shorthand pathname (ie `/currentUser`) or a fully-built json-api url (built using `buildUrl`) | **true**
 **dataKey** | `string` | A manual override of the `dataKey` to use to manage data. Defaults to the key of the declaration |
-**onMount** | `boolean` | Whether or not to automatically invoke a `get` action when the component mounts. Defaults to `false` |
-**once** | `boolean` | If `onMount` is `true`, whether or not to fetch the data *every* time the component mounts or just *once*. Defaults to `true`. |
+**fetchOnInit** | `boolean` | Whether or not to automatically invoke a `get` action when the component mounts. Defaults to `false` |
+**fetchOnce** | `boolean` | If `fetchOnInit` is `true`, whether or not to fetch the data *every* time the component mounts or just *once*. Defaults to `true`. |
 **paginated** | `boolean` | Whether or not the managed resource is paginated. Exposes a number of pagination-specific `request` status parameters and the `next` action.
 **initialRef** | `ref` | The initial ref used to initialize the reference corresponding to the `dataKey`, usually built with the `makeRef` function. This is used to pass ownership of data from a parent component to a child. See the parent/child or stream examples for more documentation about this more advanced use case. |
