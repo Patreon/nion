@@ -130,13 +130,13 @@ Note that since the declaration can also be constructed as a function of the pas
 class StreamContainer extends Component { ... }
 ```
 
-## Component Lifecycle
+## Component Lifecycle - Loading on mount
 ```javascript
 @nion({
     currentUser: {
         endpoint: '/current_user',
-        onMount: true,
-        once: true
+        fetchOnInit: true,
+        fetchOnce: true
     }
 })
 class UserContainer extends Component {
@@ -153,7 +153,32 @@ class UserContainer extends Component {
     }
 }
 ```
-Another extremely common pattern is for a component to begin loading data as soon as it's mounted. This can be achieved very easily by invoking the `get` method for a given `dataProp` in the component's `componentDidMount` method, but the nion decorator provides a few handy lifecyle options to manage this automatically. The `onMount` option tells the nion decorator to automatically dispatch a `get` action when the component mounts, and the `once` option ensures that `nion` only loads this data once, not every time the component is mounted. Note the default value of `once` is `true`, it's only explicitly passed in in the above example for clarity's sake.
+Another extremely common pattern is for a component to begin loading data as soon as it's mounted. This can be achieved very easily by invoking the `get` method for a given `dataProp` in the component's `componentDidMount` method, but the nion decorator provides a few handy lifecyle options to manage this automatically. The `fetchOnInit` option tells the nion decorator to automatically dispatch a `get` action when the component mounts, and the `fetchOnce` option ensures that `nion` only loads this data once, not every time the component is mounted. Note the default value of `fetchOnce` is `true`, it's only explicitly passed in in the above example for clarity's sake.
+
+## Component Lifecycle - Loading when props change
+```javascript
+// Child Component
+@nion(({ userId }){
+    user: {
+        endpoint: `/user/${userId}`,
+        fetchOnInit: true
+    }
+})
+class UserContainer extends Component {
+    render() {
+        const { user } = this.props.nion
+        const { request } = currentUser
+
+        return (
+            <Card>
+                { request.isLoading ? <LoadingSpinner /> : null }
+                { exists(currentUser) ? <UserCard user={currentUser} /> : null }
+            </Card>
+        )
+    }
+}
+```
+In the above example, when we pass a different `userId` prop into the nion-wrapped component, the component will automatically load the data corresponding to the new dataKey. This is because the `fetchOnInit` parameter *actually* instructs nion to automatically fetch data when a new dataKey is instantiated (which can occur as result of either mounting a component for the first time, or passing different props into the wrapped component).
 
 ## Patching
 ```javascript
@@ -311,7 +336,7 @@ Since our JSON-API interface uses a simple, cursor-based pagination system acros
     stream: {
         endpoint: `/stream`,
         paginated: true,
-        onMount: true
+        fetchOnInit: true
     }
 })
 class Paginated extends Component {
@@ -351,7 +376,7 @@ If the data that is to be managed by the child component already exists, we'll n
 @nion({
     stream: {
         endpoint: `/stream`,
-        onMount: true
+        fetchOnInit: true
     }
 })
 class Stream extends Component {  
