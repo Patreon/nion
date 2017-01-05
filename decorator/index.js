@@ -14,8 +14,8 @@ import { selectResourcesForKeys } from 'libs/nion/selectors'
 
 const defaultDeclarationOptions = {
     // Component / API Lifecycle methods
-    onMount: false, // Should the component load the data when it mounts?
-    once: true, // Should the component only load the data once on mount?
+    fetchOnInit: false, // Should the component load the data when a new dataKey is created?
+    fetchOnce: true, // Should the component only load the data once when dataKey is created?
 
     // Manual ref initialization, for parent/child data management relationships
     initialRef: null,
@@ -37,7 +37,9 @@ function processDefaultOptions(declarations) {
     })
 }
 
-function processDeclarations(declarations, options) {
+function processDeclarations(inputDeclarations, options) {
+    let declarations
+
     function defineDataProperty(obj, key, value){
         Object.defineProperty(obj, key, {
             value,
@@ -57,10 +59,10 @@ function processDeclarations(declarations, options) {
 
     // Construct the JSON API selector to map to props
     const mapStateToProps = (state, ownProps) => {
-
-        if (declarations instanceof Function) {
-            declarations = declarations(ownProps)
-        }
+        // Process the input declarations, ensuring we make a copy of the original argument to
+        // prevent object reference bugs between instances of the decorated class
+        declarations = inputDeclarations instanceof Function ?
+            inputDeclarations(ownProps) : clone(inputDeclarations)
 
         // Apply default options to the declarations
         processDefaultOptions(declarations)
@@ -298,8 +300,52 @@ const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
         mergeProps
     } = processDeclarations(declarations, options)
 
+    // Track the status of fetch actions to avoid sending out duplicate requests, since props can
+    // change multiple times before the redux store has updated (our nion actions are async)
+    const fetchesByDataKey = {}
+
     class WithNion extends Component {
         static displayName = `WithNion(${getDisplayName(WrappedComponent)})`
+
+        componentWillReceiveProps(nextProps) {
+            const { nion } = nextProps // eslint-disable-line no-shadow
+
+            // We want to trigger a fetch when the props change and lead to the creation of a new
+            // dataKey, regardless of whether or not that happens as a result of a mount.
+            map(nion._declarations, (declaration, key) => { // eslint-disable-line no-shadow
+                // If not fetching on init, don't do anything
+                if (!declaration.fetchOnInit) {
+                    return
+                }
+
+                const fetch = nion[key].actions.get
+                const status = nion[key].request.status
+                const dataKey = declaration.dataKey
+
+                // We need to manually check the status of the pending fetch action promise, since
+                // parent components may send props multiple times to the wrapped component (ie
+                // during setState). Because our redux actions are async, the redux store will not
+                // be updated before the next componentWillReceiveProps, so looking at the redux
+                // request status will be misleading because it will not have been updated
+                const isFetchPending = !!fetchesByDataKey[dataKey]
+
+                // If the fetch is only to be performed once, don't fetch if already loaded
+                if (declaration.fetchOnce) {
+                    if (isNotLoaded(status) && !isFetchPending) {
+                        fetchesByDataKey[dataKey] = fetch().then(() => {
+                            fetchesByDataKey[dataKey] = null
+                        })
+                    }
+                } else {
+                    if (isNotLoading(status) && !isFetchPending) {
+                        fetchesByDataKey[dataKey] = fetch().then(() => {
+                            fetchesByDataKey[dataKey] = null
+                        })
+                    }
+                }
+            })
+        }
+
 
         componentDidMount() {
             const { nion } = this.props // eslint-disable-line no-shadow
@@ -307,8 +353,6 @@ const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
             // Iterate over the declarations provided to the component, deciding how to manage the
             // load state of each one
             map(nion._declarations, (declaration, key) => { // eslint-disable-line no-shadow
-                const fetch = nion[key].actions.get
-
                 // If we're supplying a ref to be managed by nion, we'll want to attach it to the
                 // state tree ahead of time (maybe not? maybe we want to have a "virtual" ref...
                 // this is interesting)
@@ -323,23 +367,9 @@ const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
                     const initializeDataKey = nion[key].actions._initializeDataKey
                     return initializeDataKey(ref)
                 }
-
-                // If not loading on mount, don't do anything
-                if (!declaration.onMount) {
-                    return
-                }
-
-                // If the load is only to be performed once, don't fetch if the data has been loaded
-                if (declaration.once) {
-                    const status = nion[key].request.status
-                    if (isNotLoaded(status)) {
-                        fetch()
-                    }
-                } else {
-                    fetch()
-                }
             })
         }
+
         render() {
             return <WrappedComponent { ...this.props } />
         }
@@ -386,6 +416,15 @@ function getDisplayName(WrappedComponent) {
     return WrappedComponent.displayName || WrappedComponent.name || 'Component'
 }
 
+function isNotLoading(status) {
+    return status !== 'pending'
+}
+
 function isNotLoaded(status) {
     return status === 'not called'
+}
+
+// Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
+function clone(input) {
+    return JSON.parse(JSON.stringify(input))
 }
