@@ -131,7 +131,10 @@ function processDeclarations(inputDeclarations, options) {
             }
 
             // Use if a fully-formed url, otherwise pass to buildUrl
-            return endpoint.indexOf('https://') === 0 ? endpoint : buildUrl(endpoint, params)
+            return (
+                endpoint.indexOf('https://') === 0 ||
+                endpoint.indexOf('http://') === 0
+            ) ? endpoint : buildUrl(endpoint, params)
         }
 
         // Map over the supplied declarations to build out the 4 main methods to add to the actions

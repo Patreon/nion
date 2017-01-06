@@ -2,7 +2,7 @@
 // in the API middleware - we need to know whether or not to reject the promises that are
 // tied to the request lifecycle
 import Promise from 'promise-polyfill'
-import { getApi } from './index'
+import { selectApi } from './index'
 import { selectData } from '../selectors'
 
 // Create an "inside out" promise (with resolve and reject exposed) in order to pass down to the API
@@ -30,7 +30,7 @@ const getAction = (dataKey, { endpoint, requestType }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(getApi(requestType).get(dataKey, {
+        _dispatch(selectApi(requestType).get(dataKey, {
             endpoint
         }, promiseHandler))
     })
@@ -41,7 +41,7 @@ const patchAction = (dataKey, { endpoint, body, requestType }) => (dispatch) => 
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(getApi(requestType).patch(dataKey, {
+        _dispatch(selectApi(requestType).patch(dataKey, {
             endpoint,
             body
         }, promiseHandler))
@@ -53,7 +53,7 @@ const postAction = (dataKey, { endpoint, body, requestType }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(getApi(requestType).post(dataKey, {
+        _dispatch(selectApi(requestType).post(dataKey, {
             endpoint,
             body
         }, promiseHandler))
@@ -65,7 +65,7 @@ const deleteAction = (dataKey, ref, { endpoint, requestType }) => (dispatch) => 
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(getApi(requestType).delete(dataKey, ref, {
+        _dispatch(selectApi(requestType).delete(dataKey, ref, {
             endpoint
         }, promiseHandler))
     })
@@ -76,7 +76,7 @@ const nextAction = (dataKey, { endpoint, requestType }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
-        _dispatch(getApi(requestType)(dataKey, {
+        _dispatch(selectApi(requestType).get(dataKey, {
             endpoint,
             meta: {
                 isNextPage: true
