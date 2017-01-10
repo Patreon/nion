@@ -2,7 +2,7 @@
 // in the API middleware - we need to know whether or not to reject the promises that are
 // tied to the request lifecycle
 import Promise from 'promise-polyfill'
-import { selectApi } from './index'
+import { selectApi } from './apis'
 import { selectData } from '../selectors'
 
 // Create an "inside out" promise (with resolve and reject exposed) in order to pass down to the API

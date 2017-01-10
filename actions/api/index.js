@@ -10,7 +10,10 @@ export const requestApi = (dataKey, request, meta, promiseHandler, dataParser) =
     return {
         [CALL_API]: {
             types: getRequestTypes(dataKey, meta, promiseHandler, dataParser),
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json, application/xml, text/plain, text/html, *.*'
+            },
             ...request
         }
     }

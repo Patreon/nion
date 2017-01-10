@@ -1,3 +1,4 @@
+import { registerApi } from './apis'
 import {
     bootstrapJsonApi,
     deleteJsonApi,
@@ -36,15 +37,5 @@ export const api = {
     request: requestApi
 }
 
-const apiMap = {
-    api: api,
-    jsonApi: jsonApi
-}
-
-export const selectApi = (requestType) => {
-    if (apiMap.hasOwnProperty(requestType)) {
-        return apiMap[requestType]
-    }
-    throw new Error(`Request type ${requestType} is not supported by nion, using 'api'.`)
-    return apiMap('api')
-}
+registerApi('jsonApi', jsonApi)
+registerApi('api', api)
