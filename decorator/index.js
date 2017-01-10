@@ -203,16 +203,6 @@ function processDeclarations(inputDeclarations, options) {
                 }
             }
 
-            if (declaration.initialRef) {
-                // Private, internal nion data manipulating actions
-                dispatchProps[key].initializeDataKey = (ref) => {
-                    dispatch({
-                        type: INITIALIZE_DATAKEY,
-                        payload: { dataKey, ref: makeRef(ref) }
-                    })
-                }
-            }
-
             // Exposed, general nion data manipulating actions
             dispatchProps[key].updateRef = (ref) => {
                 return new Promise((resolve, reject) => {
@@ -224,6 +214,14 @@ function processDeclarations(inputDeclarations, options) {
                 })
             }
         })
+
+        // Private, internal nion data manipulating actions
+        dispatchProps._initializeDataKey = (dataKey, ref) => {
+            dispatch({
+                type: INITIALIZE_DATAKEY,
+                payload: { dataKey, ref: makeRef(ref) }
+            })
+        }
 
         // Exposed, general nion data manipulating actions
         dispatchProps.updateEntity = ({ type, id }, attributes) => {
@@ -273,13 +271,12 @@ function processDeclarations(inputDeclarations, options) {
                 }
             }
 
-            if (dispatchProps[key].initializeDataKey) {
-                const fn = dispatchProps[key].initializeDataKey
-                set(nextProps.nion, [key, 'actions', '_initializeDataKey'], fn)
-            }
-
             set(nextProps.nion, [key, 'actions', 'updateRef'], dispatchProps[key].updateRef)
         })
+
+        if (dispatchProps._initializeDataKey) {
+            nextProps.nion._initializeDataKey = dispatchProps._initializeDataKey
+        }
 
         // Pass along the global nion action creators
         nextProps.nion.updateEntity = dispatchProps.updateEntity
@@ -366,15 +363,20 @@ const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
                         return
                     }
 
-                    const ref = declaration.initialRef
-                    const initializeDataKey = nion[key].actions._initializeDataKey
-                    return initializeDataKey(ref)
+                    const { dataKey, initialRef } = declaration
+                    return nion._initializeDataKey(dataKey, initialRef)
                 }
             })
         }
 
         render() {
-            return <WrappedComponent { ...this.props } />
+            // Filter out internally used props to not expose them in the wrapped component
+            const nextProps = {
+                ...this.props,
+                nion: filterInternalProps(this.props.nion)
+            }
+
+            return <WrappedComponent { ...nextProps } />
         }
     }
 
@@ -425,6 +427,19 @@ function isNotLoading(status) {
 
 function isNotLoaded(status) {
     return status === 'not called'
+}
+
+// Filter out hidden props from the nion dataProp, including _declarations and _initializeDataKey,
+// which are only used internally in the wrapper component
+function filterInternalProps (dataProp) {
+    const output = {}
+    map(dataProp, (obj, key) => {
+        if (key === '_declarations' || key === '_initializeDataKey') {
+            return
+        }
+        output[key] = obj
+    })
+    return output
 }
 
 // Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
