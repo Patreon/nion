@@ -23,7 +23,7 @@ const defaultDeclarationOptions = {
     // Special request type parameters
     paginated: false,
 
-    // Specify that this is not a json-api request
+    // Specify the API used to request and parse API data
     requestType: 'jsonApi'
 }
 
