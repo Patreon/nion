@@ -24,8 +24,7 @@ const defaultDeclarationOptions = {
     paginated: false,
 
     // Specify that this is not a json-api request
-    requestType: 'jsonApi',
-    responseParser: null
+    requestType: 'jsonApi'
 }
 
 function processDefaultOptions(declarations) {
