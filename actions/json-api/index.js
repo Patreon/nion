@@ -3,13 +3,14 @@ import parseJsonApiResponse from './parse-json-api-response'
 import getRequestTypes from '../request-types'
 
 import {
-    NION_API_BOOTSTRAP
+    NION_API_BOOTSTRAP,
+    JSON_API
 } from '../types'
 
-export const requestJsonApi = (dataKey, request, meta, promiseHandler, dataParser) => {
+export const requestJsonApi = (dataKey, request, meta, promiseHandler, requestType, dataParser) => {
     return {
         [CALL_API]: {
-            types: getRequestTypes(dataKey, meta, promiseHandler, dataParser),
+            types: getRequestTypes(dataKey, meta, promiseHandler, requestType, dataParser),
             headers: { 'Content-Type': 'application/vnd.api+json' },
             ...request
         }
@@ -22,7 +23,7 @@ const fetchJsonApi = (method) => (dataKey, { endpoint, body, meta }, promiseHand
         body: JSON.stringify(body),
         endpoint,
         method
-    }, { ...meta, method, endpoint }, promiseHandler, parseJsonApiResponse)
+    }, { ...meta, method, endpoint }, promiseHandler, JSON_API, parseJsonApiResponse)
 }
 
 export const getJsonApi = fetchJsonApi('GET')
@@ -44,7 +45,7 @@ export const bootstrapJsonApi = ({ dataKey, data }) => {
         type: NION_API_BOOTSTRAP,
         meta: { dataKey },
         payload: {
-            requestType: 'jsonApi',
+            requestType: JSON_API,
             responseData: parseJsonApiResponse(data)
         }
     }

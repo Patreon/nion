@@ -8,7 +8,7 @@ import {
     NION_API_FAILURE
 } from './types'
 
-const getRequestTypes = (dataKey, meta = {}, promiseHandler, dataParser) => {
+const getRequestTypes = (dataKey, meta = {}, promiseHandler, requestType, dataParser) => {
     return [{
         type: NION_API_REQUEST,
         meta: { dataKey, ...meta }
@@ -26,7 +26,7 @@ const getRequestTypes = (dataKey, meta = {}, promiseHandler, dataParser) => {
                 }
 
                 return {
-                    requestType: 'jsonApi',
+                    requestType: requestType,
                     responseData: dataParser(json)
                 }
             })

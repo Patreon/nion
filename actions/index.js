@@ -1,4 +1,5 @@
 import { registerApi } from './apis'
+import { JSON_API, API } from './types'
 import {
     bootstrapJsonApi,
     deleteJsonApi,
@@ -10,7 +11,7 @@ import {
 } from './json-api'
 
 import {
-    bootstrapGeneric,
+    bootstrapApi,
     deleteApi,
     getApi,
     patchApi,
@@ -29,7 +30,7 @@ export const jsonApi = {
 }
 
 export const api = {
-    bootstrap: bootstrapGeneric,
+    bootstrap: bootstrapApi,
     delete: deleteApi,
     get: getApi,
     patch: patchApi,
@@ -37,5 +38,5 @@ export const api = {
     request: requestApi
 }
 
-registerApi('jsonApi', jsonApi)
-registerApi('api', api)
+registerApi(JSON_API, jsonApi)
+registerApi(API, api)

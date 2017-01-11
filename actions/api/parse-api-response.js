@@ -1,6 +1,8 @@
+import { camelizeKeys } from 'humps'
+
 export const parseApiResponse = (response) => {
     return {
-        entryRef: response
+        entryRef: camelizeKeys(response)
     }
 }
 

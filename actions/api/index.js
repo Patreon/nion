@@ -1,15 +1,15 @@
 import { CALL_API } from 'redux-api-middleware'
 import parseApiResponse from './parse-api-response'
 import getRequestTypes from '../request-types'
-
 import {
-    GENERIC_BOOTSTRAP
+    NION_API_BOOTSTRAP,
+    API
 } from '../types'
 
-export const requestApi = (dataKey, request, meta, promiseHandler, dataParser) => {
+export const requestApi = (dataKey, request, meta, promiseHandler, requestType, dataParser) => {
     return {
         [CALL_API]: {
-            types: getRequestTypes(dataKey, meta, promiseHandler, dataParser),
+            types: getRequestTypes(dataKey, meta, promiseHandler, requestType, dataParser),
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json, application/xml, text/plain, text/html, *.*'
@@ -24,7 +24,7 @@ const fetchApi = (method) => (dataKey, { endpoint, body, meta }, promiseHandler)
         body: JSON.stringify(body),
         endpoint,
         method
-    }, { ...meta, method, endpoint }, promiseHandler, parseApiResponse)
+    }, { ...meta, method, endpoint }, promiseHandler, API, parseApiResponse)
 }
 
 export const getApi = fetchApi('GET')
@@ -41,10 +41,13 @@ export const deleteApi = (dataKey, ref, options, promiseHandler) => {
     }, promiseHandler)
 }
 
-export const bootstrapGeneric = ({ dataKey, data }) => {
+export const bootstrapApi = ({ dataKey, data }) => {
     return {
-        type: GENERIC_BOOTSTRAP,
+        type: NION_API_BOOTSTRAP,
         meta: { dataKey },
-        payload: data
+        payload: {
+            requestType: API,
+            responseData: parseApiResponse(data)
+        }
     }
 }

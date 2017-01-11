@@ -1,12 +1,9 @@
-import { camelizeKeys } from 'humps'
-
 const initialState = {}
 
 import {
     NION_API_REQUEST,
     NION_API_BOOTSTRAP,
     NION_API_SUCCESS,
-    GENERIC_BOOTSTRAP,
     INITIALIZE_DATAKEY,
     UPDATE_REF
 } from '../actions/types'
@@ -76,13 +73,6 @@ const refsReducer = (state = initialState, action) => {
                     ...state,
                     [action.meta.dataKey]: undefined
                 }
-            }
-
-        // Handle generic refs to non json-api data
-        case GENERIC_BOOTSTRAP:
-            return {
-                ...state,
-                [action.meta.dataKey]: camelizeKeys(clone(action.payload))
             }
 
         // Initialize a new dataKey from a ref passed to a child component
