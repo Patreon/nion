@@ -17,13 +17,14 @@ export const requestJsonApi = (dataKey, request, meta, promiseHandler, requestTy
     }
 }
 
-const fetchJsonApi = (method) => (dataKey, { endpoint, body, meta }, promiseHandler) => {
+const fetchJsonApi = (method) => (dataKey, { endpoint, body, meta, requestType, requestParams }, promiseHandler) => {
     return requestJsonApi(dataKey, {
+        ...requestParams,
         credentials: 'include',
         body: JSON.stringify(body),
         endpoint,
         method
-    }, { ...meta, method, endpoint }, promiseHandler, JSON_API, parseJsonApiResponse)
+    }, { ...meta, method, endpoint }, promiseHandler, requestType, parseJsonApiResponse)
 }
 
 export const getJsonApi = fetchJsonApi('GET')

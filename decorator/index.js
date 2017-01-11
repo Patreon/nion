@@ -24,7 +24,9 @@ const defaultDeclarationOptions = {
     paginated: false,
 
     // Specify the API used to request and parse API data
-    requestType: 'jsonApi'
+    requestType: 'jsonApi',
+    // Set custom request parameters
+    requestParams: {}
 }
 
 function processDefaultOptions(declarations) {
@@ -147,7 +149,7 @@ function processDeclarations(inputDeclarations, options) {
                     endpoint,
                     body: { data },
                     requestType: declaration.requestType,
-                    responseParser: declaration.responseParser
+                    requestParams: declaration.requestParams
                 })(dispatch)
             }
 
@@ -157,7 +159,7 @@ function processDeclarations(inputDeclarations, options) {
                     endpoint,
                     body: { data },
                     requestType: declaration.requestType,
-                    responseParser: declaration.responseParser
+                    requestParams: declaration.requestParams
                 })(dispatch)
             }
 
@@ -166,7 +168,7 @@ function processDeclarations(inputDeclarations, options) {
                 return promiseActions.get(dataKey, {
                     endpoint,
                     requestType: declaration.requestType,
-                    responseParser: declaration.responseParser
+                    requestParams: declaration.requestParams
                 })(dispatch)
             }
 
@@ -175,7 +177,7 @@ function processDeclarations(inputDeclarations, options) {
                 return promiseActions.delete(dataKey, ref, {
                     endpoint,
                     requestType: declaration.requestType,
-                    responseParser: declaration.responseParser
+                    requestParams: declaration.requestParams
                 })(dispatch)
             }
 
@@ -197,7 +199,8 @@ function processDeclarations(inputDeclarations, options) {
 
                     return promiseActions.next(dataKey, {
                         endpoint: newEndpoint,
-                        requestType: declaration.requestType
+                        requestType: declaration.requestType,
+                        requestParams: declaration.requestParams
                     })(dispatch)
                 }
             }

@@ -26,53 +26,61 @@ function makePromiseHandler(dataKey) {
     return promiseHandler
 }
 
-const getAction = (dataKey, { endpoint, requestType }) => (dispatch) => {
+const getAction = (dataKey, { endpoint, requestType, requestParams }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
         _dispatch(selectApi(requestType).get(dataKey, {
-            endpoint
+            endpoint,
+            requestType,
+            requestParams
         }, promiseHandler))
     })
     return promiseHandler.promise
 }
 
-const patchAction = (dataKey, { endpoint, body, requestType }) => (dispatch) => {
+const patchAction = (dataKey, { endpoint, body, requestType, requestParams }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
         _dispatch(selectApi(requestType).patch(dataKey, {
             endpoint,
-            body
+            body,
+            requestType,
+            requestParams
         }, promiseHandler))
     })
     return promiseHandler.promise
 }
 
-const postAction = (dataKey, { endpoint, body, requestType }) => (dispatch) => {
+const postAction = (dataKey, { endpoint, body, requestType, requestParams }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
         _dispatch(selectApi(requestType).post(dataKey, {
             endpoint,
-            body
+            body,
+            requestType,
+            requestParams
         }, promiseHandler))
     })
     return promiseHandler.promise
 }
 
-const deleteAction = (dataKey, ref, { endpoint, requestType }) => (dispatch) => {
+const deleteAction = (dataKey, ref, { endpoint, requestType, requestParams }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
         _dispatch(selectApi(requestType).delete(dataKey, ref, {
-            endpoint
+            endpoint,
+            requestType,
+            requestParams
         }, promiseHandler))
     })
     return promiseHandler.promise
 }
 
-const nextAction = (dataKey, { endpoint, requestType }) => (dispatch) => {
+const nextAction = (dataKey, { endpoint, requestType, requestParams }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
@@ -80,7 +88,9 @@ const nextAction = (dataKey, { endpoint, requestType }) => (dispatch) => {
             endpoint,
             meta: {
                 isNextPage: true
-            }
+            },
+            requestType,
+            requestParams
         }, promiseHandler))
     })
     return promiseHandler.promise

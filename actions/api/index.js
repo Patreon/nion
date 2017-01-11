@@ -19,12 +19,13 @@ export const requestApi = (dataKey, request, meta, promiseHandler, requestType, 
     }
 }
 
-const fetchApi = (method) => (dataKey, { endpoint, body, meta }, promiseHandler) => {
+const fetchApi = (method) => (dataKey, { endpoint, body, meta, requestType, requestParams }, promiseHandler) => {
     return requestApi(dataKey, {
+        ...requestParams,
         body: JSON.stringify(body),
         endpoint,
         method
-    }, { ...meta, method, endpoint }, promiseHandler, API, parseApiResponse)
+    }, { ...meta, method, endpoint }, promiseHandler, requestType, parseApiResponse)
 }
 
 export const getApi = fetchApi('GET')
