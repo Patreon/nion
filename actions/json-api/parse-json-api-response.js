@@ -1,7 +1,7 @@
 import map from 'lodash.map'
 import every from 'lodash.every'
 
-const addEntityToStoreFragment = (store, entity) => {
+const addEntityToStoreFragment = (store, entity = {}) => {
     const { type, id, attributes, relationships } = entity
     if (!entity) {
         return
@@ -39,7 +39,7 @@ export const isJsonApiResponse = ({ data }) => {
     return data && every(dataList, ref => ref.id !== undefined && ref.type !== undefined)
 }
 
-export const parseJsonApiResponse = (response) => {
+export const parseJsonApiResponse = (response = {}) => {
     const { data, included, meta, links } = response
 
     // Create the new ref to pass to the entities reducer.
