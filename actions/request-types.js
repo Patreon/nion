@@ -1,5 +1,5 @@
 import { getJSON } from 'redux-api-middleware'
-import { PatreonApiError } from 'utilities/extend-api-error'
+import { JsonApiError } from 'utilities/extend-api-error'
 import get from 'lodash.get'
 
 import {
@@ -36,7 +36,7 @@ const getRequestTypes = (dataKey, meta = {}, promiseHandler, requestType, dataPa
         meta: { dataKey, ...meta },
         payload: (action, state, res) => {
             // Mannually handle the error here, rather than passing off to error middleware
-            const error = new PatreonApiError(res)
+            const error = new JsonApiError(res)
 
             // Reject the passed in promise, if supplied. Note we only want to reject the promise if
             // it's being used, ie, there exist _deferred methods (promise-polyfill specific) field.
