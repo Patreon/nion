@@ -1,5 +1,5 @@
 import { getJSON } from 'redux-api-middleware'
-import { JsonApiError } from 'utilities/extend-api-error'
+import { JsonApiError } from '../utilities/extend-api-error'
 import get from 'lodash.get'
 
 import {
