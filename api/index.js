@@ -28,6 +28,10 @@ class ApiManager {
         return this.getApiModule(apiType).ErrorClass
     }
 
+    getPagination = (apiType) => {
+        return this.getApiModule(apiType).pagination
+    }
+
     getParser = (apiType) => {
         return this.getApiModule(apiType).parser
     }

@@ -3,9 +3,7 @@ import difference from 'lodash.difference'
 import get from 'lodash.get'
 import set from 'lodash.set'
 import map from 'lodash.map'
-import merge from 'lodash.merge'
 import promiseActions from '../actions/promises'
-import { deconstructUrl } from '../url'
 import { makeRef } from '../transforms'
 import ApiManager from '../api'
 
@@ -109,8 +107,9 @@ function processDeclarations(inputDeclarations, options) {
             nion[key] = refDoesNotExist ?
                 makeNonExistingObject() : makeExistingObject(selected.obj)
 
-            // Define the nion-specific properties as non-enumerable properties on the dataKey
-            // prop
+            // Define the nion-specific properties as non-enumerable properties on the dataKey prop.
+            // TODO: links and meta are JSON-API specific properties on the reference that we need
+            // to decide how to handle in an API-agnostic way
             defineDataProperty(nion[key], 'actions', {})
             defineDataProperty(nion[key], 'links', { ...selected.links })
             defineDataProperty(nion[key], 'meta', { ...selected.meta })
@@ -183,24 +182,12 @@ function processDeclarations(inputDeclarations, options) {
             }
 
             if (declaration.paginated) {
-                dispatchProps[key]['NEXT'] = ({ next }, params) => {
-                    const nextUrl = next.indexOf('http') === 0 ? next : `https://${next}`
-                    const deconstructedNextUrl = deconstructUrl(nextUrl)
-                    const { pathname, options: nextUrlOptions } = deconstructedNextUrl
-
-                    // Since the nextUrl doesn't necessarily return the correct includes / fields,
-                    // we'll need to manually override those fields if supplied
-                    const suppliedUrl = getUrl(declaration, params)
-                    const { options: suppliedUrlOptions } = deconstructUrl(suppliedUrl)
-                    const newOptions = merge(nextUrlOptions, suppliedUrlOptions)
-
-                    const buildUrl = ApiManager.getBuildUrl(declaration.apiType)
-                    const newEndpoint = buildUrl(pathname, {
-                        ...newOptions
-                    })
+                dispatchProps[key]['NEXT'] = (params) => {
+                    const { next } = params
+                    const endpoint = params.endpoint || next
 
                     return promiseActions.next(dataKey, {
-                        endpoint: newEndpoint,
+                        endpoint,
                         declaration
                     })(dispatch)
                 }
@@ -264,12 +251,14 @@ function processDeclarations(inputDeclarations, options) {
 
             // Handle the special NEXT submethod, for paginated declarations
             if (dispatchProps[key]['NEXT']) {
-                const { nion } = stateProps
-                const next = get(nion, [key, 'links', 'next'])
-
                 const dispatchFn = dispatchProps[key]['NEXT']
-                if (next) {
-                    const nextFn = () => dispatchFn({ next })
+                const pagination = ApiManager.getPagination(declaration.apiType)
+
+                const selectedData = get(stateProps.nion, key)
+                const nextUrl = pagination(selectedData)
+
+                if (nextUrl) {
+                    const nextFn = (params) => dispatchFn({ ...params, next: nextUrl })
                     set(nextProps.nion, [key, 'actions', 'next'], nextFn)
                 }
             }
