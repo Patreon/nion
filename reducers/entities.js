@@ -52,7 +52,7 @@ const entitiesReducer = (state = initialState, action) => {
             return newState
         }
         case UPDATE_ENTITY: {
-            const { type, id, attributes } = action.payload.responseData
+            const { type, id, attributes } = action.payload
             const entity = state[type][id]
             const newEntity = {
                 ...entity,
