@@ -373,12 +373,13 @@ const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
     }
 
     const connectedComponent = connect(mapStateToProps, mapDispatchToProps, mergeProps)(WithNion)
-    // Take all static properties on the inner Wrapped component and put them on our now-connected component.
-    // This makes nion transparent and safe to add as a decorator; it does not occlude the shape of the inner component.
+    // Take all static properties on the inner Wrapped component and put them on our now-connected
+    // component. // This makes nion transparent and safe to add as a decorator; it does not occlude
+    // the shape of the inner component.
     difference(Object.keys(WrappedComponent), Object.keys(connectedComponent)).map((key) => {
         connectedComponent[key] = WrappedComponent[key]
     })
-    return connectedComponent;
+    return connectedComponent
 }
 
 export default nion
