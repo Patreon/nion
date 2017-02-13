@@ -255,7 +255,7 @@ function processDeclarations(inputDeclarations, options) {
                 const pagination = ApiManager.getPagination(declaration.apiType)
 
                 const selectedData = get(stateProps.nion, key)
-                const nextUrl = pagination(selectedData)
+                const nextUrl = pagination(declaration, selectedData)
 
                 if (nextUrl) {
                     const nextFn = (params) => dispatchFn({ ...params, next: nextUrl })
