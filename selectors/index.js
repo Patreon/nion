@@ -58,6 +58,9 @@ export const selectObject = (key) => createSelector(
     }
 )
 
+
+// TODO: We need to remove these references to JSON-API specific things, and figure out a way to
+// expost these on a module level
 const selectLinks = (key) => createSelector(
     selectReferences,
     (references) => get(references, [key, 'links'])
