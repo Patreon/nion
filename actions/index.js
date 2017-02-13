@@ -14,7 +14,7 @@ const apiRequest = (dataKey, requestObj, meta, promiseHandler, apiType) => {
 }
 
 const makeMethod = (method) => (dataKey, options, promiseHandler) => {
-    const { endpoint, body, meta, declaration } = options
+    const { endpoint, body, meta, declaration = {} } = options
     const nextMeta = { ...meta, method, endpoint }
     const { apiType } = declaration
 

@@ -1,6 +1,5 @@
 import decorator, * as decoratorHelpers from './decorator'
 import * as selectors from './selectors'
-import * as actions from './actions'
 import * as transforms from './transforms'
 import configureNion from './configure'
 
@@ -16,9 +15,9 @@ configureNion({
 
 export const { exists } = decoratorHelpers
 export const { selectData, selectRequest, selectResourcesForKeys } = selectors
-export const { jsonApi } = actions
 export const { makeRef } = transforms
 
+export { default as actions } from './actions'
 export { default as configureNion } from './configure'
 export { default as bootstrapNion } from './bootstrap'
 export { default as initializeNionDevTool } from './devtool'
