@@ -2,6 +2,7 @@
 // request generation, and response parsing, supplying correctly formed action/payloads to the nion
 // core reducers.
 import { buildUrl } from '../url'
+const noop = () => {}
 
 class ApiManager {
     apiMap = {}
@@ -29,7 +30,7 @@ class ApiManager {
     }
 
     getPagination = (apiType) => {
-        return this.getApiModule(apiType).pagination
+        return this.getApiModule(apiType).pagination || noop
     }
 
     getParser = (apiType) => {
