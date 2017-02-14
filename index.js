@@ -1,13 +1,26 @@
-// Set up a `buildUrl` function for dynamic hostnames and terser api path construction in nion
-import { urlBuilderForDefaults } from 'utilities/json-api-url'
-export const buildUrl = urlBuilderForDefaults({ include: [] })
+import decorator, * as decoratorHelpers from './decorator'
+import * as selectors from './selectors'
+import * as transforms from './transforms'
+import configureNion from './configure'
 
-// inject `buildUrl` as an option into the nion decorator
-import decoratorWithoutBuildURL from 'libs/nion-os'
+// We'll be setting up a default API module (json-api)
+import jsonApiNionModule from '../nion-modules/json-api'
 
-const decoratorWithBuildURL = (declarations = {}, options = {}) =>
-    decoratorWithoutBuildURL(declarations, { buildUrl, ...options })
+configureNion({
+    apiModules: {
+        jsonApi: jsonApiNionModule
+    },
+    defaultApi: 'jsonApi'
+})
 
-export default decoratorWithBuildURL
+export const { exists } = decoratorHelpers
+export const { selectData, selectRequest, selectResourcesForKeys } = selectors
+export const { makeRef } = transforms
 
-export * from 'libs/nion-os'
+export { default as actions } from './actions'
+export { default as configureNion } from './configure'
+export { default as bootstrapNion } from './bootstrap'
+export { default as initializeNionDevTool } from './devtool'
+export { buildUrl, urlBuilder } from './url'
+
+export default decorator
