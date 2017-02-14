@@ -136,7 +136,7 @@ describe('nion : integration tests', () => {
 
             @nion({ test: {
                 endpoint: pathname,
-                onMount: true
+                fetchOnInit: true
             } })
             class Container extends Component {
                 render() {
