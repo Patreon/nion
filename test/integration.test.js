@@ -271,7 +271,6 @@ describe('nion : integration tests', () => {
         it('deletes data', async () => {
             const pathname = 'test'
             const name = 'Testy McTestFace'
-            const newName = 'Nion McNionFace'
 
             const endpoint = buildUrl(pathname)
             nock(endpoint).get('').query(true).reply(200, { data: {
