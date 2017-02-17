@@ -148,12 +148,15 @@ function processDeclarations(inputDeclarations, options) {
         mapDeclarations((declaration, key, dataKey) => {
             dispatchProps[key] = {}
 
-            dispatchProps[key]['POST'] = (data = {}, params) => {
+            dispatchProps[key]['POST'] = (data = {}, params, actionOptions) => {
                 const endpoint = getUrl(declaration, params)
                 return promiseActions.post(dataKey, {
                     endpoint,
                     body: { data },
-                    declaration
+                    declaration,
+                    meta: {
+                        append: get(actionOptions, 'append')
+                    }
                 })(dispatch)
             }
 

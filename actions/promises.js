@@ -51,14 +51,15 @@ const patchAction = (dataKey, { endpoint, body, declaration }) => (dispatch) => 
     return promiseHandler.promise
 }
 
-const postAction = (dataKey, { endpoint, body, declaration }) => (dispatch) => {
+const postAction = (dataKey, { endpoint, body, declaration, meta }) => (dispatch) => {
     const promiseHandler = makePromiseHandler(dataKey)
     dispatch((_dispatch, getState) => {
         promiseHandler.getState = getState
         _dispatch(actions.post(dataKey, {
             endpoint,
             body,
-            declaration
+            declaration,
+            meta
         }, promiseHandler))
     })
     return promiseHandler.promise

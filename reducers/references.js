@@ -44,12 +44,13 @@ const refsReducer = (state = initialState, action) => {
         case NION_API_SUCCESS:
             // If the result of a paginated nextPage request, we're going to want to append the
             // retrieved entities to the end of the current entities list
-            if (action.meta.isNextPage) {
+            if (action.meta.isNextPage || action.meta.append) {
                 const nextPageRef = action.payload.responseData.entryRef
                 return {
                     ...state,
                     [action.meta.dataKey]: {
                         ...nextPageRef,
+                        isCollection: true, // hack for now, needs a better solution
                         entities: state[action.meta.dataKey].entities.concat(nextPageRef.entities)
                     }
                 }
@@ -61,7 +62,7 @@ const refsReducer = (state = initialState, action) => {
                     // if there's no ref to delete, this is a no-op
                     ...deleteRefFromEntities(action.meta.refToDelete, state)
                 }
-            // Otherwise, append the new ref to the state
+            // Otherwise, append or update the ref to the state
             } else if (action.payload) {
                 return {
                     ...state,
