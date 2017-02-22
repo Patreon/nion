@@ -1,5 +1,4 @@
 import map from 'lodash.map'
-import every from 'lodash.every'
 
 export const makeRef = (input = {}, options = {}) => {
 
@@ -19,21 +18,14 @@ export const makeRef = (input = {}, options = {}) => {
         } else {
             const { type, id } = toProcess.data
             entities = [{ type, id}]
-            isCollection = isCollection || false
+            isCollection = false
         }
     }
 
     // If the input data is a flat entity, we'll need to construct a ref to that entity
-    else if (toProcess.type && toProcess.id) {
+    if (toProcess.type && toProcess.id && toProcess.attributes) {
         entities = [{ type: toProcess.type, id: toProcess.id }]
         isCollection = false
-    } else if (isArrayOfItems(toProcess)) {
-        entities = toProcess.map(item => {
-            return { type: item.type, id: item.id }
-        })
-        isCollection = true
-    } else {
-        entities = []
     }
 
     if (options.isCollection) {
@@ -46,9 +38,4 @@ export const makeRef = (input = {}, options = {}) => {
         links,
         meta
     }
-}
-
-function isArrayOfItems (items) {
-    return items instanceof Array &&
-        every(items, item => item.id !== undefined && item.type)
 }

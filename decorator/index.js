@@ -369,7 +369,7 @@ const nion = (declarations = {}, options = {}) => (WrappedComponent) => {
             // Filter out internally used props to not expose them in the wrapped component
             const nextProps = {
                 ...this.props,
-                nion: finalProcessProps(this.props.nion)
+                nion: filterInternalProps(this.props.nion)
             }
 
             return <WrappedComponent { ...nextProps } />
@@ -433,14 +433,9 @@ function isNotLoaded(status) {
 }
 
 // Filter out hidden props from the nion dataProp, including _declarations and _initializeDataKey,
-// which are only used internally in the wrapper component. Expose a method getDeclarations that
-// returns the removed declarations property
-function finalProcessProps (dataProp) {
+// which are only used internally in the wrapper component
+function filterInternalProps (dataProp) {
     const output = {}
-
-    // Expose a getDeclarations method (used for testing)
-    output.getDeclarations = () => dataProp._declarations
-
     map(dataProp, (obj, key) => {
         if (key === '_declarations' || key === '_initializeDataKey') {
             return
