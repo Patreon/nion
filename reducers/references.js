@@ -1,3 +1,5 @@
+import get from 'lodash.get'
+
 const initialState = {}
 
 import {
@@ -20,12 +22,12 @@ const deleteRefFromEntities = (refToDelete = {}, state = {}) => {
     // Iterate over all dataKeys on state to remove all instance of the
     // ref to be deleted
     return Object.keys(state).reduce((memo, dataKey) => {
-        const oldEntites = state[dataKey].entities
+        const oldEntities = get(state[dataKey], 'entities')
 
-        if (Array.isArray(oldEntites)) {
+        if (Array.isArray(oldEntities)) {
             memo[dataKey] = {
                 ...state[dataKey],
-                entities: oldEntites.filter((entity) => {
+                entities: oldEntities.filter((entity) => {
                     return !(entity.type === type && entity.id === id)
                 })
             }
