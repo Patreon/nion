@@ -94,7 +94,7 @@ Internally, the nion suite of redux tools handles everything necessary to mainta
 
 ##### nion flow chart
 
-![nion flow chart](docs/nion decorator.png)
+![nion flow chart](docs/nion%20decorator.png)
 
 Reference-style:
 
