@@ -4,6 +4,7 @@ import { withProps } from 'recompose'
 import { mount } from 'enzyme'
 import nock from 'nock'
 import P from 'bluebird'
+import { CSRF_PATH } from 'utilities/csrf'
 
 import nion, { buildUrl, exists, makeRef } from '../index'
 
@@ -18,12 +19,17 @@ const Wrap = (Wrapped, props) => {
     const store = configureTestStore({}, storeOptions)
     return (
         <Provider store={ store }>
-            <Wrapped { ...props } />
+                <Wrapped { ...props } />
         </Provider>
     )
 }
 
 describe('nion : integration tests', () => {
+    beforeEach(() => {
+        nock(CSRF_PATH).get('').query(true).reply(200, {
+            time: Date.now(),
+        })
+    })
     afterEach(() => {
         nock.cleanAll()
     })
@@ -110,7 +116,6 @@ describe('nion : integration tests', () => {
 
             let test = getProp()
             const request = test.actions.get()
-            await P.delay(5) // Wait 5ms for the request reducer to update
 
             test = getProp()
             expect(test.request.status).toEqual('pending')
@@ -240,7 +245,6 @@ describe('nion : integration tests', () => {
 
             let test = getProp()
             let request = test.actions.get()
-            await P.delay(1) // Wait 1ms for the request reducer to update
 
             test = getProp()
             expect(test.request.status).toEqual('pending')
@@ -253,9 +257,7 @@ describe('nion : integration tests', () => {
             expect(test.name).toEqual(name)
 
             // Patch request
-
             request = test.actions.patch()
-            await P.delay(1) // Wait 5ms for the request reducer to update
 
             test = getProp()
             expect(test.request.status).toEqual('pending')
@@ -295,7 +297,6 @@ describe('nion : integration tests', () => {
 
             let test = getProp()
             let request = test.actions.get()
-            await P.delay(1) // Wait 1ms for the request reducer to update
 
             test = getProp()
             expect(test.request.status).toEqual('pending')
@@ -434,7 +435,6 @@ describe('nion : integration tests', () => {
 
             let test = getProp()
             let request = test.actions.get()
-            await P.delay(1) // Wait 1ms for the request reducer to update
 
             test = getProp()
             expect(test.request.status).toEqual('pending')
@@ -456,14 +456,11 @@ describe('nion : integration tests', () => {
                 name: newName
             })
 
-            // Wait for next tick to ensure redux is updated
-            await P.delay(0)
-
             test = getProp()
             expect(test.name).toEqual(newName)
         })
 
-        it.skip('creates children with initial refs', async () => {
+        it('creates children with initial refs', async () => {
             const pathname = 'test'
             const name = 'Testy McTestFace'
 
@@ -476,7 +473,7 @@ describe('nion : integration tests', () => {
 
             @nion((props) => ({ child: {
                 endpoint: buildUrl(pathname),
-                initialRef: makeRef(props.child)
+                initialRef: makeRef(props.inputData)
             } }))
             class ChildContainer extends Component {
                 render() {
@@ -488,7 +485,7 @@ describe('nion : integration tests', () => {
             class Container extends Component {
                 render() {
                     const { test } = this.props.nion
-                    return exists(test) ? <ChildContainer child={test} /> : <span />
+                    return exists(test) ? <ChildContainer inputData={test} /> : <span />
                 }
             }
 
@@ -499,11 +496,13 @@ describe('nion : integration tests', () => {
 
             let test = getProp()
             let request = test.actions.get()
-            await P.delay(1) // Wait 1ms for the request reducer to update
 
             test = getProp()
             expect(test.request.status).toEqual('pending')
             expect(test.request.isLoading).toEqual(true)
+
+            let ChildWrapped = Wrapped.find('ChildContainer')
+            expect(ChildWrapped.exists()).toEqual(false)
 
             await request
 
@@ -511,10 +510,9 @@ describe('nion : integration tests', () => {
             expect(test.request.status).toEqual('success')
             expect(test.name).toEqual(name)
 
-            await P.delay(1) // Wait 1ms for the reducer to update
-
             // Child component
-            const ChildWrapped = Wrapper.find('ChildContainer')
+            ChildWrapped = Wrapped.find('ChildContainer')
+
             getProp = () => ChildWrapped.props().nion.child
 
             let child = getProp()
