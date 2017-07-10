@@ -20,11 +20,6 @@ env:
 
 plugins: [ 'react', 'prettier' ]
 
-settings:
-    import/resolver:
-        webpack:
-            config: './webpack.dev.js'
-
 rules:
     camelcase: [2, {'properties': 'never'}]
     curly: [2, 'multi-line']
