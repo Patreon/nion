@@ -4,7 +4,11 @@ import { withProps } from 'recompose'
 import { mount } from 'enzyme'
 import nock from 'nock'
 import P from 'bluebird'
-import { CSRF_PATH } from 'utilities/csrf'
+import urlFactory from 'url-factory'
+
+const wwwURL = urlFactory(`https://localhost:3000`)
+const REL_PATH = '/REST/auth/CSRFTicket'
+const CSRF_PATH = wwwURL(REL_PATH)
 
 import nion, { buildUrl, exists, makeRef } from '../index'
 

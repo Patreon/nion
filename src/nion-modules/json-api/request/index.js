@@ -1,5 +1,3 @@
-import { getCsrfHeaders } from '../../../utilities/csrf'
-
 export class JsonApiPayload {
     constructor(type, attributes) {
         this.attributes = { ...attributes }
@@ -66,7 +64,7 @@ export const afterRequest = (method, options) => {
     return Promise.resolve()
 }
 
-export const getRequestParameters = (method, options) => {
+export const getRequestParameters = (method, options, csrfProvider) => {
     return Promise.resolve()
         .then(() => {
             const skipMethods = {
@@ -77,7 +75,9 @@ export const getRequestParameters = (method, options) => {
                 return
             }
 
-            return getCsrfHeaders()
+            if (csrfProvider) {
+                return csrfProvider()
+            }
         })
         .then(headers => ({
             credentials: 'include',

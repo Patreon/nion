@@ -21,7 +21,8 @@ export { default as actions } from './actions'
 export { default as configureNion } from './configure'
 export { default as bootstrapNion } from './bootstrap'
 export { default as initializeNionDevTool } from './devtool'
+export { default as apiModule } from './nion-modules/api'
+export { default as jsonApiModule } from './nion-modules/json-api'
 export { buildUrl, urlBuilder } from './url'
-export { apiNionModule } from './nion-modules'
 
 export default decorator

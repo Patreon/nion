@@ -7,6 +7,7 @@ const noop = () => {}
 class ApiManager {
     apiMap = {}
     defaultApiType = null
+    csrfProvider = null
 
     getApiModule = apiType => {
         if (this.apiMap[apiType]) {
@@ -23,6 +24,7 @@ class ApiManager {
         return this.getApiModule(apiType).request.getRequestParameters(
             method,
             options,
+            this.csrfProvider,
         )
     }
 
@@ -70,6 +72,12 @@ class ApiManager {
             this.defaultApiType = name
         } else {
             this.defaultApiType = Object.keys(this.apiMap)[0]
+        }
+    }
+
+    setCsrfProvider = csrfProvider => {
+        if (csrfProvider) {
+            this.csrfProvider = csrfProvider
         }
     }
 }
