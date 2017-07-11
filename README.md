@@ -94,7 +94,7 @@ Internally, the nion suite of redux tools handles everything necessary to mainta
 
 ##### nion flow chart
 
-![nion flow chart](docs/nion decorator.png)
+![nion flow chart](docs/nion%20decorator.png)
 
 Reference-style:
 
@@ -102,8 +102,7 @@ Reference-style:
 
 [examples](docs/examples.md)
 
-[deep dive](https://cannoneyed.gitbooks.io/nion-deep-dive/content/)
-: step-by-step guide for building a real-life piece of complex functionality using nion
+[deep dive](docs/deep-dive.md)
 
 [api](docs/api.md)
 

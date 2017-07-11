@@ -1,0 +1,68 @@
+{
+    "name": "nion",
+    "version": "0.0.1",
+    "license": "MIT",
+    "main": "lib/index.js",
+    "eslintConfig": {
+        "globals": {
+            "window": true,
+            "document": true
+        }
+    },
+    "dependencies": {
+        "babel-runtime": "^6.23.0",
+        "fast-url-parser": "^1.1.3",
+        "humps": "^2.0.1",
+        "isomorphic-fetch": "^2.2.1",
+        "lodash.difference": "^4.5.0",
+        "lodash.every": "^4.6.0",
+        "lodash.find": "^4.6.0",
+        "lodash.get": "^4.4.2",
+        "lodash.includes": "^4.3.0",
+        "lodash.map": "^4.6.0",
+        "lodash.merge": "^4.6.0",
+        "lodash.omit": "^4.5.0",
+        "lodash.set": "^4.3.2",
+        "qs": "^6.5.0",
+        "react": "^15.6.1",
+        "react-redux": "^5.0.5",
+        "redux": "^3.7.1",
+        "reselect": "^3.0.1",
+        "url-factory": "^3.0.0"
+    },
+    "scripts": {
+        "build": "npm run build:lib",
+        "prebuild": "rimraf lib/*",
+        "build:lib": "babel --out-dir lib src",
+        "prebuild:dist": "rimraf dist/*",
+        "prebuild:watch": "rimraf lib/*",
+        "build:watch": "npm run build:lib -- --watch",
+        "lint:all": "eslint . --ext=js,jsx",
+        "lint": "git diff --name-only master... | grep -E '\\.jsx?$' | xargs eslint"
+    },
+    "devDependencies": {
+        "async": "^2.5.0",
+        "babel-cli": "^6.24.1",
+        "babel-eslint": "6.0.0",
+        "babel-plugin-add-module-exports": "^0.2.1",
+        "babel-plugin-transform-async-to-generator": "^6.24.1",
+        "babel-plugin-transform-class-properties": "^6.24.1",
+        "babel-plugin-transform-decorators-legacy": "^1.3.4",
+        "babel-plugin-transform-runtime": "^6.23.0",
+        "babel-preset-es2015": "^6.24.1",
+        "babel-preset-es2016": "^6.24.1",
+        "babel-preset-react": "^6.24.1",
+        "babel-preset-stage-2": "^6.24.1",
+        "eslint": "^3.16.1",
+        "eslint-config-patreon": "Patreon/eslint-config-patreon#6327c6f98fdce522800e5fcdf3b3de6cf9e1224f",
+        "eslint-friendly-formatter": "^3.0.0",
+        "eslint-loader": "^1.8.0",
+        "eslint-plugin-import": "^2.6.1",
+        "eslint-plugin-prettier": "^2.1.2",
+        "eslint-plugin-react": "^6.10.0",
+        "install": "^0.10.1",
+        "npm": "^5.0.4",
+        "prettier": "^1.4.4",
+        "rimraf": "^2.6.1"
+    }
+}
