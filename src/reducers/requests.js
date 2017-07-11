@@ -3,7 +3,7 @@ import get from 'lodash.get'
 import {
     NION_API_REQUEST,
     NION_API_SUCCESS,
-    NION_API_FAILURE
+    NION_API_FAILURE,
 } from '../actions/types'
 
 const initialState = {}
@@ -19,8 +19,8 @@ const requestsReducer = (state = initialState, action) => {
                     ...existing,
                     status: 'pending',
                     isLoading: true,
-                    pending: action.meta.method
-                }
+                    pending: action.meta.method,
+                },
             }
         case NION_API_SUCCESS:
             return {
@@ -31,8 +31,8 @@ const requestsReducer = (state = initialState, action) => {
                     fetchedAt: Date.now(),
                     isError: false,
                     isLoaded: true,
-                    isLoading: false
-                }
+                    isLoading: false,
+                },
             }
         case NION_API_FAILURE:
             return {
@@ -46,8 +46,8 @@ const requestsReducer = (state = initialState, action) => {
                     isError: true,
                     isLoaded: false,
                     isLoading: false,
-                    pending: undefined
-                }
+                    pending: undefined,
+                },
             }
         default:
             return state

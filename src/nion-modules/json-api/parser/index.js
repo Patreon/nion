@@ -13,30 +13,37 @@ const addEntityToStoreFragment = (store, entity = {}) => {
         type: type,
         id: id,
         attributes: attributes,
-        relationships: relationships
+        relationships: relationships,
     }
 }
 
 const normalizeDataEntities = (storeFragment, dataEntities) => {
-    const entityList = Array.isArray(dataEntities) ? dataEntities : [dataEntities]
-    entityList.map((entity) => addEntityToStoreFragment(storeFragment, entity))
+    const entityList = Array.isArray(dataEntities)
+        ? dataEntities
+        : [dataEntities]
+    entityList.map(entity => addEntityToStoreFragment(storeFragment, entity))
 }
 
 const normalizeIncludedEntities = (storeFragment, includedEntities) => {
-    map(includedEntities, (entity) => addEntityToStoreFragment(storeFragment, entity))
+    map(includedEntities, entity =>
+        addEntityToStoreFragment(storeFragment, entity),
+    )
 }
 
-const makeEntityReferences = (data) => {
+const makeEntityReferences = data => {
     if (!data) {
         return []
     }
     const dataList = Array.isArray(data) ? data : [data]
-    return dataList.map((entity) => ({id: entity.id, type: entity.type}))
+    return dataList.map(entity => ({ id: entity.id, type: entity.type }))
 }
 
 export const isJsonApiResponse = ({ data }) => {
     const dataList = Array.isArray(data) ? data : [data]
-    return data && every(dataList, ref => ref.id !== undefined && ref.type !== undefined)
+    return (
+        data &&
+        every(dataList, ref => ref.id !== undefined && ref.type !== undefined)
+    )
 }
 
 export const parseJsonApiResponse = (response = {}) => {
@@ -47,7 +54,7 @@ export const parseJsonApiResponse = (response = {}) => {
         entities: makeEntityReferences(data),
         meta,
         links,
-        isCollection: data instanceof Array
+        isCollection: data instanceof Array,
     }
 
     // Create a store fragment map of normalized entities to pass to the entity reducer
@@ -58,7 +65,7 @@ export const parseJsonApiResponse = (response = {}) => {
 
     return {
         storeFragment,
-        entryRef
+        entryRef,
     }
 }
 

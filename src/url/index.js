@@ -21,7 +21,7 @@ export const urlBuilder = (...args) => {
     }
 }
 
-export const deconstructUrl = (input) => {
+export const deconstructUrl = input => {
     const unescaped = decodeURI(input)
     const deconstructed = url.parse(unescaped, true)
 
@@ -31,17 +31,17 @@ export const deconstructUrl = (input) => {
         // Handle the string-encoded empty array
         if (item === '[]') {
             deconstructed.query[key] = []
-        // Handle the fact that [ 'a', 'b' ] is encoded as "a,b"
+            // Handle the fact that [ 'a', 'b' ] is encoded as "a,b"
         } else if (includes(item, ',')) {
             deconstructed.query[key] = item.split(',')
-        // Handle the fact that [ 'a' ] is encoded as "a"
+            // Handle the fact that [ 'a' ] is encoded as "a"
         } else if (key === 'include' && item.length) {
-            deconstructed.query[key] = [ item ]
+            deconstructed.query[key] = [item]
         }
     })
 
     return {
         ...deconstructed,
-        options: deconstructed.query
+        options: deconstructed.query,
     }
 }

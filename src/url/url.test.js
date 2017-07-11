@@ -13,7 +13,7 @@ describe('nion/url : buildUrl & deconstructUrl', () => {
     it.skip('Builds a url from an endpoint, with include', () => {
         const path = '/test'
         const included = 'relationship'
-        const url = buildUrl(path, { include: [ included ] })
+        const url = buildUrl(path, { include: [included] })
         const { options } = deconstructUrl(url)
 
         expect(options.include).toHaveLength(1)

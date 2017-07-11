@@ -2,7 +2,6 @@ import map from 'lodash.map'
 import every from 'lodash.every'
 
 export const makeRef = (input = {}, options = {}) => {
-
     // Can pass in a plain object from selectData, since these objects get populated with a _ref to
     // their original { id, type } entity information
     const toProcess = input._ref ? input._ref : input
@@ -14,17 +13,15 @@ export const makeRef = (input = {}, options = {}) => {
     // the new entities list
     if (toProcess.data) {
         if (toProcess.data instanceof Array) {
-            entities = map(toProcess.data, ({ type, id}) => ({ type, id}))
+            entities = map(toProcess.data, ({ type, id }) => ({ type, id }))
             isCollection = true
         } else {
             const { type, id } = toProcess.data
-            entities = [{ type, id}]
+            entities = [{ type, id }]
             isCollection = isCollection || false
         }
-    }
-
-    // If the input data is a flat entity, we'll need to construct a ref to that entity
-    else if (toProcess.type && toProcess.id) {
+    } else if (toProcess.type && toProcess.id) {
+        // If the input data is a flat entity, we'll need to construct a ref to that entity
         entities = [{ type: toProcess.type, id: toProcess.id }]
         isCollection = false
     } else if (isArrayOfItems(toProcess)) {
@@ -44,11 +41,13 @@ export const makeRef = (input = {}, options = {}) => {
         entities,
         isCollection,
         links,
-        meta
+        meta,
     }
 }
 
-function isArrayOfItems (items) {
-    return items instanceof Array &&
+function isArrayOfItems(items) {
+    return (
+        items instanceof Array &&
         every(items, item => item.id !== undefined && item.type)
+    )
 }

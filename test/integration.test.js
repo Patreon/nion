@@ -12,14 +12,14 @@ import { Provider } from 'react-redux'
 import configureTestStore from 'shared/configure-store/test'
 
 const storeOptions = {
-    nion: true
+    nion: true,
 }
 
 const Wrap = (Wrapped, props) => {
     const store = configureTestStore({}, storeOptions)
     return (
-        <Provider store={ store }>
-                <Wrapped { ...props } />
+        <Provider store={store}>
+            <Wrapped {...props} />
         </Provider>
     )
 }
@@ -36,11 +36,15 @@ describe('nion : integration tests', () => {
 
     describe('nion decorator', () => {
         it('injects props into the component', async () => {
-            @nion({ test: {
-                endpoint: '/test'
-            }})
+            @nion({
+                test: {
+                    endpoint: '/test',
+                },
+            })
             class Container extends Component {
-                render() { return null }
+                render() {
+                    return null
+                }
             }
 
             const Wrapper = mount(Wrap(Container))
@@ -77,11 +81,13 @@ describe('nion : integration tests', () => {
             @withProps({ id: 123 })
             @nion(({ id }) => ({
                 test: {
-                    endpoint: `test/${id}`
-                }
+                    endpoint: `test/${id}`,
+                },
             }))
             class Container extends Component {
-                render() { return null }
+                render() {
+                    return null
+                }
             }
 
             const Wrapper = mount(Wrap(Container))
@@ -96,11 +102,13 @@ describe('nion : integration tests', () => {
             const name = 'Testy McTestFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, { data: {
-                id: 123,
-                type: 'animal',
-                attributes: { name }
-            }})
+            nock(endpoint).get('').query(true).reply(200, {
+                data: {
+                    id: 123,
+                    type: 'animal',
+                    attributes: { name },
+                },
+            })
 
             @nion({ test: { endpoint: pathname } })
             class Container extends Component {
@@ -133,16 +141,20 @@ describe('nion : integration tests', () => {
             const name = 'Testy McTestFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, { data: {
-                id: 123,
-                type: 'animal',
-                attributes: { name }
-            }})
+            nock(endpoint).get('').query(true).reply(200, {
+                data: {
+                    id: 123,
+                    type: 'animal',
+                    attributes: { name },
+                },
+            })
 
-            @nion({ test: {
-                endpoint: pathname,
-                fetchOnInit: true
-            } })
+            @nion({
+                test: {
+                    endpoint: pathname,
+                    fetchOnInit: true,
+                },
+            })
             class Container extends Component {
                 render() {
                     return null
@@ -176,16 +188,20 @@ describe('nion : integration tests', () => {
             const id = 123
 
             const endpoint = buildUrl(`${pathname}/${id}`)
-            nock(endpoint).get('').query(true).reply(200, { data: {
-                id: 123,
-                type: 'animal',
-                attributes: { name }
-            }})
+            nock(endpoint).get('').query(true).reply(200, {
+                data: {
+                    id: 123,
+                    type: 'animal',
+                    attributes: { name },
+                },
+            })
 
-            @nion((props) => ({ test: {
-                endpoint: buildUrl(`${pathname}/${props.id}`),
-                fetchOnInit: true
-            }}))
+            @nion(props => ({
+                test: {
+                    endpoint: buildUrl(`${pathname}/${props.id}`),
+                    fetchOnInit: true,
+                },
+            }))
             class Container extends Component {
                 render() {
                     return null
@@ -219,17 +235,21 @@ describe('nion : integration tests', () => {
             const newName = 'Nion McNionFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, { data: {
-                id: 123,
-                type: 'animal',
-                attributes: { name }
-            }})
+            nock(endpoint).get('').query(true).reply(200, {
+                data: {
+                    id: 123,
+                    type: 'animal',
+                    attributes: { name },
+                },
+            })
 
-            nock(endpoint).patch('').query(true).reply(200, { data: {
-                id: 123,
-                type: 'animal',
-                attributes: { name: newName }
-            }})
+            nock(endpoint).patch('').query(true).reply(200, {
+                data: {
+                    id: 123,
+                    type: 'animal',
+                    attributes: { name: newName },
+                },
+            })
 
             @nion({ test: { endpoint: buildUrl(pathname) } })
             class Container extends Component {
@@ -275,11 +295,13 @@ describe('nion : integration tests', () => {
             const name = 'Testy McTestFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, { data: {
-                id: 123,
-                type: 'animal',
-                attributes: { name }
-            }})
+            nock(endpoint).get('').query(true).reply(200, {
+                data: {
+                    id: 123,
+                    type: 'animal',
+                    attributes: { name },
+                },
+            })
 
             nock(endpoint).delete('').query(true).reply(204)
 
@@ -355,28 +377,34 @@ describe('nion : integration tests', () => {
             const endpoint = buildUrl(`${pathname}/1`)
             const next = buildUrl(`${pathname}/2`)
             nock(endpoint).get('').query(true).reply(200, {
-                data: [{
-                    id: 1,
-                    type: 'page',
-                    attributes: { name: 'A' }
-                }],
+                data: [
+                    {
+                        id: 1,
+                        type: 'page',
+                        attributes: { name: 'A' },
+                    },
+                ],
                 links: {
-                    next
-                }
+                    next,
+                },
             })
 
             nock(next).get('').query(true).reply(200, {
-                data: [{
-                    id: 2,
-                    type: 'page',
-                    attributes: { name: 'B' }
-                }]
+                data: [
+                    {
+                        id: 2,
+                        type: 'page',
+                        attributes: { name: 'B' },
+                    },
+                ],
             })
 
-            @nion({ pages: {
-                endpoint,
-                paginated: true
-            } })
+            @nion({
+                pages: {
+                    endpoint,
+                    paginated: true,
+                },
+            })
             class Container extends Component {
                 render() {
                     return null
@@ -415,11 +443,13 @@ describe('nion : integration tests', () => {
             const newName = 'Nion McNionFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, { data: {
-                id: 123,
-                type: 'animal',
-                attributes: { name }
-            }})
+            nock(endpoint).get('').query(true).reply(200, {
+                data: {
+                    id: 123,
+                    type: 'animal',
+                    attributes: { name },
+                },
+            })
 
             @nion({ test: { endpoint: buildUrl(pathname) } })
             class Container extends Component {
@@ -449,12 +479,15 @@ describe('nion : integration tests', () => {
             // Optimistic Update
 
             test = getProp()
-            Wrapped.props().nion.updateEntity({
-                type: 'animal',
-                id: 123
-            }, {
-                name: newName
-            })
+            Wrapped.props().nion.updateEntity(
+                {
+                    type: 'animal',
+                    id: 123,
+                },
+                {
+                    name: newName,
+                },
+            )
 
             test = getProp()
             expect(test.name).toEqual(newName)
@@ -465,16 +498,20 @@ describe('nion : integration tests', () => {
             const name = 'Testy McTestFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, { data: {
-                id: 123,
-                type: 'animal',
-                attributes: { name }
-            }})
+            nock(endpoint).get('').query(true).reply(200, {
+                data: {
+                    id: 123,
+                    type: 'animal',
+                    attributes: { name },
+                },
+            })
 
-            @nion((props) => ({ child: {
-                endpoint: buildUrl(pathname),
-                initialRef: makeRef(props.inputData)
-            } }))
+            @nion(props => ({
+                child: {
+                    endpoint: buildUrl(pathname),
+                    initialRef: makeRef(props.inputData),
+                },
+            }))
             class ChildContainer extends Component {
                 render() {
                     return null
@@ -485,7 +522,9 @@ describe('nion : integration tests', () => {
             class Container extends Component {
                 render() {
                     const { test } = this.props.nion
-                    return exists(test) ? <ChildContainer inputData={test} /> : <span />
+                    return exists(test)
+                        ? <ChildContainer inputData={test} />
+                        : <span />
                 }
             }
 

@@ -2,7 +2,7 @@ import { getCsrfHeaders } from '../../../utilities/csrf'
 
 export class JsonApiPayload {
     constructor(type, attributes) {
-        this.attributes = {...attributes}
+        this.attributes = { ...attributes }
         this.relationships = {}
         this.meta = {}
         this.type = type
@@ -35,7 +35,7 @@ export class JsonApiPayload {
         this.included.push({
             type,
             id,
-            attributes: {...attributes}
+            attributes: { ...attributes },
         })
     }
 
@@ -43,12 +43,12 @@ export class JsonApiPayload {
         let request = {}
         request['data'] = {
             type: this.type,
-            attributes: {...this.attributes},
-            relationships: {...this.relationships}
+            attributes: { ...this.attributes },
+            relationships: { ...this.relationships },
         }
 
         if (Object.keys(this.meta).length) {
-            request['meta'] = {...this.meta}
+            request['meta'] = { ...this.meta }
         }
 
         if (this.included.length) {
@@ -79,11 +79,11 @@ export const getRequestParameters = (method, options) => {
 
             return getCsrfHeaders()
         })
-        .then((headers) => ({
+        .then(headers => ({
             credentials: 'include',
             headers: {
                 ...headers,
-                'Content-Type': 'application/vnd.api+json'
-            }
+                'Content-Type': 'application/vnd.api+json',
+            },
         }))
 }

@@ -1,4 +1,4 @@
-export const namespace = (actionType) => `nion/${actionType}`
+export const namespace = actionType => `nion/${actionType}`
 
 export const UPDATE_ENTITY = Symbol(namespace('UPDATE_ENTITY'))
 export const UPDATE_REF = Symbol(namespace('UPDATE_REF'))

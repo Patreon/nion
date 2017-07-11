@@ -6,7 +6,7 @@ import parser from './parser'
 import * as pagination from './pagination'
 import * as request from './request'
 
-export const isJsonApi = (object) => {
+export const isJsonApi = object => {
     return !!get(object, 'data')
 }
 
@@ -18,5 +18,5 @@ export default {
     ErrorClass,
     pagination,
     parser,
-    request
+    request,
 }
