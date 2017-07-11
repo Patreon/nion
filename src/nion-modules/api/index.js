@@ -7,5 +7,5 @@ export default {
     buildUrl,
     ErrorClass,
     parser,
-    request
+    request,
 }

@@ -8,9 +8,9 @@ import apiNionModule from './nion-modules/api'
 
 configureNion({
     apiModules: {
-        api: apiNionModule
+        api: apiNionModule,
     },
-    defaultApi: 'api'
+    defaultApi: 'api',
 })
 
 export const { exists } = decoratorHelpers

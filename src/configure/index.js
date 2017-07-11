@@ -5,7 +5,9 @@ import map from 'lodash.map'
 
 export default ({ apiModules = {}, defaultApi }) => {
     if (Object.keys(apiModules).length === 0) {
-        throw new Error('nion requires at least one API module. Please supply an API module in nion.configureNion')
+        throw new Error(
+            'nion requires at least one API module. Please supply an API module in nion.configureNion',
+        )
     }
 
     map(apiModules, (apiModule, name) => {
@@ -15,6 +17,6 @@ export default ({ apiModules = {}, defaultApi }) => {
     ApiManager.setDefaultApi(defaultApi)
 
     return {
-        reducer: reducers
+        reducer: reducers,
     }
 }

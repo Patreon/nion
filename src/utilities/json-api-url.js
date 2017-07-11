@@ -15,8 +15,7 @@ export const CURRENT_JSON_API_VERSION = '1.0'
 const DEFAULT_API_DOMAIN = 'localhost:8080'
 const DEFAULT_WWW_DOMAIN = 'localhost:3000'
 
-let apiDomain =
-    get(defaults, 'apiServer', DEFAULT_API_DOMAIN)
+let apiDomain = get(defaults, 'apiServer', DEFAULT_API_DOMAIN)
 if (apiDomain.startsWith('http')) {
     apiDomain = apiDomain.slice(apiDomain.indexOf('://') + 3)
 }
@@ -32,6 +31,5 @@ export const urlBuilderForDefaults = defaults =>
         ...defaults,
     })
 
-const wwwDomain =
-    get(defaults, 'location.hostname', DEFAULT_WWW_DOMAIN)
+const wwwDomain = get(defaults, 'location.hostname', DEFAULT_WWW_DOMAIN)
 export const wwwURL = urlFactory(`https://${wwwDomain}`)

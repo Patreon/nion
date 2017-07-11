@@ -4,7 +4,7 @@ import map from 'lodash.map'
 import {
     NION_API_SUCCESS,
     NION_API_BOOTSTRAP,
-    UPDATE_ENTITY
+    UPDATE_ENTITY,
 } from '../actions/types'
 
 const initialState = {}
@@ -12,17 +12,21 @@ const initialState = {}
 // The core reducer for maintaining a normalized entity store of entities that are fetched / updated
 // between different JSON API actions
 const entitiesReducer = (state = initialState, action) => {
-    switch(action.type) {
+    switch (action.type) {
         case NION_API_SUCCESS:
         case NION_API_BOOTSTRAP: {
             const newState = {
-                ...state
+                ...state,
             }
 
-            const storeFragment = get(action, 'payload.responseData.storeFragment', {})
+            const storeFragment = get(
+                action,
+                'payload.responseData.storeFragment',
+                {},
+            )
             map(storeFragment, (entities, type) => {
                 newState[type] = {
-                    ...get(newState, type, {})
+                    ...get(newState, type, {}),
                 }
 
                 map(entities, (entity, id) => {
@@ -31,18 +35,22 @@ const entitiesReducer = (state = initialState, action) => {
                         id,
                         attributes: {
                             ...get(newState[type][id], 'attributes', {}),
-                            ...get(entity, 'attributes', {})
+                            ...get(entity, 'attributes', {}),
                         },
                         relationships: {
                             ...get(newState[type][id], 'relationships', {}),
-                            ...get(entity, 'relationships', {})
-                        }
+                            ...get(entity, 'relationships', {}),
+                        },
                     }
                 })
             })
 
             const entityToDelete = get(action, 'meta.refToDelete')
-            if (entityToDelete && entityToDelete.id !== undefined && entityToDelete.type) {
+            if (
+                entityToDelete &&
+                entityToDelete.id !== undefined &&
+                entityToDelete.type
+            ) {
                 delete newState[entityToDelete.type][entityToDelete.id]
             }
             return newState
@@ -54,16 +62,16 @@ const entitiesReducer = (state = initialState, action) => {
                 ...entity,
                 attributes: {
                     ...entity.attributes,
-                    ...attributes
-                }
+                    ...attributes,
+                },
             }
 
             const newState = {
                 ...state,
                 [type]: {
                     ...state[type],
-                    [id]: newEntity
-                }
+                    [id]: newEntity,
+                },
             }
 
             return newState

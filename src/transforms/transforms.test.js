@@ -8,8 +8,8 @@ describe('nion/transforms : makeRef', () => {
         it('makes a ref from a singular { id, type } tuple', () => {
             const data = {
                 _ref: {
-                    data: { id, type }
-                }
+                    data: { id, type },
+                },
             }
             const result = makeRef(data)
             const { entities, isCollection, links, meta } = result
@@ -23,8 +23,8 @@ describe('nion/transforms : makeRef', () => {
         it('makes a ref from an array of { id, type } tuples', () => {
             const data = {
                 _ref: {
-                    data: [{ id, type }, { id, type }]
-                }
+                    data: [{ id, type }, { id, type }],
+                },
             }
             const { entities, isCollection } = makeRef(data)
             expect(entities).toHaveLength(2)
@@ -37,8 +37,8 @@ describe('nion/transforms : makeRef', () => {
             const data = {
                 _ref: {
                     data: { id, type },
-                    isCollection: true
-                }
+                    isCollection: true,
+                },
             }
             const { entities, isCollection } = makeRef(data)
             expect(entities).toHaveLength(1)
@@ -49,8 +49,8 @@ describe('nion/transforms : makeRef', () => {
             const data = {
                 _ref: {
                     data: { id, type },
-                    meta: { count: 1 }
-                }
+                    meta: { count: 1 },
+                },
             }
             const { meta } = makeRef(data)
             expect(meta).toMatchObject({ count: 1 })
@@ -60,8 +60,8 @@ describe('nion/transforms : makeRef', () => {
             const data = {
                 _ref: {
                     data: { id, type },
-                    links: { next: 'next' }
-                }
+                    links: { next: 'next' },
+                },
             }
             const { links } = makeRef(data)
             expect(links).toMatchObject({ next: 'next' })
@@ -72,7 +72,7 @@ describe('nion/transforms : makeRef', () => {
         it('makes a ref from an object with id and type', () => {
             const data = {
                 id,
-                type
+                type,
             }
             const result = makeRef(data)
             const { entities, isCollection, links, meta } = result
@@ -84,10 +84,12 @@ describe('nion/transforms : makeRef', () => {
         })
 
         it('makes a ref from an array of objects with id and type', () => {
-            const data = [{
-                id,
-                type
-            }]
+            const data = [
+                {
+                    id,
+                    type,
+                },
+            ]
             const result = makeRef(data)
             const { entities, isCollection } = result
             expect(entities).toHaveLength(1)
@@ -100,7 +102,7 @@ describe('nion/transforms : makeRef', () => {
             // instantiation, but will eventually be plural, ie a firstReply
             const data = {
                 id,
-                type
+                type,
             }
             const result = makeRef(data, { isCollection: true })
             const { entities, isCollection } = result
@@ -115,6 +117,5 @@ describe('nion/transforms : makeRef', () => {
             const { entities } = result
             expect(entities).toHaveLength(0)
         })
-
     })
 })

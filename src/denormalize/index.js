@@ -28,7 +28,7 @@ export default function denormalize(ref, entities, existingObjects = {}) {
     const obj = {
         id,
         type,
-        ...camelizeKeys(entity.attributes)
+        ...camelizeKeys(entity.attributes),
     }
     set(existingObjects, [type, id], obj)
 
@@ -41,9 +41,14 @@ export default function denormalize(ref, entities, existingObjects = {}) {
             obj[camelizedKey] = null
             return
         } else if (!Array.isArray(refOrRefs)) {
-            obj[camelizedKey] = denormalize(refOrRefs, entities, existingObjects)
+            obj[camelizedKey] = denormalize(
+                refOrRefs,
+                entities,
+                existingObjects,
+            )
         } else {
-            obj[camelizedKey] = refOrRefs.map((ref) => { // eslint-disable-line
+            obj[camelizedKey] = refOrRefs.map(ref => {
+                // eslint-disable-line
                 return denormalize(ref, entities, existingObjects)
             })
         }
@@ -51,7 +56,9 @@ export default function denormalize(ref, entities, existingObjects = {}) {
         // Establish a "_ref" property on the relationship object, that acts as a pointer to the
         // original entity
         if (obj[camelizedKey] && !obj[camelizedKey]._ref) {
-            Object.defineProperty(obj[camelizedKey], '_ref', { value: merge({}, relationship) })
+            Object.defineProperty(obj[camelizedKey], '_ref', {
+                value: merge({}, relationship),
+            })
         }
     })
 

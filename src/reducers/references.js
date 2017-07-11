@@ -7,11 +7,11 @@ import {
     NION_API_BOOTSTRAP,
     NION_API_SUCCESS,
     INITIALIZE_DATAKEY,
-    UPDATE_REF
+    UPDATE_REF,
 } from '../actions/types'
 
 // Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
-const clone = (input) => JSON.parse(JSON.stringify(input))
+const clone = input => JSON.parse(JSON.stringify(input))
 
 const deleteRefFromEntities = (refToDelete = {}, state = {}) => {
     const { type, id } = refToDelete
@@ -27,9 +27,9 @@ const deleteRefFromEntities = (refToDelete = {}, state = {}) => {
         if (Array.isArray(oldEntities)) {
             memo[dataKey] = {
                 ...state[dataKey],
-                entities: oldEntities.filter((entity) => {
+                entities: oldEntities.filter(entity => {
                     return !(entity.type === type && entity.id === id)
-                })
+                }),
             }
         } else {
             memo[dataKey] = state[dataKey]
@@ -48,34 +48,37 @@ const refsReducer = (state = initialState, action) => {
             // retrieved entities to the end of the current entities list
             if (action.meta.isNextPage || action.meta.append) {
                 const nextPageRef = action.payload.responseData.entryRef
-                const oldEntities = get(state[action.meta.dataKey], 'entities', [])
+                const oldEntities = get(
+                    state[action.meta.dataKey],
+                    'entities',
+                    [],
+                )
                 return {
                     ...state,
                     [action.meta.dataKey]: {
                         ...nextPageRef,
                         isCollection: true, // hack for now, needs a better solution
-                        entities: oldEntities.concat(nextPageRef.entities)
-                    }
+                        entities: oldEntities.concat(nextPageRef.entities),
+                    },
                 }
-            }
-            // Else, if the result of a DELETE request, we must process delete corresponding refs
-            // off of the references state
-            else if (action.meta.refToDelete) {
+            } else if (action.meta.refToDelete) {
+                // Else, if the result of a DELETE request, we must process delete corresponding refs
+                // off of the references state
                 return {
                     // if there's no ref to delete, this is a no-op
-                    ...deleteRefFromEntities(action.meta.refToDelete, state)
+                    ...deleteRefFromEntities(action.meta.refToDelete, state),
                 }
-            // Otherwise, append or update the ref to the state
+                // Otherwise, append or update the ref to the state
             } else if (action.payload) {
                 return {
                     ...state,
-                    [action.meta.dataKey]: action.payload.responseData.entryRef
+                    [action.meta.dataKey]: action.payload.responseData.entryRef,
                 }
-            // Otherwise, the data returned was undefined
+                // Otherwise, the data returned was undefined
             } else {
                 return {
                     ...state,
-                    [action.meta.dataKey]: undefined
+                    [action.meta.dataKey]: undefined,
                 }
             }
 
@@ -83,14 +86,14 @@ const refsReducer = (state = initialState, action) => {
         case INITIALIZE_DATAKEY:
             return {
                 ...state,
-                [action.payload.dataKey]: clone(action.payload.ref)
+                [action.payload.dataKey]: clone(action.payload.ref),
             }
 
         // Update a reference attached to a dataKey explicitly
         case UPDATE_REF:
             return {
                 ...state,
-                [action.payload.dataKey]: clone(action.payload.ref)
+                [action.payload.dataKey]: clone(action.payload.ref),
             }
 
         default:

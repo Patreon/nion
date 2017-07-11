@@ -7,5 +7,5 @@ import entities from './entities'
 export default combineReducers({
     references,
     requests,
-    entities
+    entities,
 })
