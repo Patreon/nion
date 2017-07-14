@@ -7,6 +7,7 @@ const noop = () => {}
 class ApiManager {
     apiMap = {}
     defaultApiType = null
+    defaultApiUrl = null
     csrfProvider = null
 
     getApiModule = apiType => {
@@ -41,7 +42,7 @@ class ApiManager {
     }
 
     getBuildUrl = apiType => {
-        return this.getApiModule(apiType).buildUrl
+        return this.getApiModule(apiType).buildUrl(this.defaultApiUrl)
     }
 
     getErrorClass = apiType => {
@@ -73,6 +74,10 @@ class ApiManager {
         } else {
             this.defaultApiType = Object.keys(this.apiMap)[0]
         }
+    }
+
+    setDefaultApiUrl = url => {
+        this.defaultApiUrl = url
     }
 
     setCsrfProvider = csrfProvider => {
