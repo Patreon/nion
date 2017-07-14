@@ -5,12 +5,14 @@ import configureNion from './configure'
 
 // We'll be setting up a default API module (api)
 import apiNionModule from './nion-modules/api'
+import jsonApiModule from './nion-modules/json-api'
 
 configureNion({
     apiModules: {
         api: apiNionModule,
+        jsonApi: jsonApiModule,
     },
-    defaultApi: 'api',
+    defaultApi: 'jsonApi',
 })
 
 export const { exists } = decoratorHelpers
@@ -23,6 +25,7 @@ export { default as bootstrapNion } from './bootstrap'
 export { default as initializeNionDevTool } from './devtool'
 export { default as apiModule } from './nion-modules/api'
 export { default as jsonApiModule } from './nion-modules/json-api'
+export { JsonApiPayload } from './nion-modules/json-api'
 export { buildUrl, urlBuilder } from './url'
 
 export default decorator
