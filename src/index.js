@@ -27,5 +27,7 @@ export { default as apiModule } from './nion-modules/api'
 export { default as jsonApiModule } from './nion-modules/json-api'
 export { JsonApiPayload } from './nion-modules/json-api'
 export { buildUrl, urlBuilder } from './url'
+export { titleFormatter } from './logger'
+export { selectObjectWithRequest } from './selectors'
 
 export default decorator
