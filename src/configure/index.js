@@ -3,23 +3,20 @@ import ApiManager from '../api'
 
 import map from 'lodash.map'
 
-export default ({
-    apiModules = {},
-    defaultApi,
-    csrfProvider,
-    defaultApiUrl,
-}) => {
+export default ({ apiModules, defaultApi, csrfProvider, defaultApiUrl }) => {
     if (Object.keys(apiModules).length === 0) {
         throw new Error(
             'nion requires at least one API module. Please supply an API module in nion.configureNion',
         )
     }
 
-    map(apiModules, (apiModule, name) => {
-        ApiManager.registerApi(name, apiModule)
-    })
+    if (apiModules) {
+        map(apiModules, (apiModule, name) => {
+            ApiManager.registerApi(name, apiModule)
+        })
 
-    ApiManager.setDefaultApi(defaultApi)
+        ApiManager.setDefaultApi(defaultApi)
+    }
 
     if (csrfProvider) {
         ApiManager.setCsrfProvider(csrfProvider)
