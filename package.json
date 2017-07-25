@@ -25,6 +25,7 @@
         "lodash.set": "^4.3.2",
         "qs": "^6.5.0",
         "react": "^15.6.1",
+        "react-dom": "^15.6.1",
         "react-redux": "^5.0.5",
         "redux": "^3.7.1",
         "reselect": "^3.0.1",

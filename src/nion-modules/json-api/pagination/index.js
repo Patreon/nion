@@ -1,7 +1,7 @@
-import buildUrl from '../build-url'
 import get from 'lodash.get'
 
 import { deconstructUrl } from '../../../url'
+import ApiManager from '../../../api'
 
 export const canLoadMore = data => {
     return !!get(data, 'links.next') && !get(data, 'request.isLoading')
@@ -13,6 +13,8 @@ export const getNextUrl = (declaration, selectedData) => {
     if (!nextUrl) {
         return null
     }
+
+    const buildUrl = ApiManager.getBuildUrl(declaration.apiType)
 
     /* We want to make sure we apply the parameters supplied in the declaration URL to the url
      * supplied via the pagination link. Most of the time, cartographer should respect our passed up
@@ -30,6 +32,7 @@ export const getNextUrl = (declaration, selectedData) => {
      */
     // Find buildUrl's baseUrl's pathname
     const rootApiUrl = buildUrl('')
+
     let rootApiPath = deconstructUrl(rootApiUrl).pathname
     // Slice off any trailing slashes
     if (rootApiPath.length > 1 && rootApiPath.endsWith('/')) {
