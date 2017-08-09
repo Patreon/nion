@@ -355,7 +355,7 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
     const fetchesByDataKey = {}
 
     class WithNion extends Component {
-        displayName = `WithNion(${getDisplayName(WrappedComponent)})`
+        static displayName = `WithNion(${getDisplayName(WrappedComponent)})`
 
         static propTypes = {
             nion: PropTypes.object.isRequired,
