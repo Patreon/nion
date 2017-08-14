@@ -108,9 +108,9 @@ export const selectData = (key, defaultValue) => {
     // If we pass in an object of { type, id } signature, denormalize the corresponding entity
     if (typeof key === 'object' && key.type && key.id !== undefined) {
         const entityRef = key
-        return createSelector(selectEntities, entityStore => {
-            return denormalize(entityRef, entityStore)
-        })
+        return createSelector(selectEntities, entityStore =>
+            denormalize(entityRef, entityStore),
+        )
     }
 
     // Otherwise, use the _.get syntax to select the data
