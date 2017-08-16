@@ -73,12 +73,17 @@ const apiAction = (method, dataKey, options) => _dispatch => {
 
             return selectData(dataKey)(getState())
         } catch (error) {
-            await dispatch({
-                type: NION_API_FAILURE,
-                meta,
-                payload: error,
-            })
-
+            try {
+                await dispatch({
+                    type: NION_API_FAILURE,
+                    meta,
+                    payload: error,
+                })
+            } catch (renderError) {
+                // We probably want to catch any render errors here, logging them but actually
+                // throwing the api error that caused it
+                console.error(renderError)
+            }
             throw error
         }
     })
