@@ -132,7 +132,9 @@ function processDeclarations(inputDeclarations, ...rest) {
             map(extraProps, prop => {
                 const extraProp =
                     typeof selected[prop] === 'object'
-                        ? { ...selected[prop] }
+                        ? declarations[selectedDataKey].apiType === 'api'
+                          ? selected[prop]
+                          : { ...selected[prop] }
                         : selected[prop]
                 defineDataProperty(nion[key], prop, extraProp)
             })
