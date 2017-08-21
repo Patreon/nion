@@ -29,6 +29,9 @@ const defaultDeclarationOptions = {
 
     // Set custom request parameters
     requestParams: {},
+
+    // Custom response json parser for the declaration: (json) => parsed
+    parseResponse: undefined,
 }
 
 function processDefaultOptions(declarations) {

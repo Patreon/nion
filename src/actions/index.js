@@ -51,7 +51,7 @@ const apiAction = (method, dataKey, options) => _dispatch => {
 
             // Handle the case that calling response.json() on null responses throws a syntax error
             const text = await response.text()
-            const json = text ? JSON.parse(text) : {}
+            let json = text ? JSON.parse(text) : {}
 
             // Handle any request errors since fetch doesn't throw
             if (!response.ok) {
@@ -62,12 +62,20 @@ const apiAction = (method, dataKey, options) => _dispatch => {
                 })
             }
 
+            // If a parseResponse parameter is supplied to the declaration, we'll want to parse the
+            // data with both the parseResponse function and the api module parse function
+            const { parseResponse } = declaration
+            json = parseResponse ? parseResponse(json) : json
+
+            // Parse the data with the parser from the API module
+            const responseData = parse(json)
+
             await dispatch({
                 type: NION_API_SUCCESS,
                 meta,
                 payload: {
                     requestType: apiType,
-                    responseData: parse(json),
+                    responseData,
                 },
             })
 
