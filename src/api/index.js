@@ -1,3 +1,6 @@
+import defaultApi from '../modules/default'
+const DEFAULT_API_TYPE = 'default'
+
 // The singleton class that will manage all of nion's API modules. API modules handle URL building,
 // request generation, and response parsing, supplying correctly formed action/payloads to the nion
 // core reducers.
@@ -6,6 +9,11 @@ const noop = () => {}
 class ApiManager {
     apiMap = {}
     defaultApiType = null
+
+    constructor() {
+        this.registerApi(DEFAULT_API_TYPE, defaultApi)
+        this.setDefaultApi(DEFAULT_API_TYPE)
+    }
 
     getApiModule = apiType => {
         if (this.apiMap[apiType]) {
