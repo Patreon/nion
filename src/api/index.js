@@ -8,7 +8,7 @@ class ApiManager {
     apiMap = {}
     defaultApiType = null
     defaultApiUrl = null
-    csrfProvider = null
+    headersProvider = null
 
     getApiModule = apiType => {
         if (this.apiMap[apiType]) {
@@ -25,7 +25,7 @@ class ApiManager {
         return this.getApiModule(apiType).request.getRequestParameters(
             method,
             options,
-            this.csrfProvider,
+            this.headersProvider,
         )
     }
 
@@ -80,9 +80,9 @@ class ApiManager {
         this.defaultApiUrl = url
     }
 
-    setCsrfProvider = csrfProvider => {
-        if (csrfProvider) {
-            this.csrfProvider = csrfProvider
+    setHeadersProvider = headersProvider => {
+        if (headersProvider) {
+            this.headersProvider = headersProvider
         }
     }
 }
