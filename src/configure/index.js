@@ -3,7 +3,7 @@ import ApiManager from '../api'
 
 import map from 'lodash.map'
 
-export default ({ apiModules, defaultApi, csrfProvider, defaultApiUrl }) => {
+export default ({ apiModules, defaultApi, headersProvider, defaultApiUrl }) => {
     if (apiModules) {
         map(apiModules, (apiModule, name) => {
             ApiManager.registerApi(name, apiModule)
@@ -12,8 +12,8 @@ export default ({ apiModules, defaultApi, csrfProvider, defaultApiUrl }) => {
         ApiManager.setDefaultApi(defaultApi)
     }
 
-    if (csrfProvider) {
-        ApiManager.setCsrfProvider(csrfProvider)
+    if (headersProvider) {
+        ApiManager.setHeadersProvider(headersProvider)
     }
 
     // eventually we need to break this out and make it an config

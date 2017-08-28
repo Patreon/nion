@@ -64,19 +64,11 @@ export const afterRequest = (method, options) => {
     return Promise.resolve()
 }
 
-export const getRequestParameters = (method, options, csrfProvider) => {
+export const getRequestParameters = (method, options, headersProvider) => {
     return Promise.resolve()
         .then(() => {
-            const skipMethods = {
-                get: true,
-                options: true,
-            }
-            if (skipMethods[method.toLowerCase()]) {
-                return
-            }
-
-            if (csrfProvider) {
-                return csrfProvider()
+            if (headersProvider) {
+                return headersProvider(method.toLowerCase())
             }
         })
         .then(headers => ({
