@@ -33,11 +33,11 @@
     },
     "scripts": {
         "build": "npm run build:lib",
+        "build:watch": "npm run build:lib -- --watch",
         "prebuild": "rimraf lib/*",
         "build:lib": "babel --out-dir lib src",
         "prebuild:dist": "rimraf dist/*",
         "prebuild:watch": "rimraf lib/*",
-        "build:watch": "npm run build:lib -- --watch",
         "lint:all": "eslint . --ext=js,jsx",
         "lint": "git diff --name-only master... | grep -E '\\.jsx?$' | xargs eslint"
     },
