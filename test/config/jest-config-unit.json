@@ -1,0 +1,8 @@
+{
+  "automock": false,
+  "verbose": true,
+  "moduleFileExtensions": ["js", "jsx"],
+  "collectCoverageFrom": [
+    "src/**/*.js"
+  ]
+}
