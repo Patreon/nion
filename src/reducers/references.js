@@ -86,14 +86,14 @@ const refsReducer = (state = initialState, action) => {
         case INITIALIZE_DATAKEY:
             return {
                 ...state,
-                [action.payload.dataKey]: clone(action.payload.ref),
+                [action.meta.dataKey]: clone(action.payload.ref),
             }
 
         // Update a reference attached to a dataKey explicitly
         case UPDATE_REF:
             return {
                 ...state,
-                [action.payload.dataKey]: clone(action.payload.ref),
+                [action.meta.dataKey]: clone(action.payload.ref),
             }
 
         default:
