@@ -42,7 +42,6 @@ const processDefaultOptions = declarations => {
 
 const processDeclarations = (inputDeclarations, ...rest) => {
     let declarations
-    let processed = false
 
     const defineDataProperty = (obj, key, value) => {
         Object.defineProperty(obj, key, {
@@ -63,27 +62,24 @@ const processDeclarations = (inputDeclarations, ...rest) => {
     // Construct the JSON API selector to map to props
     const makeMapStateToProps = () => {
         const mapStateToProps = (state, ownProps) => {
-            if (!processed) {
-                // Process the input declarations, ensuring we make a copy of the original argument to
-                // prevent object reference bugs between instances of the decorated class
-                declarations =
-                    inputDeclarations instanceof Function
-                        ? inputDeclarations(ownProps)
-                        : clone(inputDeclarations)
+            // Process the input declarations, ensuring we make a copy of the original argument to
+            // prevent object reference bugs between instances of the decorated class
+            declarations =
+                inputDeclarations instanceof Function
+                    ? inputDeclarations(ownProps)
+                    : clone(inputDeclarations)
 
-                // Otherwise, if the passed in declarartions are a string (shorthand dataKey selection),
-                // create a declaration object
-                if (typeof inputDeclarations === 'string') {
-                    declarations = {}
-                    map([inputDeclarations, ...rest], dataKey => {
-                        declarations[dataKey] = {}
-                    })
-                }
-
-                // Apply default options to the declarations
-                processDefaultOptions(declarations)
-                processed = true
+            // Otherwise, if the passed in declarartions are a string (shorthand dataKey selection),
+            // create a declaration object
+            if (typeof inputDeclarations === 'string') {
+                declarations = {}
+                map([inputDeclarations, ...rest], dataKey => {
+                    declarations[dataKey] = {}
+                })
             }
+
+            // Apply default options to the declarations
+            processDefaultOptions(declarations)
 
             // We want to pass in the selected data to the wrapped component by the key (ie pledge),
             // even though we may be storing the data on the store by an id-specific dataKey (ie
