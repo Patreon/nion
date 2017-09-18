@@ -1,14 +1,19 @@
+import defaultApi from '../modules/default'
+const DEFAULT_API_TYPE = 'default'
+
 // The singleton class that will manage all of nion's API modules. API modules handle URL building,
 // request generation, and response parsing, supplying correctly formed action/payloads to the nion
 // core reducers.
-import { buildUrl } from '../url'
 const noop = () => {}
 
 class ApiManager {
     apiMap = {}
     defaultApiType = null
-    defaultApiUrl = null
-    headersProvider = null
+
+    constructor() {
+        this.registerApi(DEFAULT_API_TYPE, defaultApi)
+        this.setDefaultApi(DEFAULT_API_TYPE)
+    }
 
     getApiModule = apiType => {
         if (this.apiMap[apiType]) {
@@ -25,7 +30,6 @@ class ApiManager {
         return this.getApiModule(apiType).request.getRequestParameters(
             method,
             options,
-            this.headersProvider,
         )
     }
 
@@ -42,7 +46,7 @@ class ApiManager {
     }
 
     getBuildUrl = apiType => {
-        return this.getApiModule(apiType).buildUrl(this.defaultApiUrl)
+        return this.getApiModule(apiType).buildUrl
     }
 
     getErrorClass = apiType => {
@@ -63,9 +67,6 @@ class ApiManager {
 
     registerApi = (name, api) => {
         this.apiMap[name] = api
-
-        // Attach the namespaced buildUrl method to the exported buildUrl method (experimental)
-        buildUrl[name] = api.buildUrl
     }
 
     setDefaultApi = name => {
@@ -73,16 +74,6 @@ class ApiManager {
             this.defaultApiType = name
         } else {
             this.defaultApiType = Object.keys(this.apiMap)[0]
-        }
-    }
-
-    setDefaultApiUrl = url => {
-        this.defaultApiUrl = url
-    }
-
-    setHeadersProvider = headersProvider => {
-        if (headersProvider) {
-            this.headersProvider = headersProvider
         }
     }
 }

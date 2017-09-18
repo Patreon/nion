@@ -13,7 +13,7 @@ import { connect } from 'react-redux'
 import { INITIALIZE_DATAKEY, UPDATE_REF } from '../actions/types'
 import { selectResourcesForKeys } from '../selectors'
 
-const defaultDeclarationOptions = {
+const getDefaultDeclarationOptions = () => ({
     // Component / API Lifecycle methods
     fetchOnInit: false, // Should the component load the data when a new dataKey is created?
     fetchOnce: true, // Should the component only load the data once when dataKey is created?
@@ -29,11 +29,11 @@ const defaultDeclarationOptions = {
 
     // Set custom request parameters
     requestParams: {},
-}
+})
 
 const processDefaultOptions = declarations => {
     map(declarations, (declaration, key) => {
-        map(defaultDeclarationOptions, (defaultState, defaultKey) => {
+        map(getDefaultDeclarationOptions(), (defaultState, defaultKey) => {
             const option = get(declaration, defaultKey, defaultState)
             declaration[defaultKey] = option
         })
