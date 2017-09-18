@@ -248,8 +248,10 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                     dispatch({
                         type: UPDATE_REF,
                         payload: {
-                            dataKey: declaration.dataKey,
                             ref: makeRef(ref),
+                        },
+                        meta: {
+                            dataKey: declaration.dataKey,
                         },
                     })
                     resolve()
@@ -261,7 +263,8 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         dispatchProps._initializeDataKey = (dataKey, ref) => {
             dispatch({
                 type: INITIALIZE_DATAKEY,
-                payload: { dataKey, ref },
+                payload: { ref },
+                meta: { dataKey },
             })
         }
 
