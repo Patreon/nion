@@ -10,5 +10,6 @@
                 "polyfill": false
             }
         ]
-    ]
+    ],
+    "ignore": ["**/*.test.js"]
 }
