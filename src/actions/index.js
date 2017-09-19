@@ -19,7 +19,7 @@ const apiAction = (method, dataKey, options) => _dispatch => {
         method,
     }
 
-    const { apiType } = declaration
+    const { apiType = ApiManager.getDefaultApi() } = declaration
 
     const parse = ApiManager.getParser(apiType)
     const ErrorClass = ApiManager.getErrorClass(apiType)
