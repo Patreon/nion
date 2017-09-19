@@ -32,7 +32,7 @@ export const selectEntityFromKey = key =>
         return isCollection ? entities : entities[0]
     })
 
-export const selectObject = key =>
+export const selectObject = (key, returnAllObjects = false) =>
     createSelector(
         selectReferences,
         selectEntities,
@@ -46,7 +46,7 @@ export const selectObject = key =>
 
             const { isCollection } = ref
             const denormalized = ref.entities.map(entityRef => {
-                return denormalize(entityRef, entityStore)
+                return denormalize(entityRef, entityStore, {}, returnAllObjects)
             })
 
             return isCollection ? denormalized : denormalized[0]
@@ -65,23 +65,41 @@ export const selectRequest = key =>
     })
 
 // Selects the denormalized object plus all relevant request data from the store
-export const selectObjectWithRequest = key =>
+export const selectObjectWithRequest = (key, returnAllObjects = false) =>
     createSelector(
-        selectObject(key),
+        selectObject(key, returnAllObjects),
         selectRequest(key),
         selectExtraRefProps(key),
-        (obj, request, extra) => ({
-            obj,
-            request,
-            ...extra,
-        }),
+        (obj, request, extra) => {
+            if (!returnAllObjects) {
+                return {
+                    obj,
+                    request,
+                    ...extra,
+                }
+            }
+            if (Array.isArray(obj)) {
+                return {
+                    obj: obj.map(objAndList => objAndList.obj),
+                    allObjects: obj.map(objAndList => objAndList.allObjects),
+                    request,
+                    ...extra,
+                }
+            }
+            return {
+                obj: get(obj, 'obj'),
+                allObjects: get(obj, 'allObjects'),
+                request,
+                ...extra,
+            }
+        },
     )
 
 // Selects a keyed map of { obj, request } resources from the store taking an array of dataKeys
-export const selectResourcesForKeys = dataKeys => {
+export const selectResourcesForKeys = (dataKeys, returnAllObjects = false) => {
     return state => {
         return dataKeys.reduce((memo, key) => {
-            memo[key] = selectObjectWithRequest(key)(state)
+            memo[key] = selectObjectWithRequest(key, returnAllObjects)(state)
             return memo
         }, {})
     }

@@ -7,6 +7,7 @@ import set from 'lodash.set'
 import actions from '../actions'
 import { makeRef } from '../transforms'
 import ApiManager from '../api'
+import { areMergedPropsEqual } from './should-rerender'
 
 import { connect } from 'react-redux'
 
@@ -103,7 +104,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 return dataKey
             })
 
-            const selectedResources = selectResourcesForKeys(dataKeys)(state)
+            const selectedResources = selectResourcesForKeys(dataKeys, true)(
+                state,
+            )
 
             const nion = {}
 
@@ -128,11 +131,12 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 defineDataProperty(nion[key], 'request', {
                     ...selected.request,
                 })
+                defineDataProperty(nion[key], 'allObjects', selected.allObjects)
 
                 // Define nion properties from any extra props on the ref, which may be added by an API
                 // module after parsing (eg links, meta from the JSON-API module)
                 const extraProps = Object.keys(
-                    omit(selected, ['obj', 'request']),
+                    omit(selected, ['obj', 'request', 'allObjects']),
                 )
                 map(extraProps, prop => {
                     const extraProp =
@@ -460,6 +464,9 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
         makeMapStateToProps,
         mapDispatchToProps,
         mergeProps,
+        {
+            areMergedPropsEqual,
+        },
     )(WithNion)
     // Take all static properties on the inner Wrapped component and put them on our now-connected
     // component. // This makes nion transparent and safe to add as a decorator; it does not occlude
