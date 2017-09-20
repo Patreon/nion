@@ -2,6 +2,7 @@ import { createSelector } from 'reselect'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
 import denormalize from '../denormalize'
+import denormalizeWithCache from '../denormalize/with-cache'
 
 const selectNion = state => state.nion
 const selectEntities = state => get(selectNion(state), 'entities')
@@ -32,17 +33,15 @@ export const selectEntityFromKey = key =>
         return isCollection ? entities : entities[0]
     })
 
-export const selectObject = key =>
-    createSelector(selectRef(key), selectEntities, (ref, entityStore) => {
+export const selectObject = dataKey =>
+    createSelector(selectRef(dataKey), selectEntities, (ref, entityStore) => {
         // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
         if (isGeneric(ref)) {
             return ref
         }
 
         const { isCollection } = ref
-        const denormalized = ref.entities.map(entityRef => {
-            return denormalize(entityRef, entityStore)
-        })
+        const denormalized = denormalizeWithCache(ref, entityStore, dataKey)
 
         return isCollection ? denormalized : denormalized[0]
     })
