@@ -1,6 +1,6 @@
 import map from 'lodash.map'
 import * as includedApiModules from '../api-modules'
-const DEFAULT_API_TYPE = 'generic'
+const DEFAULT_API_TYPE = 'jsonApi'
 
 // The singleton class that will manage all of nion's API modules. API modules handle URL building,
 // request generation, and response parsing, supplying correctly formed action/payloads to the nion
