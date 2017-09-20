@@ -4,23 +4,14 @@ import { withProps } from 'recompose'
 import { mount } from 'enzyme'
 import nock from 'nock'
 import P from 'bluebird'
-import urlFactory from 'url-factory'
 
-const wwwURL = urlFactory(`https://localhost:3000`)
-const REL_PATH = '/REST/auth/CSRFTicket'
-const CSRF_PATH = wwwURL(REL_PATH)
-
-import nion, { buildUrl, exists, makeRef } from '../index'
+import nion, { exists, makeRef } from '../src/index'
 
 import { Provider } from 'react-redux'
-import configureTestStore from 'shared/configure-store/test'
-
-const storeOptions = {
-    nion: true,
-}
+import configureTestStore from './configure-test-store'
 
 const Wrap = (Wrapped, props) => {
-    const store = configureTestStore({}, storeOptions)
+    const store = configureTestStore()
     return (
         <Provider store={store}>
             <Wrapped {...props} />
@@ -28,12 +19,11 @@ const Wrap = (Wrapped, props) => {
     )
 }
 
+const baseUrl = 'http://api.test.com'
+const buildUrl = path =>
+    path.startsWith('/') ? baseUrl + path : baseUrl + '/' + path
+
 describe('nion : integration tests', () => {
-    beforeEach(() => {
-        nock(CSRF_PATH).get('').query(true).reply(200, {
-            time: Date.now(),
-        })
-    })
     afterEach(() => {
         nock.cleanAll()
     })
@@ -42,7 +32,7 @@ describe('nion : integration tests', () => {
         it('injects props into the component', async () => {
             @nion({
                 test: {
-                    endpoint: '/test',
+                    endpoint: buildUrl('/test'),
                 },
             })
             class Container extends Component {
@@ -85,7 +75,7 @@ describe('nion : integration tests', () => {
             @withProps({ id: 123 })
             @nion(({ id }) => ({
                 test: {
-                    endpoint: `test/${id}`,
+                    endpoint: buildUrl(`test/${id}`),
                 },
             }))
             class Container extends Component {
@@ -98,7 +88,7 @@ describe('nion : integration tests', () => {
             const Wrapped = Wrapper.find('Container')
 
             const declarations = Wrapped.props().nion.getDeclarations()
-            expect(declarations.test.endpoint).toEqual('test/123')
+            expect(declarations.test.endpoint).toEqual(buildUrl('test/123'))
         })
 
         it('gets data on demand', async () => {
@@ -114,7 +104,7 @@ describe('nion : integration tests', () => {
                 },
             })
 
-            @nion({ test: { endpoint: pathname } })
+            @nion({ test: { endpoint } })
             class Container extends Component {
                 render() {
                     return null
@@ -155,7 +145,7 @@ describe('nion : integration tests', () => {
 
             @nion({
                 test: {
-                    endpoint: pathname,
+                    endpoint,
                     fetchOnInit: true,
                 },
             })
