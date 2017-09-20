@@ -47,24 +47,22 @@ export default function denormalize(ref, entities, existingObjects = {}) {
                 existingObjects,
             )
         } else {
-            obj[camelizedKey] = refOrRefs.map(ref => {
+            obj[camelizedKey] = refOrRefs.map(_ref => {
                 // eslint-disable-line
-                return denormalize(ref, entities, existingObjects)
+                return denormalize(_ref, entities, existingObjects)
             })
         }
 
         // Establish a "_ref" property on the relationship object, that acts as a pointer to the
         // original entity
         if (obj[camelizedKey] && !obj[camelizedKey]._ref) {
-            Object.defineProperty(obj[camelizedKey], '_ref', {
-                value: merge({}, relationship),
-            })
+            obj._ref = merge({}, relationship)
         }
     })
 
     // Establish a "_ref" property on the object, that acts as a pointer to the original entity
     if (!obj._ref) {
-        Object.defineProperty(obj, '_ref', { value: { data: { id, type } } })
+        obj._ref = { value: { data: { id, type } } }
     }
     return obj
 }
