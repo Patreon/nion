@@ -9,7 +9,7 @@ export const afterRequest = (method, options) => {
 
 export const getRequestParameters = (
     method,
-    { endpoint, body, meta, declaration },
+    { endpoint, body, meta, declaration = {} },
 ) => {
     const defaultHeaders = {
         'Content-Type': 'application/json',
