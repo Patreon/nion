@@ -1,10 +1,13 @@
 import map from 'lodash.map'
 import every from 'lodash.every'
+import { hasEntityReference, getEntityReference } from '../denormalize'
 
 export const makeRef = (input = {}, options = {}) => {
     // Can pass in a plain object from selectData, since these objects get populated with a _ref to
     // their original { id, type } entity information
-    const toProcess = input._ref ? input._ref : input
+    const toProcess = hasEntityReference(input)
+        ? getEntityReference(input)
+        : input
 
     // Get all relevant information off of the object to be processed
     let { links, meta, isCollection, entities } = toProcess

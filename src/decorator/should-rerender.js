@@ -2,6 +2,7 @@ import difference from 'lodash.difference'
 import every from 'lodash.every'
 import get from 'lodash.get'
 import deepEqual from 'deep-equal'
+import { hasEntityReference } from '../denormalize'
 
 function getDataPropertyKeys(obj) {
     const enumerableKeys = Object.keys(obj)
@@ -59,7 +60,7 @@ function areEntitiesEqual(prevEntity, nextEntity) {
     return every(nextEntityKeys, entityKey => {
         const prevValue = prevEntity[entityKey]
         const nextValue = nextEntity[entityKey]
-        if (get(nextValue, '_ref')) {
+        if (hasEntityReference(nextValue)) {
             return true
         }
         return deepEqual(prevValue, nextValue)
