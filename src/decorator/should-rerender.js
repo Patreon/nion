@@ -90,6 +90,9 @@ export function areMergedPropsEqual(nextProps, props) {
     if (prevNionKeys.length !== nextNionKeys.length) {
         return false
     }
+    if (!deepEqual(prevNionKeys, nextNionKeys)) {
+        return false
+    }
     return every(nextNionKeys, propKey => {
         // Compare this particular nion's object and request state
         const prevResource = props.nion[propKey]

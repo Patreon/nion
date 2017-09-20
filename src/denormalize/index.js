@@ -7,7 +7,7 @@ import { camelize, camelizeKeys } from 'humps'
 export const defineEntityReference = (obj, value) =>
     Object.defineProperty(obj, '_ref', { value })
 
-export const getEntityReference = obj => get(obj, 'ref')
+export const getEntityReference = obj => get(obj, '_ref')
 
 export const hasEntityReference = obj => Boolean(getEntityReference(obj))
 
