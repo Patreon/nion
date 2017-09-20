@@ -33,25 +33,19 @@ export const selectEntityFromKey = key =>
     })
 
 export const selectObject = key =>
-    createSelector(
-        selectReferences,
-        selectEntities,
-        (references, entityStore) => {
-            const ref = get(references, key)
+    createSelector(selectRef(key), selectEntities, (ref, entityStore) => {
+        // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
+        if (isGeneric(ref)) {
+            return ref
+        }
 
-            // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
-            if (isGeneric(ref)) {
-                return ref
-            }
+        const { isCollection } = ref
+        const denormalized = ref.entities.map(entityRef => {
+            return denormalize(entityRef, entityStore)
+        })
 
-            const { isCollection } = ref
-            const denormalized = ref.entities.map(entityRef => {
-                return denormalize(entityRef, entityStore)
-            })
-
-            return isCollection ? denormalized : denormalized[0]
-        },
-    )
+        return isCollection ? denormalized : denormalized[0]
+    })
 
 const selectExtraRefProps = key =>
     createSelector(selectRef(key), ref => ({
