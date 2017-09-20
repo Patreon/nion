@@ -28,7 +28,7 @@ const requestsReducer = (state = initialState, action) => {
                 [action.meta.dataKey]: {
                     ...existing,
                     status: 'success',
-                    fetchedAt: Date.now(),
+                    fetchedAt: action.meta.fetchedAt,
                     isError: false,
                     isLoaded: true,
                     isLoading: false,
@@ -42,7 +42,7 @@ const requestsReducer = (state = initialState, action) => {
                     status: 'error',
                     name: action.payload.name,
                     errors: action.payload.errors,
-                    fetchedAt: Date.now(),
+                    fetchedAt: action.meta.fetchedAt,
                     isError: true,
                     isLoaded: false,
                     isLoading: false,
