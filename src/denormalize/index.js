@@ -64,9 +64,9 @@ export default function denormalize(
                 existingObjects,
             )
         } else {
-            obj[camelizedKey] = refOrRefs.map(ref => {
+            obj[camelizedKey] = refOrRefs.map(relationshipRef => {
                 // eslint-disable-line
-                return denormalize(ref, entities, existingObjects)
+                return denormalize(relationshipRef, entities, existingObjects)
             })
         }
 
