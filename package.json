@@ -28,6 +28,7 @@
         "react-redux": "^5.0.5",
         "redux": "^3.7.1",
         "reselect": "^3.0.1",
+        "seamless-immutable": "^7.1.2",
         "url-factory": "^3.0.0"
     },
     "scripts": {
@@ -65,6 +66,7 @@
         "eslint-plugin-react": "^6.10.0",
         "install": "^0.10.1",
         "jest": "^21.1.0",
+        "lodash.union": "^4.6.0",
         "nock": "^9.0.16",
         "npm": "^5.0.4",
         "prettier": "^1.4.4",

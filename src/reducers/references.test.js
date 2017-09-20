@@ -13,7 +13,7 @@ class Reducer {
 }
 
 describe('nion: reducers', () => {
-    describe('requests reducer', () => {
+    describe('references reducer', () => {
         it('should return the initial state', () => {
             const reducer = new Reducer()
             reducer.applyAction({})
@@ -166,6 +166,52 @@ describe('nion: reducers', () => {
             const user = get(reducer.state, [dataKey, 'entities', 0])
             expect(user.type).toEqual('user')
             expect(user.id).toEqual(456)
+        })
+
+        it('filters out refsToDelete from all refs', () => {
+            const reducer = new Reducer()
+
+            const initializationActions = [
+                makeAction(types.INITIALIZE_DATAKEY, 'userGroupA', {
+                    ref: {
+                        entities: [
+                            { type: 'user', id: 123 },
+                            { type: 'user', id: 456 },
+                        ],
+                    },
+                }),
+                makeAction(types.INITIALIZE_DATAKEY, 'userGroupB', {
+                    ref: {
+                        entities: [
+                            { type: 'user', id: 123 },
+                            { type: 'user', id: 789 },
+                        ],
+                    },
+                }),
+            ]
+            reducer.applyAction(initializationActions[0])
+            reducer.applyAction(initializationActions[1])
+
+            const deleteAction = makeAction(
+                types.NION_API_SUCCESS,
+                'someDataKey',
+                {
+                    refToDelete: { type: 'user', id: 123 },
+                },
+            )
+            reducer.applyAction(deleteAction)
+
+            const userGroupARef = get(reducer.state, 'userGroupA')
+            expect(userGroupARef.entities.length).toEqual(1)
+            const remaingingUserA = userGroupARef.entities[0]
+            expect(remaingingUserA.type).toEqual('user')
+            expect(remaingingUserA.id).toEqual(456)
+
+            const userGroupBRef = get(reducer.state, 'userGroupB')
+            expect(userGroupBRef.entities.length).toEqual(1)
+            const remaingingUserB = userGroupBRef.entities[0]
+            expect(remaingingUserB.type).toEqual('user')
+            expect(remaingingUserB.id).toEqual(789)
         })
     })
 })

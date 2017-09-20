@@ -1,6 +1,7 @@
+import Immutable from 'seamless-immutable'
 import get from 'lodash.get'
 
-const initialState = {}
+const initialState = Immutable({})
 
 import {
     NION_API_REQUEST,
@@ -10,9 +11,6 @@ import {
     UPDATE_REF,
 } from '../actions/types'
 
-// Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
-const clone = input => JSON.parse(JSON.stringify(input))
-
 const deleteRefFromEntities = (refToDelete = {}, state = {}) => {
     const { type, id } = refToDelete
     if (!id || !type) {
@@ -21,21 +19,17 @@ const deleteRefFromEntities = (refToDelete = {}, state = {}) => {
 
     // Iterate over all dataKeys on state to remove all instance of the
     // ref to be deleted
-    return Object.keys(state).reduce((memo, dataKey) => {
+    Object.keys(state).forEach(dataKey => {
         const oldEntities = get(state[dataKey], 'entities')
 
         if (Array.isArray(oldEntities)) {
-            memo[dataKey] = {
-                ...state[dataKey],
-                entities: oldEntities.filter(entity => {
-                    return !(entity.type === type && entity.id === id)
-                }),
-            }
-        } else {
-            memo[dataKey] = state[dataKey]
+            const filtered = oldEntities.filter(entity => {
+                return !(entity.type === type && entity.id === id)
+            })
+            state = state.setIn([dataKey, 'entities'], filtered)
         }
-        return memo
-    }, {})
+    })
+    return state
 }
 
 const refsReducer = (state = initialState, action) => {
@@ -53,48 +47,35 @@ const refsReducer = (state = initialState, action) => {
                     'entities',
                     [],
                 )
-                return {
-                    ...state,
+                return state.merge({
                     [action.meta.dataKey]: {
                         ...nextPageRef,
-                        isCollection: true, // hack for now, needs a better solution
+                        isCollection: true,
                         entities: oldEntities.concat(nextPageRef.entities),
                     },
-                }
+                })
             } else if (action.meta.refToDelete) {
-                // Else, if the result of a DELETE request, we must process delete corresponding refs
-                // off of the references state
-                return {
-                    // if there's no ref to delete, this is a no-op
-                    ...deleteRefFromEntities(action.meta.refToDelete, state),
-                }
+                // Else, if the result of a DELETE request, we must process delete corresponding
+                // refs off of the references state
+                return deleteRefFromEntities(action.meta.refToDelete, state)
                 // Otherwise, append or update the ref to the state
             } else if (action.payload) {
-                return {
-                    ...state,
-                    [action.meta.dataKey]: action.payload.responseData.entryRef,
-                }
+                return state.set(
+                    action.meta.dataKey,
+                    action.payload.responseData.entryRef,
+                )
                 // Otherwise, the data returned was undefined
             } else {
-                return {
-                    ...state,
-                    [action.meta.dataKey]: undefined,
-                }
+                return state.set(action.meta.dataKey, undefined)
             }
 
         // Initialize a new dataKey from a ref passed to a child component
         case INITIALIZE_DATAKEY:
-            return {
-                ...state,
-                [action.meta.dataKey]: clone(action.payload.ref),
-            }
+            return state.set(action.meta.dataKey, action.payload.ref)
 
         // Update a reference attached to a dataKey explicitly
         case UPDATE_REF:
-            return {
-                ...state,
-                [action.meta.dataKey]: clone(action.payload.ref),
-            }
+            return state.set(action.meta.dataKey, action.payload.ref)
 
         default:
             return state
