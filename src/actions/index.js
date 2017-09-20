@@ -64,7 +64,10 @@ const apiAction = (method, dataKey, options) => _dispatch => {
 
             await dispatch({
                 type: NION_API_SUCCESS,
-                meta,
+                meta: {
+                    ...meta,
+                    fetchedAt: Date.now(),
+                },
                 payload: {
                     requestType: apiType,
                     responseData: parse(json),
@@ -76,7 +79,10 @@ const apiAction = (method, dataKey, options) => _dispatch => {
             try {
                 await dispatch({
                     type: NION_API_FAILURE,
-                    meta,
+                    meta: {
+                        ...meta,
+                        fetchedAt: Date.now(),
+                    },
                     payload: error,
                 })
             } catch (renderError) {
