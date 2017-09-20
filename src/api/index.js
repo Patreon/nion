@@ -1,5 +1,6 @@
-import defaultApi from '../modules/default'
-const DEFAULT_API_TYPE = 'default'
+import map from 'lodash.map'
+import * as includedApiModules from '../api-modules'
+const DEFAULT_API_TYPE = 'jsonApi'
 
 // The singleton class that will manage all of nion's API modules. API modules handle URL building,
 // request generation, and response parsing, supplying correctly formed action/payloads to the nion
@@ -11,7 +12,9 @@ class ApiManager {
     defaultApiType = null
 
     constructor() {
-        this.registerApi(DEFAULT_API_TYPE, defaultApi)
+        map(includedApiModules, (module, key) => {
+            this.registerApi(key, module)
+        })
         this.setDefaultApi(DEFAULT_API_TYPE)
     }
 
@@ -66,6 +69,7 @@ class ApiManager {
     }
 
     registerApi = (name, api) => {
+        // TODO: perhaps add some sort of run-time module interface checking here?
         this.apiMap[name] = api
     }
 
