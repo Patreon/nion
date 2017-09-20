@@ -48,6 +48,7 @@ describe('nion: reducers', () => {
                 storeFragment.toPayload(),
             )
             reducer.applyAction(action)
+
             const name = get(reducer.state, ['user', 123, 'attributes', 'name'])
             expect(name).toEqual('Test User')
         })
