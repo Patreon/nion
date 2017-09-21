@@ -2,18 +2,21 @@ import map from 'lodash.map'
 import every from 'lodash.every'
 
 const addEntityToStoreFragment = (store, entity = {}) => {
-    const { type, id, attributes, relationships } = entity
+    // It's important to have default attributes and relationships here, since we can accidentally
+    // overwrite these keys when we merge the fragment into the redux store if they are undefined
+    const { type, id, attributes = {}, relationships = {} } = entity
     if (!entity) {
         return
     }
     if (!(type in store)) {
         store[type] = {}
     }
+
     store[type][id] = {
-        type: type,
-        id: id,
-        attributes: attributes,
-        relationships: relationships,
+        type,
+        id,
+        attributes,
+        relationships,
     }
 }
 
