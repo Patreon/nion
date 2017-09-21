@@ -1,6 +1,7 @@
 import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 import nock from 'nock'
+import union from 'lodash.union'
 import ApiManager from '../api'
 
 import * as actionTypes from './types'
@@ -47,6 +48,7 @@ describe('nion: actions', () => {
                     type: actionTypes.NION_API_SUCCESS,
                     meta: {
                         dataKey,
+                        fetchedAt: Date.now(),
                         endpoint: apiEndpoint.url,
                         method: 'GET',
                     },
@@ -65,9 +67,9 @@ describe('nion: actions', () => {
                 }),
             )
 
-            const obvservedActions = store.getActions()
+            const observedActions = store.getActions()
             expectedActions.forEach((expectedAction, index) => {
-                expect(expectedAction).toEqual(obvservedActions[index])
+                assertEqualAction(expectedAction, observedActions[index])
             })
         })
 
@@ -93,6 +95,7 @@ describe('nion: actions', () => {
                     type: actionTypes.NION_API_FAILURE,
                     meta: {
                         dataKey,
+                        fetchedAt: Date.now(),
                         endpoint: apiEndpoint.url,
                         method: 'GET',
                     },
@@ -115,10 +118,38 @@ describe('nion: actions', () => {
                 expectedActions[1].payload = err
             }
 
-            const obvservedActions = store.getActions()
+            const observedActions = store.getActions()
             expectedActions.forEach((expectedAction, index) => {
-                expect(expectedAction).toEqual(obvservedActions[index])
+                assertEqualAction(expectedAction, observedActions[index])
             })
         })
     })
 })
+
+function assertEqualAction(expected, observed) {
+    expect(expected.type).toEqual(observed.type)
+
+    const metaKeys = union(
+        Object.keys(expected.meta || {}),
+        Object.keys(observed.meta || {}),
+    )
+    metaKeys.forEach(metaKey => {
+        if (metaKey === 'fetchedAt') {
+            // Check to see that our fetchedAt value is within 30ms of our actual value
+            const diff = expected.meta.fetchedAt - observed.meta.fetchedAt
+            expect(Math.abs(diff)).toBeLessThan(30)
+        } else {
+            expect(expected.meta[metaKey]).toEqual(observed.meta[metaKey])
+        }
+    })
+
+    const payloadKeys = union(
+        Object.keys(expected.payload || {}),
+        Object.keys(observed.payload || {}),
+    )
+    payloadKeys.forEach(payloadKey => {
+        expect(expected.payload[payloadKey]).toEqual(
+            observed.payload[payloadKey],
+        )
+    })
+}

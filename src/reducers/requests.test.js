@@ -88,6 +88,7 @@ function makeAction(actionType, dataKey, { method, name, errors }) {
         meta: {
             dataKey,
             method,
+            fetchedAt: Date.now(),
         },
     }
 }
