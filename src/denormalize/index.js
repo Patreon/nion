@@ -1,7 +1,6 @@
 import get from 'lodash.get'
 import set from 'lodash.set'
 import map from 'lodash.map'
-import merge from 'lodash.merge'
 import { camelize, camelizeKeys } from 'humps'
 
 export default function denormalize(ref, entities, existingObjects = {}) {
@@ -52,19 +51,11 @@ export default function denormalize(ref, entities, existingObjects = {}) {
                 return denormalize(relationshipRef, entities, existingObjects)
             })
         }
-
-        // Establish a "_ref" property on the relationship object, that acts as a pointer to the
-        // original entity
-        if (obj[camelizedKey] && !obj[camelizedKey]._ref) {
-            Object.defineProperty(obj[camelizedKey], '_ref', {
-                value: merge({}, relationship),
-            })
-        }
     })
 
     // Establish a "_ref" property on the object, that acts as a pointer to the original entity
     if (!obj._ref) {
-        Object.defineProperty(obj, '_ref', { value: { data: { id, type } } })
+        obj = obj.set('_ref', { value: { data: { id, type } } })
     }
     return obj
 }
