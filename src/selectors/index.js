@@ -1,8 +1,7 @@
 import { createSelector } from 'reselect'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
-import denormalize from '../denormalize'
-import denormalizeWithCache from '../denormalize/with-cache'
+import denormalizeWithCache from '../denormalize'
 
 const selectNion = state => state.nion
 const selectEntities = state => get(selectNion(state), 'entities')
@@ -41,7 +40,7 @@ export const selectObject = dataKey =>
         }
 
         const { isCollection } = ref
-        const denormalized = denormalizeWithCache(ref, entityStore, dataKey)
+        const denormalized = denormalizeWithCache(ref, entityStore)
 
         return isCollection ? denormalized : denormalized[0]
     })
@@ -102,7 +101,7 @@ export const selectData = (key, defaultValue) => {
     if (typeof key === 'object' && key.type && key.id !== undefined) {
         const entityRef = key
         return createSelector(selectEntities, entityStore =>
-            denormalize(entityRef, entityStore),
+            denormalizeWithCache(entityRef, entityStore),
         )
     }
 
