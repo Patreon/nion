@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
-import denormalize from '../denormalize'
+import denormalizeWithCache from '../denormalize'
 
 const selectNion = state => state.nion
 const selectEntities = state => get(selectNion(state), 'entities')
@@ -32,29 +32,21 @@ export const selectEntityFromKey = key =>
         return isCollection ? entities : entities[0]
     })
 
-export const selectObject = key =>
-    createSelector(
-        selectReferences,
-        selectEntities,
-        (references, entityStore) => {
-            const ref = get(references, key)
+export const selectObject = dataKey =>
+    createSelector(selectRef(dataKey), selectEntities, (ref, entityStore) => {
+        // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
+        if (isGeneric(ref)) {
+            return ref
+        }
 
-            // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
-            if (isGeneric(ref)) {
-                return ref
-            }
+        const { isCollection } = ref
+        const denormalized = denormalizeWithCache(ref, entityStore)
 
-            const { isCollection } = ref
-            const denormalized = ref.entities.map(entityRef => {
-                return denormalize(entityRef, entityStore)
-            })
+        return isCollection ? denormalized : denormalized[0]
+    })
 
-            return isCollection ? denormalized : denormalized[0]
-        },
-    )
-
-const selectExtraRefProps = key =>
-    createSelector(selectRef(key), ref => ({
+const selectExtraRefProps = dataKey =>
+    createSelector(selectRef(dataKey), ref => ({
         ...omit(ref, ['entities', 'isCollection']),
     }))
 
@@ -65,11 +57,11 @@ export const selectRequest = key =>
     })
 
 // Selects the denormalized object plus all relevant request data from the store
-export const selectObjectWithRequest = key =>
+export const selectObjectWithRequest = dataKey =>
     createSelector(
-        selectObject(key),
-        selectRequest(key),
-        selectExtraRefProps(key),
+        selectObject(dataKey),
+        selectRequest(dataKey),
+        selectExtraRefProps(dataKey),
         (obj, request, extra) => ({
             obj,
             request,
@@ -88,8 +80,8 @@ export const selectResourcesForKeys = dataKeys => {
 }
 
 // Selects the combination { obj, request } resource from the store taking a dataKey
-export const selectResourceForKey = dataKey =>
-    createSelector(selectResourcesForKeys([dataKey]), data => data[dataKey])
+export const selectResourceForKey = dataKey => state =>
+    selectObjectWithRequest(dataKey)(state)
 
 // Selects the combination { obj, request } resource from the store, taking either a dataKey or
 // array of dataKeys
@@ -109,7 +101,7 @@ export const selectData = (key, defaultValue) => {
     if (typeof key === 'object' && key.type && key.id !== undefined) {
         const entityRef = key
         return createSelector(selectEntities, entityStore =>
-            denormalize(entityRef, entityStore),
+            denormalizeWithCache(entityRef, entityStore),
         )
     }
 
