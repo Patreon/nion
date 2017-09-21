@@ -2,15 +2,9 @@ import difference from 'lodash.difference'
 import every from 'lodash.every'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
-import shallowEqual from 'is-equal-shallow'
 import deepEqual from 'deep-equal'
-import { hasEntityReference } from '../denormalize'
-
-function areNonNionDataEqual(props, nextProps) {
-    const prevNonNionData = omit(props, ['nion'])
-    const nextNonNionData = omit(nextProps, ['nion'])
-    return shallowEqual(prevNonNionData, nextNonNionData)
-}
+import shallowEqual from '../utilities/shallow-equal'
+import { exists } from './index'
 
 function getDataPropertyKeys(obj) {
     const enumerableKeys = Object.keys(obj)
@@ -18,8 +12,8 @@ function getDataPropertyKeys(obj) {
     return difference(allKeys, enumerableKeys)
 }
 
-const keysWithCustomComparators = ['actions', 'request', 'allObjects']
-function areCustomDataEqual(prevResource, nextResource) {
+const keysWithCustomComparators = ['actions', 'request', 'extra']
+function compareCustomProperties(prevResource, nextResource) {
     const prevDataKeys = getDataPropertyKeys(prevResource)
     const nextDataKeys = getDataPropertyKeys(nextResource)
     const prevExtraProps = difference(prevDataKeys, keysWithCustomComparators)
@@ -35,67 +29,57 @@ function areCustomDataEqual(prevResource, nextResource) {
     })
 }
 
-function areRequestsEqual(prevRequests, nextRequests) {
+// We don't want to do a strict immutable check here because we're adding a 'canLoadMore' property
+// to the selected request in the nion decorator...
+// TODO: we'll probably want to handle that special pagination property a bit more elegantly /
+// consistently so that it's automatically added to the request reducer
+
+function compareRequests(prevRequests, nextRequests) {
     return (
         get(prevRequests, 'status') === get(nextRequests, 'status') &&
         get(prevRequests, 'fetchedAt') === get(nextRequests, 'fetchedAt')
     )
 }
 
-function flattenEntities(entitiesTree) {
-    if (!entitiesTree) {
-        return []
+function compareObject(prevObject, nextObject) {
+    // If the selected data do not exist yet, the ad-hoc created nonexistence objects should be
+    // treated as equal
+    if (!exists(prevObject) && !exists(nextObject)) {
+        return true
+    } else {
+        return prevObject === nextObject
     }
-    const result = []
-    const entityTypes = Object.keys(entitiesTree).sort()
-    entityTypes.forEach(entityType => {
-        const entitiesById = entitiesTree[entityType]
-        const ids = Object.keys(entitiesById).sort()
-        ids.forEach(entityId => {
-            result.push(entitiesById[entityId])
-        })
-    })
-    return result
 }
 
-function areEntitiesEqual(prevEntity, nextEntity) {
-    const prevEntityKeys = Object.keys(prevEntity).sort()
-    const nextEntityKeys = Object.keys(nextEntity).sort()
-    if (prevEntityKeys.length !== nextEntityKeys.length) {
+// TODO: We can probably make this situation a bit more elegant - right now, we're forced to compare
+// each element of an array containing denormalized objects to see if any of them have changed...
+// it's probably more straightforward to compare immutable arrays. In addition, this would make
+// it easier to handle the subtle weirdness around non-existent objects, which we'll probably want
+// to change up how we handle as we transition towards injecting data under the "data" named prop
+function compareData(prevData, nextData) {
+    // Cast all input data to an array to make comparisons between non-existent and existent
+    // collections more straightforward
+    prevData = prevData instanceof Array ? prevData : [prevData]
+    nextData = nextData instanceof Array ? nextData : [nextData]
+
+    if (prevData.length !== nextData.length) {
         return false
     }
 
-    return every(nextEntityKeys, entityKey => {
-        const prevValue = prevEntity[entityKey]
-        const nextValue = nextEntity[entityKey]
-        if (hasEntityReference(nextValue)) {
-            return true
-        }
-        return deepEqual(prevValue, nextValue)
-    })
-}
-
-function areEntityListsEqual(prevFlatEntities, nextFlatEntities) {
-    if (prevFlatEntities.length !== nextFlatEntities.length) {
-        return false
-    }
-
-    for (let index = 0; index < nextFlatEntities.length; index++) {
-        const prevEntity = prevFlatEntities[index]
-        const nextEntity = nextFlatEntities[index]
-        if (!areEntitiesEqual(prevEntity, nextEntity)) {
+    for (let i = 0; i < prevData.length; i++) {
+        const areEqual = compareObject(prevData[i], nextData[i])
+        if (!areEqual) {
             return false
         }
     }
-
     return true
 }
 
-export function areMergedPropsEqual(nextProps, props) {
-    if (!areNonNionDataEqual(props, nextProps)) {
-        return false
-    }
+function comparePassedProps(nextProps, props) {
+    return shallowEqual(omit(nextProps, 'nion'), omit(props, 'nion'))
+}
 
+export function areMergedPropsEqual(nextProps, props) {
     const keysToIgnore = ['_initializeDataKey', 'updateEntity', '_declarations']
     const prevNionKeys = difference(Object.keys(props.nion), keysToIgnore)
     const nextNionKeys = difference(Object.keys(nextProps.nion), keysToIgnore)
@@ -105,36 +89,40 @@ export function areMergedPropsEqual(nextProps, props) {
     if (!deepEqual(prevNionKeys, nextNionKeys)) {
         return false
     }
+
+    // Check the custom props being passed in from parent components
+    const passedPropsAreEqual = comparePassedProps(nextProps, props)
+    if (!passedPropsAreEqual) {
+        return false
+    }
+
     return every(nextNionKeys, propKey => {
-        // Compare this particular nion's object and request state
+        // Compare this particular nion dataProp's actions, denormalized objects, and request state
         const prevResource = props.nion[propKey]
         const nextResource = nextProps.nion[propKey]
 
         // Compare all extra properties, except those which have custom comparators
-        const customDataEqualityResult = areCustomDataEqual(
+        const customPropsAreEqual = compareCustomProperties(
             prevResource,
             nextResource,
         )
-        if (!customDataEqualityResult) {
+
+        if (!customPropsAreEqual) {
             return false
         }
 
         // Compare request state
-        const requestsEqualityResult = areRequestsEqual(
-            get(prevResource, 'request'),
-            get(nextResource, 'request'),
+        const requestsAreEqual = compareRequests(
+            prevResource.request,
+            nextResource.request,
         )
-        if (!requestsEqualityResult) {
+
+        if (!requestsAreEqual) {
             return false
         }
 
-        // Compare entity data
-        const prevFlatEntities = flattenEntities(
-            get(prevResource, 'allObjects'),
-        )
-        const nextFlatEntities = flattenEntities(
-            get(nextResource, 'allObjects'),
-        )
-        return areEntityListsEqual(prevFlatEntities, nextFlatEntities)
+        // Compare selected denormalized data
+        const dataAreEqual = compareData(prevResource.data, nextResource.data)
+        return dataAreEqual
     })
 }

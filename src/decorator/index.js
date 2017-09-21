@@ -4,7 +4,7 @@ import get from 'lodash.get'
 import map from 'lodash.map'
 import omit from 'lodash.omit'
 import set from 'lodash.set'
-import actions from '../actions'
+import nionActions from '../actions'
 import { makeRef } from '../transforms'
 import ApiManager from '../api'
 import { areMergedPropsEqual } from './should-rerender'
@@ -43,13 +43,6 @@ const processDefaultOptions = declarations => {
 
 const processDeclarations = (inputDeclarations, ...rest) => {
     let declarations
-
-    const defineDataProperty = (obj, key, value) => {
-        Object.defineProperty(obj, key, {
-            value,
-            enumerable: false,
-        })
-    }
 
     // The passed in declarations object is a map of dataKeys to fetch and their corresponding
     // params. We need to handle both the component-scoped key (the key of the object passed to
@@ -113,6 +106,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
             // Now map back over the dataKeys to their original keys
             map(selectedResources, (selected, selectedDataKey) => {
                 const key = keysByDataKey[selectedDataKey]
+                nion[key] = {}
 
                 // If the ref doesn't yet exist, we need to ensure we can pass an object with
                 // 'request' and 'actions' props to the child component so it can manage loading the
@@ -120,33 +114,14 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 // hidden property) to pass down to the child component. This can interface with the
                 // "exists" function to tell if the data exists yet
                 const refDoesNotExist = selected.obj === undefined || null
-                nion[key] = refDoesNotExist
+                nion[key].data = refDoesNotExist
                     ? makeNonExistingObject()
-                    : makeExistingObject(selected.obj)
+                    : selected.obj
 
-                // Define the nion-specific properties as non-enumerable properties on the dataKey prop.
-                // TODO: links and meta are JSON-API specific properties on the reference that we need
-                // to decide how to handle in an API-agnostic way
-                defineDataProperty(nion[key], 'actions', {})
-                defineDataProperty(nion[key], 'request', {
-                    ...selected.request,
-                })
-                defineDataProperty(nion[key], 'allObjects', selected.allObjects)
-
-                // Define nion properties from any extra props on the ref, which may be added by an API
-                // module after parsing (eg links, meta from the JSON-API module)
-                const extraProps = Object.keys(
-                    omit(selected, ['obj', 'request', 'allObjects']),
-                )
-                map(extraProps, prop => {
-                    const extraProp =
-                        typeof selected[prop] === 'object' &&
-                        get(declarations, `${selectedDataKey}.apiType`) !==
-                            'api'
-                            ? { ...selected[prop] }
-                            : selected[prop]
-                    defineDataProperty(nion[key], prop, extraProp)
-                })
+                // Define the nion-specific properties as properties on the dataKey prop.
+                nion[key].actions = {}
+                nion[key].request = selected.request
+                nion[key].extra = selected.extra
             })
 
             return { nion }
@@ -187,7 +162,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
             dispatchProps[key]['POST'] = (body = {}, params, actionOptions) => {
                 const endpoint = getUrl(declaration, params)
 
-                return actions.post(dataKey, {
+                return nionActions.post(dataKey, {
                     endpoint,
                     declaration,
                     body,
@@ -199,7 +174,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
             dispatchProps[key]['PATCH'] = (body = {}, params) => {
                 const endpoint = getUrl(declaration, params)
-                return actions.patch(dataKey, {
+                return nionActions.patch(dataKey, {
                     endpoint,
                     declaration,
                     body,
@@ -208,7 +183,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
             dispatchProps[key]['GET'] = params => {
                 const endpoint = getUrl(declaration, params)
-                return actions.get(dataKey, {
+                return nionActions.get(dataKey, {
                     declaration,
                     endpoint,
                 })(dispatch)
@@ -223,7 +198,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                     refToDelete = options.refToDelete
                 }
                 const endpoint = getUrl(declaration, params)
-                return actions.delete(dataKey, {
+                return nionActions.delete(dataKey, {
                     declaration,
                     endpoint,
                     refToDelete,
@@ -235,7 +210,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                     const { next } = params
                     const endpoint = params.endpoint || next
 
-                    return actions.next(dataKey, {
+                    return nionActions.next(dataKey, {
                         declaration,
                         endpoint,
                     })(dispatch)
@@ -271,7 +246,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         // Exposed, general nion data manipulating actions
         dispatchProps.updateEntity = ({ type, id }, attributes) => {
             return new Promise((resolve, reject) => {
-                dispatch(actions.updateEntity({ type, id }, attributes))
+                dispatch(nionActions.updateEntity({ type, id }, attributes))
                 resolve()
             })
         }
@@ -284,7 +259,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         const nextProps = { ...stateProps, ...ownProps }
 
         mapDeclarations((declaration, key, dataKey) => {
-            const data = get(stateProps.nion, key)
+            const data = get(stateProps.nion, [key, 'data'])
             const ref = data ? { id: data.id, type: data.type } : null
 
             // Add each method's corresponding request handler to the nextProps[key].request
@@ -320,16 +295,16 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 }
 
                 // Add in a special "canLoadMore" prop to the request if the pagination module
-                // exists
+                // exists. TODO: We probably shouldn't be extending our immutable request object
+                // here, since there may be a more elegant way to send this information to the
+                // decorated component than through the "request" object
                 if (pagination.canLoadMore) {
                     const canLoadMore = pagination.canLoadMore(
                         nextProps.nion[key],
                     )
-                    set(
-                        nextProps.nion,
-                        [key, 'request', 'canLoadMore'],
-                        canLoadMore,
-                    )
+                    nextProps.nion[key].request = nextProps.nion[
+                        key
+                    ].request.set('canLoadMore', canLoadMore)
                 }
             }
 
@@ -340,13 +315,20 @@ const processDeclarations = (inputDeclarations, ...rest) => {
             )
         })
 
-        if (dispatchProps._initializeDataKey) {
-            nextProps.nion._initializeDataKey = dispatchProps._initializeDataKey
-        }
+        // Pass along the nion decorator-internal methods for initialization
+        defineNonEnumerable(nextProps.nion, '_declarations', declarations)
+        defineNonEnumerable(
+            nextProps.nion,
+            '_initializeDataKey',
+            dispatchProps._initializeDataKey,
+        )
 
         // Pass along the global nion action creators
-        nextProps.nion.updateEntity = dispatchProps.updateEntity
-        nextProps.nion._declarations = declarations
+        defineNonEnumerable(
+            nextProps.nion,
+            'updateEntity',
+            dispatchProps.updateEntity,
+        )
 
         return nextProps
     }
@@ -439,7 +421,8 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
                 if (declaration.initialRef) {
                     // If a ref has already been attached to the dataKey, don't dispatch it again...
                     // this triggers a cascading rerender which will cause an infinite loop
-                    if (exists(nion[key])) {
+
+                    if (exists(nion[key].data)) {
                         return
                     }
 
@@ -497,7 +480,7 @@ export function exists(input = {}, defaultValue = false) {
         return input._exists
     }
 
-    const testExists = obj => !!(obj.id && obj.type)
+    const testExists = obj => !!(obj.id && obj.type) || input._exists
 
     if (input instanceof Array) {
         return input.filter(testExists).length
@@ -512,15 +495,6 @@ function makeNonExistingObject() {
     const obj = {}
     Object.defineProperty(obj, '_exists', { value: false, enumerable: false })
     return obj
-}
-
-function makeExistingObject(input) {
-    const output = input instanceof Array ? [...input] : { ...input }
-    Object.defineProperty(output, '_exists', {
-        value: true,
-        enumerable: false,
-    })
-    return output
 }
 
 function getDisplayName(WrappedComponent) {
@@ -538,17 +512,45 @@ function isNotLoaded(status) {
 // Filter out hidden props from the nion dataProp, including _declarations and _initializeDataKey,
 // which are only used internally in the wrapper component. Expose a method getDeclarations that
 // returns the removed declarations property
-function finalProcessProps(dataProp) {
+function finalProcessProps(nionProp) {
     const output = {}
 
-    // Expose a getDeclarations method (used for testing)
-    output.getDeclarations = () => dataProp._declarations
+    // Expose a getDeclarations method (used for testing) and updateEntity method (for optimistic
+    // updates)
+    output.getDeclarations = () => nionProp._declarations
+    output.updateEntity = nionProp.updateEntity
 
-    map(dataProp, (obj, key) => {
-        if (key === '_declarations' || key === '_initializeDataKey') {
-            return
-        }
-        output[key] = obj
+    map(nionProp, (dataProp, key) => {
+        // Now, transform the dataProp.data object or array to be the first class dataProp value
+        // TODO: Do we want to expose the nion selected data as a first class object / array on the
+        // dataProp or do we want to namespace it under the dataProp.data key?
+        const { data, actions, request, extra, ...rest } = dataProp
+
+        const reconstructedData =
+            data instanceof Array ? [...data] : { ...data }
+
+        defineNonEnumerable(reconstructedData, 'actions', actions)
+        defineNonEnumerable(reconstructedData, 'request', request)
+        defineNonEnumerable(reconstructedData, 'extra', extra)
+
+        // We also need to apply the properties of extra to the exposed data for
+        // backwards-compatibility reasons. TODO: Look through the codebase and try to excise these
+        // splatted out extra ref properties (most likely links and meta) and keep them on "extra"
+        // We also need to think about how these work with non-json-api data... currently we're
+        // just putting all data retrieved from a generic API request onto the reference reducer,
+        // and this is a bit weird (are they non-enumerable? Should they be handled via entities?)
+        map(extra, (extraValue, extraKey) => {
+            reconstructedData[extraKey] = extraValue
+        })
+
+        // Apply any other ad-hoc added props for legacy-compatibility reasons... the data contained
+        // on extra used to be applied here, but that's namespaced on that key now... TODO: make
+        // sure we're not adding any more ad-hoc props to the nion dataProp and get rid of this step
+        map(rest, (restValue, restKey) => {
+            reconstructedData[restKey] = restValue
+        })
+
+        output[key] = reconstructedData
     })
     return output
 }
@@ -556,4 +558,11 @@ function finalProcessProps(dataProp) {
 // Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
 function clone(input) {
     return JSON.parse(JSON.stringify(input))
+}
+
+function defineNonEnumerable(obj, key, value) {
+    Object.defineProperty(obj, key, {
+        value,
+        enumerable: false,
+    })
 }

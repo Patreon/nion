@@ -352,6 +352,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
+
             expect(exists(test)).toEqual(false)
         })
 
