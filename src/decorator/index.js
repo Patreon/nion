@@ -168,9 +168,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
             // Use if a fully-formed url, otherwise pass to buildUrl
             return typeof buildUrl === 'undefined' ||
-            typeof endpoint === 'undefined' ||
-            endpoint.indexOf('https://') === 0 ||
-            endpoint.indexOf('http://') === 0
+                typeof endpoint === 'undefined' ||
+                endpoint.indexOf('https://') === 0 ||
+                endpoint.indexOf('http://') === 0
                 ? endpoint
                 : buildUrl(endpoint, params)
         }

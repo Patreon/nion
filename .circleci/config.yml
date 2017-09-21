@@ -1,0 +1,57 @@
+version: 2
+
+_helpers:
+  - &node_image
+    image: circleci/node:8.2.1
+
+jobs:
+    build:
+        working_directory: ~/nion
+        parallelism: 2
+        docker:
+            - *node_image
+        steps:
+            - checkout
+
+            - run:
+                name: Print debug information
+                command: |
+                  node --version
+                  npm --version
+
+            - restore_cache:
+                key: v1-nion-npm-{{ checksum "package.json" }}
+
+            - run:
+                name: Install npm dependencies
+                command: |
+                    npm install
+
+            - save_cache:
+                key: v1-nion-npm-{{ checksum "package.json" }}
+                paths:
+                    - node_modules
+
+            - run:
+                name: Lint
+                command: npm run lint:all
+
+            - run:
+                name: Test
+                command: |
+                    TESTFILES=$(circleci tests glob "src/**/{*.,}test.js" "app/**/__tests__/*.js" | circleci tests split --split-by=timings)
+                    JEST_JUNIT_OUTPUT="./test-artifacts/test-reports/junit-jest.xml" npm run test -- --runInBand ${TESTFILES}
+
+            - store_test_results:
+                path: ./test-artifacts/test-reports
+
+            - store_artifacts:
+                path: ./test-artifacts
+                destination: test-artifacts
+
+
+workflows:
+    version: 2
+    primary_workflow:
+        jobs:
+            - build

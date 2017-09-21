@@ -23,6 +23,7 @@
         "lodash.merge": "^4.6.0",
         "lodash.omit": "^4.5.0",
         "lodash.set": "^4.3.2",
+        "lodash.union": "^4.6.0",
         "qs": "^6.5.0",
         "react": "^15.6.1",
         "react-redux": "^5.0.5",
