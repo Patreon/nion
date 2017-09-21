@@ -4,7 +4,19 @@ import map from 'lodash.map'
 import merge from 'lodash.merge'
 import { camelize, camelizeKeys } from 'humps'
 
-export default function denormalize(ref, entities, existingObjects = {}) {
+export const defineEntityReference = (obj, value) =>
+    Object.defineProperty(obj, '_ref', { value })
+
+export const getEntityReference = obj => get(obj, '_ref')
+
+export const hasEntityReference = obj => Boolean(getEntityReference(obj))
+
+export default function denormalize(
+    ref,
+    entities,
+    existingObjects = {},
+    returnAllObjects = false,
+) {
     if (!(ref && ref.type && ref.id)) {
         return undefined
     }
@@ -29,6 +41,11 @@ export default function denormalize(ref, entities, existingObjects = {}) {
         id,
         type,
         ...camelizeKeys(entity.attributes),
+    }
+    // Explicitly set the type tracker as an object, because otherwise
+    // set({}, ['user', '123'], {}) => { user: [(empty x 122), {}] }
+    if (!get(existingObjects, type)) {
+        existingObjects[type] = {}
     }
     set(existingObjects, [type, id], obj)
 
@@ -55,16 +72,17 @@ export default function denormalize(ref, entities, existingObjects = {}) {
 
         // Establish a "_ref" property on the relationship object, that acts as a pointer to the
         // original entity
-        if (obj[camelizedKey] && !obj[camelizedKey]._ref) {
-            Object.defineProperty(obj[camelizedKey], '_ref', {
-                value: merge({}, relationship),
-            })
+        if (obj[camelizedKey] && !hasEntityReference(obj[camelizedKey])) {
+            defineEntityReference(obj[camelizedKey], merge({}, relationship))
         }
     })
 
     // Establish a "_ref" property on the object, that acts as a pointer to the original entity
-    if (!obj._ref) {
-        Object.defineProperty(obj, '_ref', { value: { data: { id, type } } })
+    if (!hasEntityReference(obj)) {
+        defineEntityReference(obj, { data: { id, type } })
+    }
+    if (returnAllObjects) {
+        return { obj, allObjects: existingObjects }
     }
     return obj
 }

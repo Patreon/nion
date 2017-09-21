@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "babel-runtime": "^6.23.0",
+        "deep-equal": "^1.0.1",
         "fast-url-parser": "^1.1.3",
         "humps": "^2.0.1",
         "isomorphic-fetch": "github:patreon/isomorphic-fetch#e4f90061be5fabed8fde118b04585478bfe185b2",
