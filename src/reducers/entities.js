@@ -20,6 +20,9 @@ const entitiesReducer = (state = initialState, action) => {
                 'payload.responseData.storeFragment',
                 {},
             )
+
+            console.log('🐷', storeFragment)
+
             let nextState = state.merge(storeFragment, { deep: true })
             // Handle deletion
             const refToDelete = get(action, 'meta.refToDelete')

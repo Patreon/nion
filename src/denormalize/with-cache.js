@@ -1,7 +1,4 @@
 import Immutable from 'seamless-immutable'
-
-console.log('🍕', Immutable)
-
 import get from 'lodash.get'
 import map from 'lodash.map'
 import { camelize, camelizeKeys } from 'humps'
@@ -61,35 +58,41 @@ class EntityCache {
 
 const entityCache = new EntityCache()
 
+window.entityCache = entityCache
+
 export default function denormalizeWithCache(reference, entityStore, dataKey) {
     const refs = reference.entities
     return refs.map(ref => {
-        if (!(ref && ref.type && ref.id)) {
-            return undefined
-        }
-
-        const hasDataChanged = entityCache.hasDataChanged(ref, entityStore)
-        if (!hasDataChanged) {
-            return entityCache.getDenormalized(ref.type, ref.id)
-        } else {
-            return denormalize(ref, entityStore)
-        }
+        const { denormalized } = denormalize(ref, entityStore)
+        return denormalized
     })
 }
 
-function denormalize(ref, entityStore) {
+function denormalize(ref, entityStore, existingObjects = {}) {
     if (!(ref && ref.type && ref.id)) {
         return undefined
     }
 
     let { type, id } = ref
+    let relatedRefs = {}
 
     // Check to see if the underlying data has changed for the ref, if not - we'll return the
     // cached immutable denormalized version, otherwise we'll construct a new denormalized portion
     // and update the related refs that are part of this ref's dependency tree
     const hasDataChanged = entityCache.hasDataChanged(ref, entityStore)
     if (!hasDataChanged) {
-        return entityCache.getDenormalized(ref.type, ref.id)
+        const denormalized = entityCache.getDenormalized(ref.type, ref.id)
+        return { denormalized, relatedRefs }
+    }
+
+    // Check the existing object to see if a reference to the denormalized object already exists,
+    // if so, use the existing denormalized object
+    const existingObject = get(existingObjects, [type, id])
+    if (existingObject) {
+        return {
+            denormalized: existingObject,
+            relatedRefs,
+        }
     }
 
     // Otherwise, fetch the entity from the entity store
@@ -104,11 +107,12 @@ function denormalize(ref, entityStore) {
         type,
         ...camelizeKeys(entity.attributes),
     })
-    entityCache.addDenormalized(type, id, obj)
+
+    existingObjects[type] = existingObjects[type] || {}
+    existingObjects[type][id] = obj
 
     // Now map over the relationships, accruing a list of related refs that we check for changes
     // against
-    let relatedRefs = {}
     const relationships = get(entity, 'relationships', {})
     map(relationships, (relationship, key) => {
         const refOrRefs = relationship.data // The { id, type } pointers stored on 'data' key
@@ -121,6 +125,7 @@ function denormalize(ref, entityStore) {
             const { denormalized, related } = denormalize(
                 refOrRefs,
                 entityStore,
+                existingObjects,
             )
             obj = obj.set(camelizedKey, denormalized)
             relatedRefs = { ...relatedRefs, ...related }
@@ -131,16 +136,13 @@ function denormalize(ref, entityStore) {
                     const { denormalized, related } = denormalize(
                         _ref,
                         entityStore,
+                        existingObjects,
                     )
                     relatedRefs = { ...relatedRefs, ...related }
                     return denormalized
                 }),
             )
         }
-
-        // Establish a "_ref" property on the relationship object, that acts as a pointer to the
-        // original entity
-        obj = obj.set([camelizedKey, '_ref'], relationship)
     })
 
     // Establish a "_ref" property on the object, that acts as a pointer to the original entity
@@ -150,6 +152,7 @@ function denormalize(ref, entityStore) {
 
     entityCache.addEntity(entity)
     entityCache.addRelated(entity, relatedRefs)
+    entityCache.addDenormalized(type, id, obj)
 
     return { denormalized: obj, related: relatedRefs }
 }
