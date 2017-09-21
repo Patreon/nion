@@ -3,6 +3,7 @@ import thunk from 'redux-thunk'
 import nock from 'nock'
 import union from 'lodash.union'
 import ApiManager from '../api'
+import union from 'lodash.union'
 
 import * as actionTypes from './types'
 import * as apiActions from './index'
