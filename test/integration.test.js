@@ -96,13 +96,16 @@ describe('nion : integration tests', () => {
             const name = 'Testy McTestFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, {
-                data: {
-                    id: 123,
-                    type: 'animal',
-                    attributes: { name },
-                },
-            })
+            nock(endpoint)
+                .get('')
+                .query(true)
+                .reply(200, {
+                    data: {
+                        id: 123,
+                        type: 'animal',
+                        attributes: { name },
+                    },
+                })
 
             @nion({ test: { endpoint } })
             class Container extends Component {
@@ -135,13 +138,16 @@ describe('nion : integration tests', () => {
             const name = 'Testy McTestFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, {
-                data: {
-                    id: 123,
-                    type: 'animal',
-                    attributes: { name },
-                },
-            })
+            nock(endpoint)
+                .get('')
+                .query(true)
+                .reply(200, {
+                    data: {
+                        id: 123,
+                        type: 'animal',
+                        attributes: { name },
+                    },
+                })
 
             @nion({
                 test: {
@@ -182,13 +188,16 @@ describe('nion : integration tests', () => {
             const id = 123
 
             const endpoint = buildUrl(`${pathname}/${id}`)
-            nock(endpoint).get('').query(true).reply(200, {
-                data: {
-                    id: 123,
-                    type: 'animal',
-                    attributes: { name },
-                },
-            })
+            nock(endpoint)
+                .get('')
+                .query(true)
+                .reply(200, {
+                    data: {
+                        id: 123,
+                        type: 'animal',
+                        attributes: { name },
+                    },
+                })
 
             @nion(props => ({
                 test: {
@@ -229,21 +238,27 @@ describe('nion : integration tests', () => {
             const newName = 'Nion McNionFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, {
-                data: {
-                    id: 123,
-                    type: 'animal',
-                    attributes: { name },
-                },
-            })
+            nock(endpoint)
+                .get('')
+                .query(true)
+                .reply(200, {
+                    data: {
+                        id: 123,
+                        type: 'animal',
+                        attributes: { name },
+                    },
+                })
 
-            nock(endpoint).patch('').query(true).reply(200, {
-                data: {
-                    id: 123,
-                    type: 'animal',
-                    attributes: { name: newName },
-                },
-            })
+            nock(endpoint)
+                .patch('')
+                .query(true)
+                .reply(200, {
+                    data: {
+                        id: 123,
+                        type: 'animal',
+                        attributes: { name: newName },
+                    },
+                })
 
             @nion({ test: { endpoint: buildUrl(pathname) } })
             class Container extends Component {
@@ -289,15 +304,21 @@ describe('nion : integration tests', () => {
             const name = 'Testy McTestFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, {
-                data: {
-                    id: 123,
-                    type: 'animal',
-                    attributes: { name },
-                },
-            })
+            nock(endpoint)
+                .get('')
+                .query(true)
+                .reply(200, {
+                    data: {
+                        id: 123,
+                        type: 'animal',
+                        attributes: { name },
+                    },
+                })
 
-            nock(endpoint).delete('').query(true).reply(204)
+            nock(endpoint)
+                .delete('')
+                .query(true)
+                .reply(204)
 
             @nion({ test: { endpoint: buildUrl(pathname) } })
             class Container extends Component {
@@ -338,7 +359,11 @@ describe('nion : integration tests', () => {
             const pathname = 'test'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').delay(2000).query(true).reply(404)
+            nock(endpoint)
+                .get('')
+                .delay(2000)
+                .query(true)
+                .reply(404)
 
             @nion({ test: { endpoint } })
             class Container extends Component {
@@ -370,28 +395,34 @@ describe('nion : integration tests', () => {
 
             const endpoint = buildUrl(`${pathname}/1`)
             const next = buildUrl(`${pathname}/2`)
-            nock(endpoint).get('').query(true).reply(200, {
-                data: [
-                    {
-                        id: 1,
-                        type: 'page',
-                        attributes: { name: 'A' },
+            nock(endpoint)
+                .get('')
+                .query(true)
+                .reply(200, {
+                    data: [
+                        {
+                            id: 1,
+                            type: 'page',
+                            attributes: { name: 'A' },
+                        },
+                    ],
+                    links: {
+                        next,
                     },
-                ],
-                links: {
-                    next,
-                },
-            })
+                })
 
-            nock(next).get('').query(true).reply(200, {
-                data: [
-                    {
-                        id: 2,
-                        type: 'page',
-                        attributes: { name: 'B' },
-                    },
-                ],
-            })
+            nock(next)
+                .get('')
+                .query(true)
+                .reply(200, {
+                    data: [
+                        {
+                            id: 2,
+                            type: 'page',
+                            attributes: { name: 'B' },
+                        },
+                    ],
+                })
 
             @nion({
                 pages: {
@@ -437,13 +468,16 @@ describe('nion : integration tests', () => {
             const newName = 'Nion McNionFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, {
-                data: {
-                    id: 123,
-                    type: 'animal',
-                    attributes: { name },
-                },
-            })
+            nock(endpoint)
+                .get('')
+                .query(true)
+                .reply(200, {
+                    data: {
+                        id: 123,
+                        type: 'animal',
+                        attributes: { name },
+                    },
+                })
 
             @nion({ test: { endpoint: buildUrl(pathname) } })
             class Container extends Component {
@@ -492,13 +526,16 @@ describe('nion : integration tests', () => {
             const name = 'Testy McTestFace'
 
             const endpoint = buildUrl(pathname)
-            nock(endpoint).get('').query(true).reply(200, {
-                data: {
-                    id: 123,
-                    type: 'animal',
-                    attributes: { name },
-                },
-            })
+            nock(endpoint)
+                .get('')
+                .query(true)
+                .reply(200, {
+                    data: {
+                        id: 123,
+                        type: 'animal',
+                        attributes: { name },
+                    },
+                })
 
             @nion(props => ({
                 child: {
@@ -516,9 +553,11 @@ describe('nion : integration tests', () => {
             class Container extends Component {
                 render() {
                     const { test } = this.props.nion
-                    return exists(test)
-                        ? <ChildContainer inputData={test} />
-                        : <span />
+                    return exists(test) ? (
+                        <ChildContainer inputData={test} />
+                    ) : (
+                        <span />
+                    )
                 }
             }
 
