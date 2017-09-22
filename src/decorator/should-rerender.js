@@ -1,8 +1,16 @@
 import difference from 'lodash.difference'
 import every from 'lodash.every'
 import get from 'lodash.get'
+import omit from 'lodash.omit'
+import shallowEqual from 'is-equal-shallow'
 import deepEqual from 'deep-equal'
 import { hasEntityReference } from '../denormalize'
+
+function areNonNionDataEqual(props, nextProps) {
+    const prevNonNionData = omit(props, ['nion'])
+    const nextNonNionData = omit(nextProps, ['nion'])
+    return shallowEqual(prevNonNionData, nextNonNionData)
+}
 
 function getDataPropertyKeys(obj) {
     const enumerableKeys = Object.keys(obj)
@@ -84,6 +92,10 @@ function areEntityListsEqual(prevFlatEntities, nextFlatEntities) {
 }
 
 export function areMergedPropsEqual(nextProps, props) {
+    if (!areNonNionDataEqual(props, nextProps)) {
+        return false
+    }
+
     const keysToIgnore = ['_initializeDataKey', 'updateEntity', '_declarations']
     const prevNionKeys = difference(Object.keys(props.nion), keysToIgnore)
     const nextNionKeys = difference(Object.keys(nextProps.nion), keysToIgnore)
