@@ -292,7 +292,7 @@ describe('nion: should-rerender', () => {
             })
 
             describe('when there are a few entities with relationships in there', () => {
-                it.only('should still return true', () => {
+                it('should still return true', () => {
                     let prevProps = { user: {} }
                     defineDataProperty(prevProps.user, 'allObjects', {
                         user: {
