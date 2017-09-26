@@ -12,7 +12,7 @@ The nion decorator accepts either a map of declarations, or a function that acce
 ```javascript
 @nion({
     currentUser: {
-        endpoint: '/current_user'
+        endpoint: buildUrl('/current_user')
     }
 })
 
@@ -25,7 +25,7 @@ The above example is the simplest declaration possible - the **dataKey** is set 
 @nion(({ userId }) => ({
     user: {
         dataKey: `user:${userId}`,
-        endpoint: `/users/${userId}`
+        endpoint: buildUrl(`/users/${userId}`)
     }
 }))
 class MyComponent extends Component
@@ -39,9 +39,11 @@ A declaration has a number of potential properties
 
 property | type | description | required
 -------- | ---- | ----------- | --------
-**endpoint** | `string` | The pathname or json-api url from which to fetch / manage the dataKeys. This can be either a shorthand pathname (ie `/currentUser`) or a fully-built json-api url (built using `buildUrl`) | **true**
+**endpoint** | `string` | The fully-formed url from which to fetch / manage the dataKeys. This must be a fully-built  url (built using a custom `buildUrl` function in the example above) | **true**<sup>*</sup>
 **dataKey** | `string` | A manual override of the `dataKey` to use to manage data. Defaults to the key of the declaration |
 **fetchOnInit** | `boolean` | Whether or not to automatically invoke a `get` action when the component mounts. Defaults to `false` |
 **fetchOnce** | `boolean` | If `fetchOnInit` is `true`, whether or not to fetch the data *every* time the component mounts or just *once*. Defaults to `true`. |
 **paginated** | `boolean` | Whether or not the managed resource is paginated. Exposes a number of pagination-specific `request` status parameters and the `next` action.
 **initialRef** | `ref` | The initial ref used to initialize the reference corresponding to the `dataKey`, usually built with the `makeRef` function. This is used to pass ownership of data from a parent component to a child. See the parent/child or stream examples for more documentation about this more advanced use case. |
+
+<small>* The `endpoint` parameter is not strictly required as it can be overridden later, but it is essential to interact with an `endpoint` for API-related actions</small>

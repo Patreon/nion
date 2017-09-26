@@ -1,7 +1,7 @@
 # nion core
 
 ## Introduction
-nion gives us a set of redux compliant functions and utilities that automatically normalizes API entity data into a predictable state tree. Right now we have an interface for making requests to json-api compliant json-api servers, but the client is modular to support other transport layers.
+nion gives us a set of redux compliant functions and utilities that automatically normalizes API entity data into a predictable state tree. The default api module included with nion is built for json-api compliant json-api servers, but the client is extensible with any custom api module to support other transport layers.
 
 ### features
 * Client defined  data mapping through `dataKeys`. This allows the us to define application specific context to API requests (ex. `currentUser`) and can be shared to all component containers that need this data.
@@ -18,15 +18,16 @@ In this container example we create a dispatch action that makes an API request 
 import { connect } from 'react-redux'
 import { createStructuredSelector } from 'reselect'
 
-import { actions, buildUrl, selectData, selectRequest } from 'libs/nion'
+import { actions, selectData, selectRequest } from 'libs/nion'
+import { buildUrl } from 'utilities/json-api'
 
 import Page from '../components/Page'
 
 const dataKey = 'currentUser'
 
 const mapStateToProps = createStructuredSelector(
-    currentUser: selectData(dataKey ),
-    currentUserRequest: selectRequest(dataKey )
+    currentUser: selectData(dataKey),
+    currentUserRequest: selectRequest(dataKey)
 )
 
 const mapDispatchToProps = dispatch => {
@@ -131,11 +132,9 @@ The `selectData` selector is extremely versatile, and is the best tool for selec
 
 Example of selecting data and mapping to state props.
 
-```
+```javascript
 const mapStateToProps = createStructuredSelector(
     currentUser: selectData('currentUser'),
     currentCreatorId: selectData('currentCreator.id'),
 )
 ```
-
-This readme also has a living document located here: [nion documentation](https://patreon.bold.co/post/nion-network-inputoutput-dekauy) if you would like to comment on anything, or feel free to edit this directly.
