@@ -14,6 +14,8 @@ import { connect } from 'react-redux'
 import { INITIALIZE_DATAKEY, UPDATE_REF } from '../actions/types'
 import { selectResourcesForKeys } from '../selectors'
 
+import { configuration } from '../configure'
+
 const getDefaultDeclarationOptions = () => ({
     // Component / API Lifecycle methods
     fetchOnInit: false, // Should the component load the data when a new dataKey is created?
@@ -519,6 +521,10 @@ function finalProcessProps(nionProp) {
     // updates)
     output.getDeclarations = () => nionProp._declarations
     output.updateEntity = nionProp.updateEntity
+
+    if (!configuration.flattenSelectedData) {
+        return { ...nionProp, ...output }
+    }
 
     map(nionProp, (dataProp, key) => {
         // Now, transform the dataProp.data object or array to be the first class dataProp value
