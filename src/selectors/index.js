@@ -1,16 +1,13 @@
+import Immutable from 'seamless-immutable'
 import { createSelector } from 'reselect'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
-import denormalize from '../denormalize'
+import denormalizeWithCache from '../denormalize'
 
 const selectNion = state => state.nion
 const selectEntities = state => get(selectNion(state), 'entities')
 const selectRequests = state => get(selectNion(state), 'requests')
 const selectReferences = state => get(selectNion(state), 'references')
-
-const makeDefaultRequest = () => ({
-    status: 'not called',
-})
 
 const isGeneric = ref => {
     // This may not be the best way to check if something is a ref to entities or not
@@ -32,67 +29,49 @@ export const selectEntityFromKey = key =>
         return isCollection ? entities : entities[0]
     })
 
-export const selectObject = (key, returnAllObjects = false) =>
-    createSelector(
-        selectReferences,
-        selectEntities,
-        (references, entityStore) => {
-            const ref = get(references, key)
+export const selectObject = dataKey =>
+    createSelector(selectRef(dataKey), selectEntities, (ref, entityStore) => {
+        // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
+        if (isGeneric(ref)) {
+            return ref
+        }
 
-            // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
-            if (isGeneric(ref)) {
-                return ref
-            }
+        const { isCollection } = ref
+        const denormalized = denormalizeWithCache(ref, entityStore)
 
-            const { isCollection } = ref
-            const denormalized = ref.entities.map(entityRef => {
-                return denormalize(entityRef, entityStore, {}, returnAllObjects)
-            })
+        return isCollection ? denormalized : denormalized[0]
+    })
 
-            return isCollection ? denormalized : denormalized[0]
-        },
-    )
-
-const selectExtraRefProps = key =>
-    createSelector(selectRef(key), ref => ({
+const selectExtraRefProps = dataKey =>
+    createSelector(selectRef(dataKey), ref => ({
         ...omit(ref, ['entities', 'isCollection']),
     }))
 
+// We need to make a simple singleton default immutable request so that areRequestsEqual comparisons
+// are super simple and straightforward in the areMergedPropsEqual comparison function
+// TODO: We might want to refactor this so that each request dataKey in the requests reducer is
+// initialized with this immutable state
+const defaultRequest = Immutable({
+    status: 'not called',
+})
+
 export const selectRequest = key =>
     createSelector(selectRequests, apiRequests => {
-        const request = get(apiRequests, key, makeDefaultRequest())
-        return { ...request }
+        const request = get(apiRequests, key, defaultRequest)
+        return request
     })
 
 // Selects the denormalized object plus all relevant request data from the store
-export const selectObjectWithRequest = (key, returnAllObjects = false) =>
+export const selectObjectWithRequest = dataKey =>
     createSelector(
-        selectObject(key, returnAllObjects),
-        selectRequest(key),
-        selectExtraRefProps(key),
-        (obj, request, extra) => {
-            if (!returnAllObjects) {
-                return {
-                    obj,
-                    request,
-                    ...extra,
-                }
-            }
-            if (Array.isArray(obj)) {
-                return {
-                    obj: obj.map(objAndList => objAndList.obj),
-                    allObjects: obj.map(objAndList => objAndList.allObjects),
-                    request,
-                    ...extra,
-                }
-            }
-            return {
-                obj: get(obj, 'obj'),
-                allObjects: get(obj, 'allObjects'),
-                request,
-                ...extra,
-            }
-        },
+        selectObject(dataKey),
+        selectRequest(dataKey),
+        selectExtraRefProps(dataKey),
+        (obj, request, extra) => ({
+            obj,
+            request,
+            extra,
+        }),
     )
 
 // Selects a keyed map of { obj, request } resources from the store taking an array of dataKeys
@@ -106,8 +85,8 @@ export const selectResourcesForKeys = (dataKeys, returnAllObjects = false) => {
 }
 
 // Selects the combination { obj, request } resource from the store taking a dataKey
-export const selectResourceForKey = dataKey =>
-    createSelector(selectResourcesForKeys([dataKey]), data => data[dataKey])
+export const selectResourceForKey = dataKey => state =>
+    selectObjectWithRequest(dataKey)(state)
 
 // Selects the combination { obj, request } resource from the store, taking either a dataKey or
 // array of dataKeys
@@ -127,7 +106,7 @@ export const selectData = (key, defaultValue) => {
     if (typeof key === 'object' && key.type && key.id !== undefined) {
         const entityRef = key
         return createSelector(selectEntities, entityStore =>
-            denormalize(entityRef, entityStore),
+            denormalizeWithCache(entityRef, entityStore),
         )
     }
 

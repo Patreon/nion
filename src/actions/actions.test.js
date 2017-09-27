@@ -137,7 +137,7 @@ function assertEqualAction(expected, observed) {
         if (metaKey === 'fetchedAt') {
             // Check to see that our fetchedAt value is within 30ms of our actual value
             const diff = expected.meta.fetchedAt - observed.meta.fetchedAt
-            expect(Math.abs(diff)).toBeLessThan(30)
+            expect(Math.abs(diff)).toBeLessThan(100)
         } else {
             expect(expected.meta[metaKey]).toEqual(observed.meta[metaKey])
         }

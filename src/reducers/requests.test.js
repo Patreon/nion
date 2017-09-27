@@ -38,14 +38,15 @@ describe('nion: reducers', () => {
             const reducer = new Reducer()
             const dataKey = 'currentUser'
 
-            const rightThisSecond = Date.now()
             const action = makeAction(types.NION_API_SUCCESS, dataKey, {
                 method: 'GET',
             })
             reducer.applyAction(action)
             const request = get(reducer.state, dataKey)
             expect(request.status).toEqual('success')
-            expect(request.fetchedAt).toEqual(rightThisSecond)
+
+            const timeDiff = Math.abs(request.fetchedAt - Date.now())
+            expect(timeDiff).toBeLessThan(3)
             expect(request.isError).toEqual(false)
             expect(request.isLoaded).toEqual(true)
             expect(request.isLoading).toEqual(false)
@@ -58,7 +59,6 @@ describe('nion: reducers', () => {
             const errorName = 'Oh Snap!'
             const errors = 'Something went wrong'
 
-            const rightThisSecond = Date.now()
             const action = makeAction(types.NION_API_FAILURE, dataKey, {
                 method: 'GET',
                 errors,
@@ -69,7 +69,8 @@ describe('nion: reducers', () => {
             expect(request.status).toEqual('error')
             expect(request.name).toEqual(errorName)
             expect(request.errors).toEqual(errors)
-            expect(request.fetchedAt).toEqual(rightThisSecond)
+            const timeDiff = Math.abs(request.fetchedAt - Date.now())
+            expect(timeDiff).toBeLessThan(3)
             expect(request.isError).toEqual(true)
             expect(request.isLoaded).toEqual(false)
             expect(request.isLoading).toEqual(false)
