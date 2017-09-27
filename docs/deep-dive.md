@@ -1,13 +1,13 @@
 # nion deep dive
 
-nion is our best attempt at addressing the main issues that come with developing a complex redux web application. It's an **opinionated** solution to the problems we face at Patreon.
+nion is our best attempt at addressing the main issues that come with developing a complex redux web application. It's an **opinionated** solution to the problems we faced building a complex React web application at Patreon.
 
 A canonical example of a challenging data management problem is a **stream**. Our **stream** is a paginated list of posts, which can be liked and unliked, and have comments and replies, which are both also independently paginated. This presents a number of challenges that have guided the design process of nion.
 
 1. How do I paginate a list?
 1. How do I optimistically update data?
 1. How do I pass off management of data from one component to another?
-1. How do I do all of this while keeping my code clear?
+1. How do I do all of this while keeping my code clear and consistent?
 
 
 <hr>
@@ -37,18 +37,19 @@ In the following walkthrough, we'll be building a fully functional stream using 
 
 Let's begin by fetching and rendering a stream of posts. We begin by wrapping a **Stream** component with the nion decorator function. The nion decorator accepts a map of **declarations** as its parameters, which tell nion *what* data to manage and *where* to load it from. *What* data nion will manage is determined by the **dataKey**, and *where* it will load it from is determined by the endpoint.
 
-In the example below, our **dataKey** is `"stream"`, and our **endpoint** is `"/stream"`. In this most basic case, the **dataKey** is determined by the key of the declaration passed into the nion decorator. The nion decorator creates a set of selectors and actions based on this information and passes the selected data and actions into the child component as props mapped to the key of the declarative.
+In the example below, our **dataKey** is `"stream"`, and our **endpoint** is the output of the function `buildUrl("/stream")`. (note - we're using our own custom function to construct a fully-formed url, and nion needs a fully-formed url to fetch data from) In this most basic case, the **dataKey** is determined by the key of the declaration passed into the nion decorator. The nion decorator creates a set of selectors and actions based on this information and passes the selected data and actions into the child component as props mapped to the key of the declarative.
 
 #### Stream.jsx
 ```javascript
 import React, { Component } from 'react'
-import nion, { exists } from 'libs/nion'
+import nion, { exists } from 'nion'
+import { buildUrl } from 'utilities/json-api'
 
 import Post from './Post'
 
 @nion({
     stream: {
-        endpoint: '/stream'
+        endpoint: buildUrl('/stream')
     }
 })
 class Stream extends Component {
@@ -63,7 +64,7 @@ class Stream extends Component {
 
         return (
             <Card>
-                { exists(stream) && stream.map((post, index) => (
+                { exists(stream.data) && stream.data.map((post, index) => (
                     <Post key={index} post={post} />
                 )) }
                 { loading ? <LoadingSpinner /> : null }
@@ -73,11 +74,11 @@ class Stream extends Component {
 }
 ```
 
-The nion decorator supplies a `nion` prop to the child component, with a `stream` subprop. This stream subprop consists of an object combining the result of `selectData('stream')` with `requests` and `actions` properties
+The nion decorator supplies a `nion` prop to the child component, with a `stream` subprop. This stream subprop consists of an object combining the result of `selectData('stream')` onto a `data` property, with `requests` and `actions` properties
 
 The `requests` property contains the result of applying the selector `selectRequest('stream')`. It contains all information regarding the network status of the given request. The `actions` property contains methods that dispatch redux actions corresponding to a given resource's REST actions.
 
-Notice the `exists` method we're using to check existence of the stream data. The reason for this is that the nion decorator actually passes in an empty object to represent nonexistent data, since it makes the most sense syntacticallt to attach corresponding requests and actions properties to the top-level dataKey prop (`stream.actions`, for instance). Therefore, when the stream has yet to load, the `stream` property will simply be an empty object and will evaluate truthy using simple boolean existence checks. Therefore, nion exports the `exists` helper method to handle checking existence.
+Notice the `exists` method we're using to check existence of the stream data. This is a convenience method for checking whether or not any data has been attached to the dataKey, since falsiness bugs in selected data can lead to some strange bugs.
 
 #### Post.jsx
 ```javascript
@@ -103,6 +104,7 @@ For brevity's sake, we'll omit importing a few files that are used throughout th
 import Card from 'components/Card'
 import Button from 'components/Button'
 import LoadingSpinner from 'components/LoadingSpinner'
+
 ```
 
 
@@ -117,6 +119,7 @@ It's a very common pattern to load data for a component when that component moun
 ```javascript
 import React, { Component } from 'react'
 import nion, { exists } from 'libs/nion'
+import { buildUrl } from 'utilities/json-api'
 
 import Post from './Post'
 
@@ -133,7 +136,7 @@ class Stream extends Component {
 
         return (
             <Card>
-                { exists(stream) && stream.map((post, index) => (
+                { exists(stream.data) && stream.data.map((post, index) => (
                     <Post key={index} post={post} />
                 )) }
                 { loading ? <LoadingSpinner /> : null }
@@ -149,12 +152,13 @@ class Stream extends Component {
 
 ## 3. include and fields
 
-JSON API allows us to specify which fields and related entities are fetched in a request. We can specify these JSON API parameters by passing a fully formed JSON API url to the `endpoint` parameter of the declarative. nion exports a buildUrl helper function for constructing fully formed JSON API urls, and we use that here to construct an endpoint specifying exactly what fields and included relationships we want to fetch.
+JSON API allows us to specify which fields and related entities are fetched in a request. We can specify these JSON API parameters by passing a fully formed JSON API url with these url-encoded fields to the `endpoint` parameter of the declarative. We can include these data requirements directly inside the declaration, but we import them from an external file here for clarity.
 
 #### Stream.jsx
 ```javascript
 import React, { Component } from 'react'
 import nion, { exists } from 'libs/nion'
+import { buildUrl } from 'utilities/json-api'
 
 import { streamInclude, streamFields } from './data-requirements'
 import Post from './Post'
@@ -174,7 +178,7 @@ class Stream extends Component {
 
         return (
             <Card>
-                { exists(stream) && stream.map((post, index) => (
+                { exists(stream.data) && stream.data.map((post, index) => (
                     <Post key={index} post={post} />
                 )) }
                 { loading ? <LoadingSpinner /> : null }
@@ -236,14 +240,15 @@ export const commentIncludes = [
 
 Since our JSON-API interface uses a simple, cursor-based pagination system across API resources, the nion decorator can handle pagination in a consistent and elegant way.
 
-Paginated resources are managed by simply setting the `paginated` parameter of the declarative, which tells the nion decorator to expose a few pagination-related properties to the child component. The main focus is the `next` action method, which is simply a `get` action method curried with the next page cursor returned from the initial request to the paginated resource's endpoint. In addition to dispatching this curried `get` request, the `next` method also dispatches the underlying `NION_API_SUCCESS` redux action with a special `isNextPage` meta property, which tells the internal reducers to append the result of the `next` request to the existing reference rather than overwriting it.
+Paginated resources are managed by simply setting the `paginated` parameter of the declarative, which tells the nion decorator to expose a few pagination-related properties to the child component. These pagination behaviors are fully defined by the nion API module, which can be customized to handle any pagination system. The main focus is the `next` action method, which is simply a `get` action method curried with the next page cursor returned from the initial request to the paginated resource's endpoint. In addition to dispatching this curried `get` request, the `next` method also dispatches the underlying `NION_API_SUCCESS` redux action with a special `isNextPage` meta property, which tells the internal reducers to append the result of the `next` request to the existing reference rather than overwriting it.
 
 In addition to the next action method, the nion decorator also exposes a `canLoadMore` property to the `request` property - This is a convenience property indicating whether or not a next cursor link exists for a given paginated ref.
 
 #### Stream.jsx
 ```javascript
 import React, { Component } from 'react'
-import nion, { exists, buildUrl } from 'libs/nion'
+import nion, { exists } from 'libs/nion'
+import { buildUrl } from 'utilities/json-api'
 
 import { streamInclude, streamFields } from './data-requirements'
 import Post from './Post'
@@ -267,7 +272,7 @@ class Stream extends Component {
 
         return (
             <div>
-                { exists(stream( && stream.map((post, index) => (
+                { exists(stream.data) && stream.data.map((post, index) => (
                     <Post key={index} post={post} />
                 )) }
                 { loading ? <LoadingSpinner /> : null }
@@ -358,11 +363,12 @@ class Comment extends Component {
 ```javascript
 import React from 'react'
 
-return ({ liked, onClick }) => (
+const Like = ({ liked, onClick }) => (
     <div onClick={onClick}>
         { liked ? '❤️' : 'like' }
     </div>
-}
+)
+export default Like
 ```
 
 
@@ -378,6 +384,8 @@ The nion decorator can accept a function that creates a `declaration` from props
 #### Post.jsx
 ```javascript
 import React, { Component } from 'react'
+import nion from 'nion'
+import { buildUrl } from 'utilities/json-api'
 
 import Comments from './Comments'
 
@@ -433,6 +441,8 @@ The `updateEntity` nion action is extremely simple under the hood - it simply me
 #### Post.jsx
 ```javascript
 import React, { Component } from 'react'
+import nion from 'nion'
+import { buildUrl } from 'utilities/json-api'
 
 import Comments from './Comments'
 
@@ -487,6 +497,8 @@ In order to unlike a post, we're simply deleting the corresponding like resource
 #### Post.jsx
 ```javascript
 import React, { Component } from 'react'
+import nion from 'nion'
+import { buildUrl } from 'utilities/json-api'
 
 import Comments from './Comments'
 
@@ -545,6 +557,8 @@ Since the `updateEntity` method returns a promise, we can chain it with nion RES
 #### Post.jsx
 ```javascript
 import React, { Component } from 'react'
+import nion from 'nion'
+import { buildUrl } from 'utilities/json-api'
 
 import Comments from './Comments'
 
@@ -612,7 +626,8 @@ One final detail - notice the `makeRef` function used to supply the ref to the *
 ```javascript
 import React, { Component } from 'react'
 import map from 'lodash.map'
-import nion, { buildUrl, makeRef } from 'libs/nion'
+import nion, { makeRef } from 'libs/nion'
+import { buildUrl } from 'utilities/json-api'
 
 import { commentInclude, commentStreamFields } from './dataRequirements'
 import Comment from './Comment'
@@ -639,7 +654,7 @@ class Comments extends Component {
 
         return (
             <div>
-                { map(comments, (comment, index) => (
+                { map(comments.data, (comment, index) => (
                     <Comment comment={comment} />
                 )) }
                 { isLoading ? <LoadingSpinner /> : null }
@@ -727,11 +742,11 @@ class Replies extends Component {
         const { isLoading } = replies.request
 
         const remaining = count > 1 ? count - 1 : 0
-        const canLoadMore = count > replies.length && remaining && !isLoading
+        const canLoadMore = count > replies.data.length && remaining && !isLoading
 
         return (
             <Card>
-                { exists(replies) && replies.map(reply => {
+                { exists(replies.data) && replies.data.map(reply => {
                     return <Comment comment={reply} />
                 })}
                 { canLoadMore ?
