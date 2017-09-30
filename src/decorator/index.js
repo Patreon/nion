@@ -486,9 +486,9 @@ export function exists(input = {}, defaultValue = false) {
 
     if (input instanceof Array) {
         return input.filter(testExists).length
-    } else {
-        return testExists(input) || defaultValue
     }
+
+    return testExists(input) || defaultValue
 }
 
 function makeNonExistingObject() {
