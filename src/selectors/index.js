@@ -2,7 +2,7 @@ import Immutable from 'seamless-immutable'
 import { createSelector } from 'reselect'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
-import denormalizeWithCache from '../denormalize'
+import denormalizeWithCache, { getGenericRefData } from '../denormalize'
 
 const selectNion = state => state.nion
 const selectEntities = state => get(selectNion(state), 'entities')
@@ -32,8 +32,14 @@ export const selectEntityFromKey = key =>
 export const selectObject = dataKey =>
     createSelector(selectRef(dataKey), selectEntities, (ref, entityStore) => {
         // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
+
+        // JB (in ref to the comment above)
+        // We know the API type, we should be storing this information with the payload
+        // this will simplify our assumptions
         if (isGeneric(ref)) {
-            return ref
+            console.log('before', ref)
+            console.log('generic ref data response', getGenericRefData(ref))
+            return getGenericRefData(ref)
         }
 
         const { isCollection } = ref

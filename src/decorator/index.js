@@ -489,8 +489,6 @@ export function exists(input = {}, defaultValue = false) {
     } else {
         return testExists(input) || defaultValue
     }
-
-    return defaultValue
 }
 
 function makeNonExistingObject() {
@@ -532,8 +530,11 @@ function finalProcessProps(nionProp) {
         // dataProp or do we want to namespace it under the dataProp.data key?
         const { data, actions, request, extra, ...rest } = dataProp
 
+        const hasData = data ? data._exists : false
         const reconstructedData =
-            data instanceof Array ? [...data] : { ...data }
+            data instanceof Array
+                ? [...data]
+                : Object.create({ _exists: hasData })
 
         defineNonEnumerable(reconstructedData, 'actions', actions)
         defineNonEnumerable(reconstructedData, 'request', request)
