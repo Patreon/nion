@@ -37,8 +37,6 @@ export const selectObject = dataKey =>
         // We know the API type, we should be storing this information with the payload
         // this will simplify our assumptions
         if (isGeneric(ref)) {
-            console.log('before', ref)
-            console.log('generic ref data response', getGenericRefData(ref))
             return getGenericRefData(ref)
         }
 
