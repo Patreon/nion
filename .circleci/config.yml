@@ -39,7 +39,7 @@ jobs:
             - run:
                 name: Test
                 command: |
-                    TESTFILES=$(circleci tests glob "src/**/{*.,}test.js" "app/**/__tests__/*.js" | circleci tests split --split-by=timings)
+                    TESTFILES=$(circleci tests glob "src/**/{*.,}test.js" "test/**/{*.,}test.js" | circleci tests split --split-by=timings)
                     JEST_JUNIT_OUTPUT="./test-artifacts/test-reports/junit-jest.xml" npm run test -- --runInBand ${TESTFILES}
 
             - store_test_results:
