@@ -497,6 +497,15 @@ function makeNonExistingObject() {
     return obj
 }
 
+function makeExistingObject(existingObj = {}) {
+    const obj = { ...existingObj }
+    Object.defineProperty(obj, '_exists', {
+        value: true,
+        enumerable: false,
+    })
+    return obj
+}
+
 function getDisplayName(WrappedComponent) {
     return WrappedComponent.displayName || WrappedComponent.name || 'Component'
 }
@@ -531,10 +540,11 @@ function finalProcessProps(nionProp) {
         const { data, actions, request, extra, ...rest } = dataProp
 
         const hasData = data ? data._exists : false
+        const checkedData = hasData
+            ? makeExistingObject(data)
+            : makeNonExistingObject()
         const reconstructedData =
-            data instanceof Array
-                ? [...data]
-                : { ...Object.create({ _exists: hasData }, data) }
+            data instanceof Array ? [...data] : checkedData
 
         defineNonEnumerable(reconstructedData, 'actions', actions)
         defineNonEnumerable(reconstructedData, 'request', request)
