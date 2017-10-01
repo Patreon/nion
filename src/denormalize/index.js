@@ -45,7 +45,9 @@ export function getGenericRefData(ref) {
     return genericData
 }
 
-export const addEntityReference = (obj, value) => obj.set('_ref', value)
+export const addEntityReference = (obj, value) => {
+    return obj && obj.set('_ref', value)
+}
 
 export const getEntityReference = obj => get(obj, '_ref')
 
