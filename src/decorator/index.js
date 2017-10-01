@@ -534,7 +534,7 @@ function finalProcessProps(nionProp) {
         const reconstructedData =
             data instanceof Array
                 ? [...data]
-                : Object.create({ _exists: hasData })
+                : { ...Object.create({ _exists: hasData }, data) }
 
         defineNonEnumerable(reconstructedData, 'actions', actions)
         defineNonEnumerable(reconstructedData, 'request', request)
