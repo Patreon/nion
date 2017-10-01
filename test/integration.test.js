@@ -130,7 +130,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
         })
 
         it('fetches data on mount', async () => {
@@ -179,7 +179,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
         })
 
         it('fetches data from props', async () => {
@@ -229,7 +229,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
         })
 
         it('patches data', async () => {
@@ -283,7 +283,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
 
             // Patch request
             request = test.actions.patch()
@@ -296,7 +296,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(newName)
+            expect(test.data.name).toEqual(newName)
         })
 
         it('deletes data', async () => {
@@ -343,7 +343,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
 
             // Delete request
             request = test.actions.delete()
@@ -449,7 +449,7 @@ describe('nion : integration tests', () => {
 
             pages = getProp()
             expect(pages.request.status).toEqual('success')
-            expect(pages.length).toEqual(1)
+            expect(pages.data.length).toEqual(1)
             expect(pages.request.isLoading).toEqual(false)
 
             request = pages.actions.next()
@@ -458,7 +458,7 @@ describe('nion : integration tests', () => {
 
             pages = getProp()
             expect(pages.request.status).toEqual('success')
-            expect(pages.length).toEqual(2)
+            expect(pages.data.length).toEqual(2)
             expect(pages.request.isLoading).toEqual(false)
             expect(pages.request.canLoadMore).toBeFalsey
         })
@@ -503,7 +503,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
 
             // Optimistic Update
 
@@ -519,7 +519,7 @@ describe('nion : integration tests', () => {
             )
 
             test = getProp()
-            expect(test.name).toEqual(newName)
+            expect(test.data.name).toEqual(newName)
         })
 
         it('creates children with initial refs', async () => {
@@ -581,7 +581,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
 
             // Child component
             ChildWrapped = Wrapped.find('ChildContainer')
