@@ -34,14 +34,20 @@ export default function denormalizeWithCache(reference, entityStore, dataKey) {
     })
 }
 
+const makeGenericData = obj => {
+    const genericData = Immutable(new GenericData(obj), {
+        prototype: GenericData.prototype,
+    })
+    return genericData
+}
+
 export function getGenericRefData(ref) {
     if (ref === null || ref === undefined) {
         return null
     }
 
-    const genericData = Immutable(new GenericData(ref), {
-        prototype: GenericData.prototype,
-    })
+    const genericData =
+        ref instanceof Array ? ref.map(makeGenericData) : makeGenericData(ref)
     return genericData
 }
 
