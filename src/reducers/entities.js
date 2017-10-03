@@ -22,6 +22,7 @@ const entitiesReducer = (state = initialState, action) => {
             )
 
             let nextState = state.merge(storeFragment, { deep: true })
+
             // Handle deletion
             const refToDelete = get(action, 'meta.refToDelete')
             if (
@@ -30,7 +31,12 @@ const entitiesReducer = (state = initialState, action) => {
                 refToDelete.type
             ) {
                 const { type, id } = refToDelete
-                nextState = nextState.without([type, id])
+                const exists =
+                    nextState[type] && nextState[type][id] !== undefined
+                if (exists) {
+                    const removed = Immutable.without(nextState[type], id)
+                    nextState = nextState.set(type, removed)
+                }
             }
             return nextState
         }
