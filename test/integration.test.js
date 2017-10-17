@@ -115,7 +115,7 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            let Wrapped = Wrapper.find('Container')
+            const Wrapped = Wrapper.find('Container')
 
             const getProp = () =>
                 Wrapper.update()
