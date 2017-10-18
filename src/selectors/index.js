@@ -108,7 +108,10 @@ export const selectResource = keyOrKeys => {
 export const selectData = (key, defaultValue) => {
     // If we pass in an object of { type, id } signature, denormalize the corresponding entity
     if (typeof key === 'object' && key.type && key.id !== undefined) {
-        const entityRef = key
+        const entityRef = {
+            entities: [{ type: key.type, id: key.id }],
+        }
+
         return createSelector(selectEntities, entityStore =>
             denormalizeWithCache(entityRef, entityStore),
         )
