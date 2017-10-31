@@ -273,6 +273,9 @@ describe('nion: reducers', () => {
             firstStoreFragment.addEntity('campaign', 456, {
                 name: 'Test Campaign',
             })
+            firstStoreFragment.addEntity('campaign', 789, {
+                name: 'Test Campaign 2',
+            })
 
             const action = makeActionWithFragment(
                 types.NION_API_SUCCESS,
@@ -304,6 +307,13 @@ describe('nion: reducers', () => {
             reducer.applyAction(nextAction)
             const campaign = get(reducer.state, `campaign.${456}`)
             expect(campaign).toEqual(undefined)
+
+            // It doesn't delete other entities from the store
+            const user = get(reducer.state, `user.${123}`)
+            expect(user).toBeDefined()
+
+            const otherCampaign = get(reducer.state, `campaign.${789}`)
+            expect(otherCampaign).toBeDefined()
         })
 
         it('handles the UPDATE_ENTITY action', () => {
