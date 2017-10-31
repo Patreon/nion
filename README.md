@@ -95,7 +95,6 @@ Internally, the nion suite of redux tools handles everything necessary to mainta
 ### Get started
 Learn more in the [guide](docs/getting-started.md)
 
-
 ### Learn More
 
 [examples](docs/examples.md)
@@ -103,6 +102,8 @@ Learn more in the [guide](docs/getting-started.md)
 [deep dive](docs/deep-dive.md)
 
 [api](docs/api.md)
+
+[extensions](docs/extensions.md)
 
 [api-modules](docs/api-modules.md)
 

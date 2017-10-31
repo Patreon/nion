@@ -1,3 +1,5 @@
+import raf from './polyfills' // eslint-disable-line no-unused-vars
+
 const Enzyme = require('enzyme')
 const EnzymeAdapter = require('enzyme-adapter-react-16')
 
