@@ -112,8 +112,9 @@ export const selectData = (key, defaultValue) => {
             entities: [{ type: key.type, id: key.id }],
         }
 
-        return createSelector(selectEntities, entityStore =>
-            denormalizeWithCache(entityRef, entityStore),
+        return createSelector(
+            selectEntities,
+            entityStore => denormalizeWithCache(entityRef, entityStore)[0],
         )
     }
 
