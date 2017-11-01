@@ -13,4 +13,6 @@ export { default as initializeNionDevTool } from './devtool'
 export { titleFormatter } from './logger'
 export { selectObjectWithRequest } from './selectors'
 
+console.log('NION WORKS')
+
 export default decorator

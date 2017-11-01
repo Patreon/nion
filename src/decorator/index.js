@@ -8,6 +8,7 @@ import set from 'lodash.set'
 import nionActions from '../actions'
 import { makeRef } from '../transforms'
 import ApiManager from '../api'
+import ExtensionManager from '../extensions'
 import { areMergedPropsEqual } from './should-rerender'
 
 import { connect } from 'react-redux'
@@ -208,18 +209,6 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 })(dispatch)
             }
 
-            if (declaration.paginated) {
-                dispatchProps[key]['NEXT'] = params => {
-                    const { next } = params
-                    const endpoint = params.endpoint || next
-
-                    return nionActions.next(dataKey, {
-                        declaration,
-                        endpoint,
-                    })(dispatch)
-                }
-            }
-
             // Exposed, general nion data manipulating actions
             dispatchProps[key].updateRef = ref => {
                 return new Promise((resolve, reject) => {
@@ -262,7 +251,8 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         const nextProps = { ...stateProps, ...ownProps }
 
         mapDeclarations((declaration, key, dataKey) => {
-            const data = get(stateProps.nion, [key, 'data'])
+            const resource = get(stateProps.nion, [key])
+            const data = get(resource, ['data'])
             const ref = data ? { id: data.id, type: data.type } : null
 
             // Add each method's corresponding request handler to the nextProps[key].request
@@ -283,33 +273,23 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 deleteDispatchFn(ref, props, options)
             set(nextProps.nion, [key, 'actions', 'delete'], deleteFn)
 
-            // Handle the special NEXT submethod, for paginated declarations
-            if (declaration.paginated) {
-                const dispatchFn = dispatchProps[key]['NEXT']
-                const pagination = ApiManager.getPagination(declaration.apiType)
+            // Get extra actions from extensions
+            map(declaration.extensions, (options, extension) => {
+                map(
+                    ExtensionManager.getActions(extension, options, resource),
+                    (action, actionKey) => {
+                        const { method, params } = action
+                        const extendedFn = () =>
+                            dispatchProps[key][method](params)
 
-                const selectedData = get(stateProps.nion, key)
-                const nextUrl = pagination.getNextUrl(declaration, selectedData)
-
-                if (nextUrl) {
-                    const nextFn = params =>
-                        dispatchFn({ ...params, next: nextUrl })
-                    set(nextProps.nion, [key, 'actions', 'next'], nextFn)
-                }
-
-                // Add in a special "canLoadMore" prop to the request if the pagination module
-                // exists. TODO: We probably shouldn't be extending our immutable request object
-                // here, since there may be a more elegant way to send this information to the
-                // decorated component than through the "request" object
-                if (pagination.canLoadMore) {
-                    const canLoadMore = pagination.canLoadMore(
-                        nextProps.nion[key],
-                    )
-                    nextProps.nion[key].request = nextProps.nion[
-                        key
-                    ].request.set('canLoadMore', canLoadMore)
-                }
-            }
+                        set(
+                            nextProps.nion,
+                            [key, 'actions', actionKey],
+                            extendedFn,
+                        )
+                    },
+                )
+            })
 
             set(
                 nextProps.nion,

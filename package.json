@@ -19,6 +19,7 @@
         "lodash.every": "^4.6.0",
         "lodash.get": "^4.4.2",
         "lodash.map": "^4.6.0",
+        "lodash.mapvalues": "^4.6.0",
         "lodash.merge": "^4.6.0",
         "lodash.omit": "^4.5.0",
         "lodash.set": "^4.3.2",
