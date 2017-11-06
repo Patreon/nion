@@ -473,22 +473,22 @@ export default nion
 // dataKey, nion will still pass down an empty object with "request" and "actions" props in order to
 // manage loading the corresponding data. This method tests to see if that object has data
 // associated with it.
-export function exists(input = {}, defaultValue = false) {
+export function exists(input = {}) {
     if (input === null || input === undefined) {
-        return defaultValue
+        return false
     }
 
     if (input._exists !== undefined && input._exists) {
         return input._exists
     }
 
-    const testExists = obj => !!(obj.id && obj.type) || input._exists
+    const testExists = obj => !!(obj.id && obj.type) || input._exists || false
 
     if (input instanceof Array) {
-        return input.filter(testExists).length
+        return true
     }
 
-    return testExists(input) || defaultValue
+    return testExists(input)
 }
 
 function makeNonExistingObject() {
