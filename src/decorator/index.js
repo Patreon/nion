@@ -485,7 +485,7 @@ export function exists(input = {}) {
     const testExists = obj => !!(obj.id && obj.type) || input._exists || false
 
     if (input instanceof Array) {
-        return input.filter(testExists).length >= 0
+        return true
     }
 
     return testExists(input)
