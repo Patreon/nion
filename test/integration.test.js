@@ -117,7 +117,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             const request = test.actions.get()
@@ -164,12 +167,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
-
-            // Wait until the request reducer has been updated
-            while (getProp().request.status === 'not called') {
-                await P.delay(1) // Wait 5ms for the request reducer to update
-            }
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             expect(test.request.status).toEqual('pending')
@@ -214,7 +215,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container, { id }))
             const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             // Wait until the request reducer has been updated
             while (getProp().request.status === 'not called') {
@@ -270,7 +274,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -330,7 +337,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -376,7 +386,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -440,7 +453,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.pages
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.pages
 
             let pages = getProp()
             let request = pages.actions.get()
@@ -490,7 +506,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -565,7 +584,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
-            let getProp = () => Wrapped.props().nion.test
+            let getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -574,7 +596,7 @@ describe('nion : integration tests', () => {
             expect(test.request.status).toEqual('pending')
             expect(test.request.isLoading).toEqual(true)
 
-            let ChildWrapped = Wrapped.find('ChildContainer')
+            let ChildWrapped = Wrapper.update().find('ChildContainer')
             expect(ChildWrapped.exists()).toEqual(false)
 
             await request
@@ -584,7 +606,7 @@ describe('nion : integration tests', () => {
             expect(test.data.name).toEqual(name)
 
             // Child component
-            ChildWrapped = Wrapped.find('ChildContainer')
+            ChildWrapped = Wrapper.update().find('ChildContainer')
 
             getProp = () => ChildWrapped.props().nion.child
 
