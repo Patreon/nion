@@ -53,6 +53,11 @@ const refsReducer = (state = initialState, action) => {
                             ...nextPageRef,
                             isCollection: true,
                             entities: oldEntities.concat(nextPageRef.entities),
+                            links: {
+                                next: null,
+                                prev: null,
+                                ...nextPageRef.links,
+                            },
                         },
                     },
                     { deep: true },
