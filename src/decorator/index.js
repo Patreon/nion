@@ -26,8 +26,8 @@ const getDefaultDeclarationOptions = () => ({
     // Manual ref initialization, for parent/child data management relationships
     initialRef: null,
 
-    // Special request type parameters
-    paginated: false,
+    // Extend basic actions
+    extensions: {},
 
     // Specify the API used to request and parse API data
     apiType: ApiManager.getDefaultApi(),
