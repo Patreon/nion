@@ -185,11 +185,14 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 })(dispatch)
             }
 
-            dispatchProps[key]['GET'] = params => {
+            dispatchProps[key]['GET'] = (params, actionOptions = {}) => {
                 const endpoint = getUrl(declaration, params)
                 return nionActions.get(dataKey, {
                     declaration,
                     endpoint,
+                    meta: {
+                        append: get(actionOptions, 'append'),
+                    },
                 })(dispatch)
             }
 
@@ -278,15 +281,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 map(
                     ExtensionManager.getActions(extension, options, resource),
                     (action, actionKey) => {
-                        const { method, params } = action
-                        const extendedFn = () =>
-                            dispatchProps[key][method](params)
-
-                        set(
-                            nextProps.nion,
-                            [key, 'actions', actionKey],
-                            extendedFn,
-                        )
+                        set(nextProps.nion, [key, 'actions', actionKey], action)
                     },
                 )
             })

@@ -441,7 +441,7 @@ describe('nion : integration tests', () => {
             @nion({
                 pages: {
                     endpoint,
-                    paginated: true,
+                    extensions: { jsonApiPagination: { append: true } },
                 },
             })
             class Container extends Component {
