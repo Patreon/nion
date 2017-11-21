@@ -276,12 +276,21 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 deleteDispatchFn(ref, props, options)
             set(nextProps.nion, [key, 'actions', 'delete'], deleteFn)
 
-            // Get extra actions from extensions
+            // Process extensions
             map(declaration.extensions, (options, extension) => {
+                // Get extra actions from extensions
                 map(
                     ExtensionManager.getActions(extension, options, resource),
                     (action, actionKey) => {
                         set(nextProps.nion, [key, 'actions', actionKey], action)
+                    },
+                )
+
+                // Get helper meta values from extensions
+                map(
+                    ExtensionManager.getMeta(extension, options, resource),
+                    (metaValue, metaKey) => {
+                        set(nextProps.nion, [key, 'extra', metaKey], metaValue)
                     },
                 )
             })

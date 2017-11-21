@@ -467,6 +467,7 @@ describe('nion : integration tests', () => {
             expect(pages.request.status).toEqual('success')
             expect(pages.data.length).toEqual(1)
             expect(pages.request.isLoading).toEqual(false)
+            expect(pages.extra.canLoadMore).toBeTruthy
 
             request = pages.actions.next()
 
@@ -476,7 +477,7 @@ describe('nion : integration tests', () => {
             expect(pages.request.status).toEqual('success')
             expect(pages.data.length).toEqual(2)
             expect(pages.request.isLoading).toEqual(false)
-            expect(pages.request.canLoadMore).toBeFalsey
+            expect(pages.extra.canLoadMore).toBeFalsey
         })
 
         it('handles optimistic updates', async () => {

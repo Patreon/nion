@@ -1,3 +1,4 @@
+import get from 'lodash.get'
 import mapValues from 'lodash.mapvalues'
 
 export default {
@@ -9,22 +10,17 @@ export default {
         return mapValues(extra.links, (link, key) => {
             switch (key) {
                 case 'next':
-                    return () =>
-                        actions.get(
-                            {
-                                endpoint: link,
-                            },
-                            { append },
-                        )
+                    return () => actions.get({ endpoint: link }, { append })
                     break
                 default:
-                    return () =>
-                        actions.get({
-                            endpoint: link,
-                        })
+                    return () => actions.get({ endpoint: link })
             }
         })
     },
 
-    generateMeta: (options, resource) => {},
+    generateMeta: (options, resource) => {
+        return {
+            canLoadMore: get(resource, 'extra.links.next') ? true : false,
+        }
+    },
 }

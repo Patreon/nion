@@ -23,6 +23,10 @@ class ExtensionManager {
         return this.getExtension(name).generateActions(options, resource)
     }
 
+    getMeta = (name, options, resource) => {
+        return this.getExtension(name).generateMeta(options, resource)
+    }
+
     registerExtension = (name, extension) => {
         this.extensionMap[name] = extension
     }
