@@ -10,10 +10,18 @@ export default {
         return mapValues(extra.links, (link, key) => {
             switch (key) {
                 case 'next':
-                    return () => actions.get({ endpoint: link }, { append })
+                    return (params, actionOptions) =>
+                        actions.get(
+                            { ...params, endpoint: link },
+                            { ...actionOptions, append },
+                        )
                     break
                 default:
-                    return () => actions.get({ endpoint: link })
+                    return (params, actionOptions) =>
+                        actions.get(
+                            { ...params, endpoint: link },
+                            actionOptions,
+                        )
             }
         })
     },

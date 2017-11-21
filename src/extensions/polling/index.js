@@ -7,9 +7,9 @@ export default {
         const { key, delay } = options
 
         return {
-            poll: () => {
+            poll: (params, actionOptions) => {
                 intervalMap[key] = setInterval(
-                    () => resource.actions.get(),
+                    () => resource.actions.get(params, actionOptions),
                     delay,
                 )
             },
