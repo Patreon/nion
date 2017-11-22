@@ -2,10 +2,12 @@ import ExtensionManager from './'
 import configure from '../configure'
 
 const minimalExtensionObj = {
-    generateActions: () => true,
+    generateActions: () => {},
+    generateMeta: () => {},
 }
 const minimalExtensionMatcher = {
     generateActions: expect.any(Function),
+    generateMeta: expect.any(Function),
 }
 
 describe('ExtensionManager', () => {

@@ -6,6 +6,11 @@ class ExtensionManager {
 
     constructor() {
         map(includedExtensions, (extension, name) => {
+            if (!extension.generateActions || !extension.generateMeta) {
+                throw new Error(
+                    `Extension ${name} isn't correctly shaped. It should generate both actions and meta values, even if they're just empty objects.`,
+                )
+            }
             this.registerExtension(name, extension)
         })
     }
