@@ -9,8 +9,6 @@ import nion from '../../../'
 import { Provider } from 'react-redux'
 import configureTestStore from '../../../../test/configure-test-store'
 
-import { intervalMap } from '../'
-
 const Wrap = (Wrapped, props) => {
     const store = configureTestStore()
     return (
@@ -90,14 +88,18 @@ describe('Polling extension', () => {
         const Wrapped = generateWrappedComponent(endpoint)
         const getProp = () => Wrapped.props().nion.notifications
 
-        getProp().actions.pollStart()
-        await P.delay(INCREMENT * 3 + FUDGE_FACTOR)
-        expect(callCount).toBe(3)
-        expect(getProp().extra.polling).toBe(true)
+        let notifications = getProp()
 
-        getProp().actions.pollStop()
-        await P.delay(INCREMENT + FUDGE_FACTOR)
+        notifications.actions.pollStart()
+        await P.delay(INCREMENT * 3 + FUDGE_FACTOR)
+        notifications = getProp()
         expect(callCount).toBe(3)
-        expect(getProp().extra.polling).toBe(false)
+        expect(notifications.extra.polling).toBe(true)
+
+        notifications.actions.pollStop()
+        await P.delay(INCREMENT + FUDGE_FACTOR)
+        notifications = getProp()
+        expect(callCount).toBe(3)
+        expect(notifications.extra.polling).toBe(false)
     })
 })
