@@ -68,7 +68,7 @@ describe('Polling extension', () => {
 
         expect(notifications.actions.pollStart).toBeInstanceOf(Function)
         expect(notifications.actions.pollStop).toBeInstanceOf(Function)
-        expect(notifications.extra.polling).toBe(false)
+        expect(notifications.extra.polling()).toBe(false)
     })
 
     test('pollStart and pollStop work as expected', async () => {
@@ -94,12 +94,12 @@ describe('Polling extension', () => {
         await P.delay(INCREMENT * 3 + FUDGE_FACTOR)
         notifications = getProp()
         expect(callCount).toBe(3)
-        expect(notifications.extra.polling).toBe(true)
+        expect(notifications.extra.polling()).toBe(true)
 
         notifications.actions.pollStop()
         await P.delay(INCREMENT + FUDGE_FACTOR)
         notifications = getProp()
         expect(callCount).toBe(3)
-        expect(notifications.extra.polling).toBe(false)
+        expect(notifications.extra.polling()).toBe(false)
     })
 })

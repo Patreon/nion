@@ -22,7 +22,8 @@ export default {
     },
 
     generateMeta: (options, resource) => {
-        const { key } = options
-        return { polling: get(intervalMap, key) ? true : false }
+        return {
+            polling: () => (get(intervalMap, options.key) ? true : false),
+        }
     },
 }
