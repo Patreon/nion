@@ -7,14 +7,14 @@ export default {
         const { key, delay } = options
 
         return {
-            poll: (params, actionOptions) => {
+            pollStart: (params, actionOptions) => {
                 intervalMap[key] = setInterval(
                     () => resource.actions.get(params, actionOptions),
                     delay,
                 )
             },
 
-            unpoll: () => {
+            pollStop: () => {
                 clearInterval(intervalMap[key])
                 intervalMap[key] = null
             },
@@ -22,6 +22,7 @@ export default {
     },
 
     generateMeta: (options, resource) => {
-        return { polling: get(intervalMap, options.key) ? true : false }
+        const { key } = options
+        return { polling: get(intervalMap, key) ? true : false }
     },
 }
