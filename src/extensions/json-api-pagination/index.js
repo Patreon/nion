@@ -27,8 +27,9 @@ export default {
     },
 
     generateMeta: (options, resource) => {
-        return {
-            canLoadMore: get(resource, 'extra.links.next') ? true : false,
+        if (get(resource, 'extra.links.next')) {
+            return { canLoadMore: true }
         }
+        return {}
     },
 }
