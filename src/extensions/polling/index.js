@@ -23,7 +23,7 @@ export default {
 
     generateMeta: (options, resource) => {
         return {
-            polling: () => (get(intervalMap, options.key) ? true : false),
+            isPolling: () => (get(intervalMap, options.key) ? true : false),
         }
     },
 }
