@@ -13,10 +13,8 @@ const minimalExtensionMatcher = {
 describe('ExtensionManager', () => {
     describe('getExtension', () => {
         test('should return registered extensions by name', () => {
-            const pagination = ExtensionManager.getExtension(
-                'jsonApiPagination',
-            )
-            expect(pagination).toMatchObject(minimalExtensionMatcher)
+            const polling = ExtensionManager.getExtension('polling')
+            expect(polling).toMatchObject(minimalExtensionMatcher)
         })
 
         test('should return named extensions registered through configuration', () => {
@@ -26,9 +24,7 @@ describe('ExtensionManager', () => {
         })
 
         test('should throw an error when called with an unregistered extension', () => {
-            const ersatz = () => {
-                ExtensionManager.getExtension('ersatz')
-            }
+            const ersatz = () => ExtensionManager.getExtension('ersatz')
             expect(ersatz).toThrow()
         })
     })
