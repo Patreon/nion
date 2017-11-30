@@ -115,7 +115,6 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
             const getProp = () =>
                 Wrapper.update()
@@ -165,7 +164,6 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
             const getProp = () =>
                 Wrapper.update()
@@ -213,7 +211,6 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container, { id }))
-            const Wrapped = Wrapper.find('Container')
 
             const getProp = () =>
                 Wrapper.update()
@@ -272,7 +269,6 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
             const getProp = () =>
                 Wrapper.update()
@@ -335,7 +331,6 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
             const getProp = () =>
                 Wrapper.update()
@@ -384,7 +379,6 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
             const getProp = () =>
                 Wrapper.update()
@@ -507,7 +501,6 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
             let getProp = () =>
                 Wrapper.update()
