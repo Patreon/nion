@@ -47,9 +47,11 @@ describe('JSON API Pagination extension', () => {
         }
 
         const Wrapper = mount(Wrap(Container))
-        const Wrapped = Wrapper.find('Container')
 
-        const getProp = () => Wrapped.props().nion.user
+        const getProp = () =>
+            Wrapper.update()
+                .find('Container')
+                .props().nion.user
 
         let user = getProp()
         let request = user.actions.get()
@@ -98,9 +100,11 @@ describe('JSON API Pagination extension', () => {
         }
 
         const Wrapper = mount(Wrap(Container))
-        const Wrapped = Wrapper.find('Container')
 
-        const getProp = () => Wrapped.props().nion.page
+        const getProp = () =>
+            Wrapper.update()
+                .find('Container')
+                .props().nion.page
 
         let page = getProp()
         let request = page.actions.get()
@@ -160,9 +164,11 @@ describe('JSON API Pagination extension', () => {
         }
 
         const Wrapper = mount(Wrap(Container))
-        const Wrapped = Wrapper.find('Container')
 
-        const getProp = () => Wrapped.props().nion.page
+        const getProp = () =>
+            Wrapper.update()
+                .find('Container')
+                .props().nion.page
 
         let page = getProp()
         let request = page.actions.get()
