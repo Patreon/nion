@@ -56,10 +56,6 @@ class ApiManager {
         return this.getApiModule(apiType).ErrorClass
     }
 
-    getPagination = apiType => {
-        return this.getApiModule(apiType).pagination || noop
-    }
-
     getParser = apiType => {
         return this.getApiModule(apiType).parser
     }
