@@ -3,10 +3,9 @@ import React, { Component } from 'react'
 import { mount } from 'enzyme'
 import nock from 'nock'
 import P from 'bluebird'
+import { Provider } from 'react-redux'
 
 import nion from '../../../'
-
-import { Provider } from 'react-redux'
 import configureTestStore from '../../../../test/configure-test-store'
 
 const Wrap = (Wrapped, props) => {

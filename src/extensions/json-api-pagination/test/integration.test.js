@@ -2,10 +2,9 @@
 import React, { Component } from 'react'
 import { mount } from 'enzyme'
 import nock from 'nock'
+import { Provider } from 'react-redux'
 
 import nion from '../../../'
-
-import { Provider } from 'react-redux'
 import configureTestStore from '../../../../test/configure-test-store'
 
 const Wrap = (Wrapped, props) => {
@@ -68,7 +67,7 @@ describe('JSON API Pagination extension', () => {
         expect(user.actions.first).toBeUndefined()
         expect(user.actions.last).toBeUndefined()
 
-        expect(user.extra.canLoadMore).toBeFalsey
+        expect(user.extra.canLoadMore).toBeFalsy()
     })
 
     test(`adds actions and meta to resources with pagination links`, async () => {

@@ -24,11 +24,11 @@ class ExtensionManager {
         )
     }
 
-    getActions = (name, options, resource) => {
+    generateActionsForExtension = (name, options, resource) => {
         return this.getExtension(name).generateActions(options, resource)
     }
 
-    getMeta = (name, options, resource) => {
+    generateMetaForExtension = (name, options, resource) => {
         return this.getExtension(name).generateMeta(options, resource)
     }
 

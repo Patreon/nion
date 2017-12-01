@@ -1,9 +1,9 @@
 import ExtensionManager from './'
 import configure from '../configure'
 
-const minimalExtensionObj = {
-    generateActions: () => {},
-    generateMeta: () => {},
+const minimalExtensionShape = {
+    generateActions: jest.fn(),
+    generateMeta: jest.fn(),
 }
 const minimalExtensionMatcher = {
     generateActions: expect.any(Function),
@@ -18,7 +18,7 @@ describe('ExtensionManager', () => {
         })
 
         test('should return named extensions registered through configuration', () => {
-            configure({ extensions: { useless: minimalExtensionObj } })
+            configure({ extensions: { useless: minimalExtensionShape } })
             const useless = ExtensionManager.getExtension('useless')
             expect(useless).toMatchObject(minimalExtensionMatcher)
         })
