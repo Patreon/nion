@@ -2,12 +2,12 @@ import ExtensionManager from './'
 import configure from '../configure'
 
 const minimalExtensionShape = {
-    generateActions: jest.fn(),
-    generateMeta: jest.fn(),
+    composeActions: jest.fn(),
+    composeMeta: jest.fn(),
 }
 const minimalExtensionMatcher = {
-    generateActions: expect.any(Function),
-    generateMeta: expect.any(Function),
+    composeActions: expect.any(Function),
+    composeMeta: expect.any(Function),
 }
 
 describe('ExtensionManager', () => {

@@ -3,27 +3,27 @@ import get from 'lodash.get'
 export const intervalMap = {}
 
 export default {
-    generateActions: (options, resource) => {
+    composeActions: (options, resource) => {
         const { key, delay } = options
 
         return {
-            pollStart: (params, actionOptions) => {
+            start: (params, actionOptions) => {
                 intervalMap[key] = setInterval(
                     () => resource.actions.get(params, actionOptions),
                     delay,
                 )
             },
 
-            pollStop: () => {
+            stop: () => {
                 clearInterval(intervalMap[key])
                 intervalMap[key] = null
             },
         }
     },
 
-    generateMeta: (options, resource) => {
+    composeMeta: (options, resource) => {
         return {
-            isPolling: () => (get(intervalMap, options.key) ? true : false),
+            isActive: () => (get(intervalMap, options.key) ? true : false),
         }
     },
 }

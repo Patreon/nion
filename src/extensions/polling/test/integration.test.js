@@ -65,9 +65,9 @@ describe('Polling extension', () => {
         const getProp = () => Wrapped.props().nion.notifications
         const notifications = getProp()
 
-        expect(notifications.actions.pollStart).toBeInstanceOf(Function)
-        expect(notifications.actions.pollStop).toBeInstanceOf(Function)
-        expect(notifications.extra.isPolling()).toBe(false)
+        expect(notifications.extensions.polling.start).toBeInstanceOf(Function)
+        expect(notifications.extensions.polling.stop).toBeInstanceOf(Function)
+        expect(notifications.extensions.polling.meta.isActive()).toBe(false)
     })
 
     test('pollStart and pollStop work as expected', async () => {
@@ -89,16 +89,16 @@ describe('Polling extension', () => {
 
         let notifications = getProp()
 
-        notifications.actions.pollStart()
+        notifications.extensions.polling.start()
         await P.delay(INCREMENT * 3 + FUDGE_FACTOR)
         notifications = getProp()
         expect(callCount).toBe(3)
-        expect(notifications.extra.isPolling()).toBe(true)
+        expect(notifications.extensions.polling.meta.isActive()).toBe(true)
 
-        notifications.actions.pollStop()
+        notifications.extensions.polling.stop()
         await P.delay(INCREMENT + FUDGE_FACTOR)
         notifications = getProp()
         expect(callCount).toBe(3)
-        expect(notifications.extra.isPolling()).toBe(false)
+        expect(notifications.extensions.polling.meta.isActive()).toBe(false)
     })
 })

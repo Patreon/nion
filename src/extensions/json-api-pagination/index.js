@@ -2,7 +2,7 @@ import get from 'lodash.get'
 import mapValues from 'lodash.mapvalues'
 
 export default {
-    generateActions: (options, resource) => {
+    composeActions: (options, resource) => {
         const { append = false } = options
         const { actions, extra } = resource
 
@@ -26,7 +26,7 @@ export default {
         })
     },
 
-    generateMeta: (options, resource) => {
+    composeMeta: (options, resource) => {
         if (get(resource, 'extra.links.next')) {
             return { canLoadMore: true }
         }

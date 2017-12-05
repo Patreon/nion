@@ -6,9 +6,9 @@ class ExtensionManager {
 
     constructor() {
         map(includedExtensions, (extension, name) => {
-            if (!extension.generateActions || !extension.generateMeta) {
+            if (!extension.composeActions || !extension.composeMeta) {
                 throw new Error(
-                    `Extension ${name} isn't correctly shaped. It should generate both actions and meta values, even if they're just empty objects.`,
+                    `Extension "${name}" isn't correctly shaped. It should generate both actions and meta values, even if they're just empty objects.`,
                 )
             }
             this.registerExtension(name, extension)
@@ -20,16 +20,16 @@ class ExtensionManager {
             return this.extensionMap[name]
         }
         throw new Error(
-            `Extension ${name} is not registered with nion. Add a corresponding extension module to nion.configureNion`,
+            `Extension "${name}" is not registered with nion. Add a corresponding extension module to nion.configureNion`,
         )
     }
 
-    generateActionsForExtension = (name, options, resource) => {
-        return this.getExtension(name).generateActions(options, resource)
+    composeActionsForExtension = (name, options, resource) => {
+        return this.getExtension(name).composeActions(options, resource)
     }
 
-    generateMetaForExtension = (name, options, resource) => {
-        return this.getExtension(name).generateMeta(options, resource)
+    composeMetaForExtension = (name, options, resource) => {
+        return this.getExtension(name).composeMeta(options, resource)
     }
 
     registerExtension = (name, extension) => {

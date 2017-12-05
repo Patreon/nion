@@ -279,24 +279,32 @@ const processDeclarations = (inputDeclarations, ...rest) => {
             // Process extensions
             map(declaration.extensions, (options, extension) => {
                 map(
-                    ExtensionManager.generateActionsForExtension(
+                    ExtensionManager.composeActionsForExtension(
                         extension,
                         options,
                         resource,
                     ),
                     (action, actionKey) => {
-                        set(nextProps.nion, [key, 'actions', actionKey], action)
+                        set(
+                            nextProps.nion,
+                            [key, `extensions`, extension, actionKey],
+                            action,
+                        )
                     },
                 )
 
                 map(
-                    ExtensionManager.generateMetaForExtension(
+                    ExtensionManager.composeMetaForExtension(
                         extension,
                         options,
                         resource,
                     ),
                     (metaValue, metaKey) => {
-                        set(nextProps.nion, [key, 'extra', metaKey], metaValue)
+                        set(
+                            nextProps.nion,
+                            [key, `extensions`, extension, `meta`, metaKey],
+                            metaValue,
+                        )
                     },
                 )
             })

@@ -62,12 +62,7 @@ describe('JSON API Pagination extension', () => {
         expect(user.request.status).toEqual('success')
         expect(user.request.isLoading).toEqual(false)
 
-        expect(user.actions.next).toBeUndefined()
-        expect(user.actions.prev).toBeUndefined()
-        expect(user.actions.first).toBeUndefined()
-        expect(user.actions.last).toBeUndefined()
-
-        expect(user.extra.canLoadMore).toBeFalsy()
+        expect(user.extensions).toBeUndefined()
     })
 
     test(`adds actions and meta to resources with pagination links`, async () => {
@@ -115,9 +110,9 @@ describe('JSON API Pagination extension', () => {
         expect(page.request.status).toEqual('success')
         expect(page.request.isLoading).toEqual(false)
 
-        expect(page.actions.next).toBeDefined()
-        expect(page.actions.last).toBeDefined()
-        expect(page.extra.canLoadMore).toEqual(true)
+        expect(page.extensions.jsonApiPagination.next).toBeDefined()
+        expect(page.extensions.jsonApiPagination.last).toBeDefined()
+        expect(page.extensions.jsonApiPagination.meta.canLoadMore).toEqual(true)
     })
 
     test(`pagination actions work`, async () => {
@@ -178,7 +173,7 @@ describe('JSON API Pagination extension', () => {
         expect(page.request.isLoading).toEqual(false)
         expect(page.data).toHaveProperty('id', 1)
 
-        request = page.actions.next()
+        request = page.extensions.jsonApiPagination.next()
         await request
 
         page = getProp()
