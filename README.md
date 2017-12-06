@@ -93,8 +93,7 @@ The requests reducer maintains a map of `dataKeys` that tracks all network reque
 Internally, the nion suite of redux tools handles everything necessary to maintain application state and provide a clear interface to the higher-level component tooling.
 
 ### Get started
-Learn more in the [guide](docs/get-started.md)
-
+Learn more in the [guide](docs/getting-started.md)
 
 ### Learn More
 
@@ -103,6 +102,8 @@ Learn more in the [guide](docs/get-started.md)
 [deep dive](docs/deep-dive.md)
 
 [api](docs/api.md)
+
+[extensions](docs/extensions.md)
 
 [api-modules](docs/api-modules.md)
 
