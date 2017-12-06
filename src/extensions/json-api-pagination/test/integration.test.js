@@ -36,7 +36,7 @@ describe('JSON API Pagination extension', () => {
         @nion({
             user: {
                 endpoint,
-                extensions: { jsonApiPagination: {} },
+                extensions: { jsonApiPagination: true },
             },
         })
         class Container extends Component {
@@ -84,7 +84,7 @@ describe('JSON API Pagination extension', () => {
         @nion({
             page: {
                 endpoint,
-                extensions: { jsonApiPagination: {} },
+                extensions: { jsonApiPagination: true },
             },
         })
         class Container extends Component {
@@ -148,7 +148,7 @@ describe('JSON API Pagination extension', () => {
         @nion({
             page: {
                 endpoint: endpoints[0],
-                extensions: { jsonApiPagination: {} },
+                extensions: { jsonApiPagination: true },
             },
         })
         class Container extends Component {
@@ -178,5 +178,60 @@ describe('JSON API Pagination extension', () => {
 
         page = getProp()
         expect(page.data).toHaveProperty('id', 2)
+    })
+
+    test(`the 'append' option works correctly with 'next'`, async () => {
+        const start = buildUrl(`pages/1`)
+        const next = buildUrl(`pages/2`)
+
+        nock(start)
+            .get('')
+            .query(true)
+            .reply(200, {
+                data: { id: 1, type: 'page' },
+                links: {
+                    next,
+                },
+            })
+        nock(next)
+            .get('')
+            .query(true)
+            .reply(200, {
+                data: { id: 2, type: 'page' },
+            })
+
+        @nion({
+            page: {
+                endpoint: start,
+                extensions: { jsonApiPagination: { append: true } },
+            },
+        })
+        class Container extends Component {
+            render() {
+                return null
+            }
+        }
+
+        const Wrapper = mount(Wrap(Container))
+
+        const getProp = () =>
+            Wrapper.update()
+                .find('Container')
+                .props().nion.page
+
+        let page = getProp()
+        let request = page.actions.get()
+        await request
+
+        page = getProp()
+        expect(page.request.status).toEqual('success')
+        expect(page.request.isLoading).toEqual(false)
+        expect([page.data].length).toBe(1)
+
+        request = page.extensions.jsonApiPagination.next()
+        await request
+
+        page = getProp()
+        expect(Array.from(page.data).length).toBe(2)
     })
 })
