@@ -5,7 +5,6 @@ property | description | required
 -------- | ----------- | --------
 `parser` | A method responsible for parsing a JSON response from a server and converting it into data that nion's reducers will use internally | required
 `request` | A set of methods that handle request parameters and before / after request hooks | optional
-`pagination` | A set of methods that handle pagination-related logic for paginated resources | optional
 `ErrorClass` | A class / constructor to handle API Errors in an application-specific way | optional
 
 ## `parser`
@@ -55,14 +54,6 @@ interface Parameters {
 function getRequestParameters(method: string, options: any): Parameters {}
 ```
 The `request` attribute exposes a single method `getRequestParameters` which returns the request parameters that will be provided to the `fetch` method used inside of the nion api action.
-
-## `pagination`
-```javascript
-function canLoadMore(data: SelectedData): boolean {}
-
-function getNextUrl(declaration: Declaration, data: SelectedData): string {}
-```
-The `pagination` attribute exposes two methods, `canLoadMore` and `getNextUrl` that are used for implementing pagination schemes within nion. nion uses these two methods to implement pagination for declarations where the `paginated` attribute is set to `true`.
 
 ## `ErrorClass`
 ```javascript
