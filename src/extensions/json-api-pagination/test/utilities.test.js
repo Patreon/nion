@@ -1,12 +1,14 @@
 import { ensureLinkHasProtocol } from '../utilities'
 
-let location
-
 describe('ensureLinkHasProtocol', () => {
+    let location
     // Fun hack to get around jest's `document.location` implementation
     // https://github.com/facebook/jest/issues/890
-    beforeAll(() => {
+    beforeEach(() => {
         location = document.location.href
+    })
+
+    beforeAll(() => {
         const parser = document.createElement('a')
         const PROPERTIES = ['href', 'protocol']
 
