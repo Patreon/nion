@@ -1,4 +1,5 @@
 import { ensureLinkHasProtocol } from '../utilities'
+
 let location = document.location.href
 
 describe('ensureLinkHasProtocol', () => {
@@ -6,7 +7,9 @@ describe('ensureLinkHasProtocol', () => {
     // https://github.com/facebook/jest/issues/890
     beforeAll(() => {
         const parser = document.createElement('a')
-        ;['href', 'protocol'].forEach(prop => {
+        const PROPERTIES = ['href', 'protocol']
+
+        PROPERTIES.forEach(prop => {
             Object.defineProperty(document.location, prop, {
                 get: function() {
                     parser.href = location
