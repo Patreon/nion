@@ -1,8 +1,10 @@
 import { ensureLinkHasProtocol } from '../utilities'
 
-let location = document.location.href
+let location
 
 describe('ensureLinkHasProtocol', () => {
+    location = document.location.href
+
     // Fun hack to get around jest's `document.location` implementation
     // https://github.com/facebook/jest/issues/890
     beforeAll(() => {
