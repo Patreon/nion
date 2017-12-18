@@ -1,5 +1,6 @@
 import get from 'lodash.get'
 import mapValues from 'lodash.mapvalues'
+import { ensureLinkHasProtocol } from './utilities'
 
 export default {
     composeActions: (options, resource) => {
@@ -12,14 +13,20 @@ export default {
                 case 'next':
                     return (params, actionOptions) =>
                         actions.get(
-                            { ...params, endpoint: link },
+                            {
+                                ...params,
+                                endpoint: ensureLinkHasProtocol(link),
+                            },
                             { ...actionOptions, append },
                         )
                     break
                 default:
                     return (params, actionOptions) =>
                         actions.get(
-                            { ...params, endpoint: link },
+                            {
+                                ...params,
+                                endpoint: ensureLinkHasProtocol(link),
+                            },
                             actionOptions,
                         )
             }
