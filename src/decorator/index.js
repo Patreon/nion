@@ -481,11 +481,16 @@ export function exists(input = {}) {
         return input._exists
     }
 
-    const testExists = obj => !!(obj.id && obj.type) || input._exists || false
-
     if (input instanceof Array) {
         return true
     }
+
+    const refTest = obj =>
+        configuration.flattenSelectedData
+            ? !!(obj.data.id && obj.data.type)
+            : !!(obj.id && obj.type)
+
+    const testExists = obj => refTest(obj) || input._exists || false
 
     return testExists(input)
 }
