@@ -44,6 +44,8 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
+            console.log(Wrapped.props())
+
             const props = Wrapped.props()
 
             expect(props.nion).toBeDefined()

@@ -4,24 +4,49 @@ import get from 'lodash.get'
 import omit from 'lodash.omit'
 import deepEqual from 'deep-equal'
 import shallowEqual from '../utilities/shallow-equal'
-import { exists } from './index'
 
 // We don't want to do a strict immutable check here because we're adding a 'canLoadMore' property
 // to the selected request in the nion decorator...
-// TODO: we'll probably want to handle that special pagination property a bit more elegantly /
-// consistently so that it's automatically added to the request reducer
-
-function compareRequests(prevRequests, nextRequests) {
+function requestsAreEqual(prevRequests, nextRequests) {
     return (
         get(prevRequests, 'status') === get(nextRequests, 'status') &&
         get(prevRequests, 'fetchedAt') === get(nextRequests, 'fetchedAt')
     )
 }
 
-function compareObject(prevObject, nextObject) {
+function extensionsExist(resource) {
+    return get(resource, 'extensions', false)
+}
+
+// Extensions are optional, so we'll do the previous check first
+function extensionsAreEqual(prevExts, nextExts) {
+    const prevExtensionKeys = Object.keys(prevExts)
+    const nextExtensionKeys = Object.keys(nextExts)
+    if (prevExtensionKeys !== nextExtensionKeys) {
+        return false
+    }
+
+    return every(nextExtensionKeys, key => {
+        return deepEqual(get(prevExts, key), get(nextExts, key))
+    })
+}
+
+function objectsAreEqual(prevObject, nextObject) {
+    const objectExists = obj => {
+        if (obj === null || obj === undefined) {
+            return false
+        }
+
+        if (obj instanceof Array) {
+            return true
+        }
+
+        return !!(obj.id && obj.type)
+    }
+
     // If the selected data do not exist yet, the ad-hoc created nonexistence objects should be
     // treated as equal
-    if (!exists(prevObject) && !exists(nextObject)) {
+    if (!objectExists(prevObject) && !objectExists(nextObject)) {
         return true
     } else {
         return prevObject === nextObject
@@ -33,7 +58,7 @@ function compareObject(prevObject, nextObject) {
 // it's probably more straightforward to compare immutable arrays. In addition, this would make
 // it easier to handle the subtle weirdness around non-existent objects, which we'll probably want
 // to change up how we handle as we transition towards injecting data under the "data" named prop
-function compareData(prevData, nextData) {
+function dataAreEqual(prevData, nextData) {
     // Cast all input data to an array to make comparisons between non-existent and existent
     // collections more straightforward
     prevData = prevData instanceof Array ? prevData : [prevData]
@@ -44,15 +69,14 @@ function compareData(prevData, nextData) {
     }
 
     for (let i = 0; i < prevData.length; i++) {
-        const areEqual = compareObject(prevData[i], nextData[i])
-        if (!areEqual) {
+        if (!objectsAreEqual(prevData[i], nextData[i])) {
             return false
         }
     }
     return true
 }
 
-function comparePassedProps(nextProps, props) {
+function passedPropsAreEqual(nextProps, props) {
     return shallowEqual(omit(nextProps, 'nion'), omit(props, 'nion'))
 }
 
@@ -68,8 +92,7 @@ export function areMergedPropsEqual(nextProps, props) {
     }
 
     // Check the custom props being passed in from parent components
-    const passedPropsAreEqual = comparePassedProps(nextProps, props)
-    if (!passedPropsAreEqual) {
+    if (!passedPropsAreEqual(nextProps, props)) {
         return false
     }
 
@@ -79,19 +102,25 @@ export function areMergedPropsEqual(nextProps, props) {
         const nextResource = nextProps.nion[propKey]
 
         // TODO: Compare resource.extra, write tests for this comparison
-        // TODO: Compare resource.extensions[extensionName].meta for all extensionNames, write tests for this comparison
 
         // Compare request state
-        const requestsAreEqual = compareRequests(
-            prevResource.request,
-            nextResource.request,
-        )
-        if (!requestsAreEqual) {
+        if (!requestsAreEqual(prevResource.request, nextResource.request)) {
             return false
         }
 
+        // Compare extensions (if they exist)
+        if (extensionsExist(prevResource)) {
+            if (
+                !extensionsAreEqual(
+                    prevResource.extensions,
+                    nextResource.extensions,
+                )
+            ) {
+                return false
+            }
+        }
+
         // Compare selected denormalized data
-        const dataAreEqual = compareData(prevResource.data, nextResource.data)
-        return dataAreEqual
+        return dataAreEqual(prevResource.data, nextResource.data)
     })
 }
