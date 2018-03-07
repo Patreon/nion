@@ -1,10 +1,6 @@
 import Immutable from 'seamless-immutable'
 const areMergedPropsEqual = require('./should-rerender').areMergedPropsEqual
 
-const defineDataProperty = (obj, key, value) => {
-    obj.data = obj.data.set(key, value)
-}
-
 const makeDataObject = data => {
     return { data: Immutable({ type: 'test', id: '123', ...data }) }
 }
@@ -60,26 +56,21 @@ describe('nion: should-rerender', () => {
 
     describe('when there are extra or different keys on the nion resource', () => {
         it('should return false', () => {
-            let prevProps = { user: makeDataObject({}) }
-            defineDataProperty(prevProps.user, 'foo', 'bar')
+            let prevProps = { user: makeDataObject({ foo: 'bar' }) }
             let nextProps = { user: makeDataObject({}) }
 
             expect(
                 areMergedPropsEqual({ nion: prevProps }, { nion: nextProps }),
             ).toEqual(false)
 
-            prevProps = { user: makeDataObject({}) }
-            defineDataProperty(prevProps.user, 'foo', 'bar')
-            nextProps = { user: makeDataObject({}) }
-            defineDataProperty(nextProps.user, 'foo', 'baz')
+            prevProps = { user: makeDataObject({ foo: 'bar' }) }
+            nextProps = { user: makeDataObject({ foo: 'baz' }) }
             expect(
                 areMergedPropsEqual({ nion: prevProps }, { nion: nextProps }),
             ).toEqual(false)
 
-            prevProps = { user: makeDataObject({}) }
-            defineDataProperty(prevProps.user, 'foo', 'bar')
-            nextProps = { user: makeDataObject({}) }
-            defineDataProperty(nextProps.user, 'baz', 'biz')
+            prevProps = { user: makeDataObject({ foo: 'bar' }) }
+            nextProps = { user: makeDataObject({ baz: 'biz' }) }
             expect(
                 areMergedPropsEqual({ nion: prevProps }, { nion: nextProps }),
             ).toEqual(false)
@@ -93,12 +84,12 @@ describe('nion: should-rerender', () => {
         describe('when the requests have different status or timestamps', () => {
             it('should return false', () => {
                 let prevProps = { user: makeDataObject({}) }
-                defineDataProperty(prevProps.user, 'request', {
+                prevProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aTimestamp,
                 })
                 let nextProps = { user: makeDataObject({}) }
-                defineDataProperty(nextProps.user, 'request', {
+                nextProps.user.request = Immutable({
                     status: 'success',
                     fetchedAt: aLaterTimestamp,
                 })
@@ -110,12 +101,12 @@ describe('nion: should-rerender', () => {
                 ).toEqual(false)
 
                 prevProps = { user: makeDataObject({}) }
-                defineDataProperty(prevProps.user, 'request', {
+                prevProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aTimestamp,
                 })
                 nextProps = { user: makeDataObject({}) }
-                defineDataProperty(nextProps.user, 'request', {
+                nextProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aLaterTimestamp,
                 })
@@ -127,12 +118,12 @@ describe('nion: should-rerender', () => {
                 ).toEqual(false)
 
                 prevProps = { user: makeDataObject({}) }
-                defineDataProperty(prevProps.user, 'request', {
+                prevProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aTimestamp,
                 })
                 nextProps = { user: makeDataObject({}) }
-                defineDataProperty(nextProps.user, 'request', {
+                nextProps.user.request = Immutable({
                     status: 'success',
                     fetchedAt: aTimestamp,
                 })
@@ -149,12 +140,12 @@ describe('nion: should-rerender', () => {
             it('should return true', () => {
                 let user = makeDataObject({})
                 let prevProps = { user }
-                defineDataProperty(prevProps.user, 'request', {
+                prevProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aTimestamp,
                 })
                 let nextProps = { user }
-                defineDataProperty(nextProps.user, 'request', {
+                nextProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aTimestamp,
                 })
@@ -168,8 +159,8 @@ describe('nion: should-rerender', () => {
         })
     })
 
-    describe('entities', () => {
-        describe('when the denormalized object is empty', () => {
+    describe('entity data', () => {
+        describe('when the denormalized data object is empty', () => {
             it('should return false', () => {
                 let prevProps = { user: makeDataObject({ _exists: false }) }
                 let nextProps = { user: makeDataObject({ _exists: false }) }
@@ -182,7 +173,7 @@ describe('nion: should-rerender', () => {
             })
         })
 
-        describe('when the denormalized objects are equal', () => {
+        describe('when the denormalized data objects are equal', () => {
             it('should return true', () => {
                 const user = makeDataObject({ name: 'test' })
                 let prevProps = { user: user }
@@ -196,7 +187,7 @@ describe('nion: should-rerender', () => {
             })
         })
 
-        describe('when the denormalized objects are not equal', () => {
+        describe('when the denormalized data objects are not equal', () => {
             it('should return false', () => {
                 let prevProps = { user: makeDataObject({ name: 'test' }) }
                 let nextProps = { user: makeDataObject({ name: 'other' }) }
