@@ -210,4 +210,12 @@ describe('nion: should-rerender', () => {
             })
         })
     })
+
+    describe('extra data', () => {
+        // TODO: test `nion[key].extra` comparisons
+    })
+
+    describe('extensions metadata', () => {
+        // TODO: test `nion[key].extensions[extensionName].meta` comparisons
+    })
 })

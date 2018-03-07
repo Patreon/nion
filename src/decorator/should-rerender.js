@@ -6,29 +6,6 @@ import deepEqual from 'deep-equal'
 import shallowEqual from '../utilities/shallow-equal'
 import { exists } from './index'
 
-function getDataPropertyKeys(obj) {
-    const enumerableKeys = Object.keys(obj)
-    const allKeys = Object.getOwnPropertyNames(obj)
-    return difference(allKeys, enumerableKeys)
-}
-
-const keysWithCustomComparators = ['actions', 'request', 'extra']
-function compareCustomProperties(prevResource, nextResource) {
-    const prevDataKeys = getDataPropertyKeys(prevResource)
-    const nextDataKeys = getDataPropertyKeys(nextResource)
-    const prevExtraProps = difference(prevDataKeys, keysWithCustomComparators)
-    const nextExtraProps = difference(nextDataKeys, keysWithCustomComparators)
-    if (prevExtraProps.length !== nextExtraProps.length) {
-        return false
-    }
-    return every(nextExtraProps, extraPropKey => {
-        return deepEqual(
-            get(prevResource, extraPropKey),
-            get(nextResource, extraPropKey),
-        )
-    })
-}
-
 // We don't want to do a strict immutable check here because we're adding a 'canLoadMore' property
 // to the selected request in the nion decorator...
 // TODO: we'll probably want to handle that special pagination property a bit more elegantly /
@@ -101,22 +78,14 @@ export function areMergedPropsEqual(nextProps, props) {
         const prevResource = props.nion[propKey]
         const nextResource = nextProps.nion[propKey]
 
-        // Compare all extra properties, except those which have custom comparators
-        const customPropsAreEqual = compareCustomProperties(
-            prevResource,
-            nextResource,
-        )
-
-        if (!customPropsAreEqual) {
-            return false
-        }
+        // TODO: Compare resource.extra, write tests for this comparison
+        // TODO: Compare resource.extensions[extensionName].meta for all extensionNames, write tests for this comparison
 
         // Compare request state
         const requestsAreEqual = compareRequests(
             prevResource.request,
             nextResource.request,
         )
-
         if (!requestsAreEqual) {
             return false
         }
