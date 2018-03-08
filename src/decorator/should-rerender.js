@@ -17,14 +17,14 @@ function extrasAreEqual(prevExtra, nextExtra) {
         return true
     }
 
-    const prevExtraEntries = Object.entries(prevExtra) || []
-    const nextExtraEntries = Object.entries(nextExtra) || []
+    const prevExtraKeys = Object.keys(prevExtra) || []
+    const nextExtraKeys = Object.keys(nextExtra) || []
 
-    if (prevExtraEntries.length !== nextExtraEntries.length) {
+    if (prevExtraKeys.length !== nextExtraKeys.length) {
         return false
     }
 
-    return deepEqual(prevExtraEntries, nextExtraEntries)
+    return prevExtra === nextExtra
 }
 
 function extensionsAreEqual(prevExts, nextExts) {
