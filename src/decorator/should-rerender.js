@@ -5,8 +5,6 @@ import omit from 'lodash.omit'
 import deepEqual from 'deep-equal'
 import shallowEqual from '../utilities/shallow-equal'
 
-// We don't want to do a strict immutable check here because we're adding a 'canLoadMore' property
-// to the selected request in the nion decorator...
 function requestsAreEqual(prevRequests, nextRequests) {
     return (
         get(prevRequests, 'status') === get(nextRequests, 'status') &&
@@ -14,20 +12,42 @@ function requestsAreEqual(prevRequests, nextRequests) {
     )
 }
 
-function extensionsExist(resource) {
-    return get(resource, 'extensions', false)
+function extrasAreEqual(prevExtra, nextExtra) {
+    if (!(prevExtra && nextExtra)) {
+        return true
+    }
+
+    const prevExtraKeys = Object.keys(prevExtra) || []
+    const nextExtraKeys = Object.keys(nextExtra) || []
+
+    console.log(prevExtraKeys, nextExtraKeys)
+
+    if (!deepEqual(prevExtraKeys, nextExtraKeys)) {
+        return false
+    }
+
+    return every(nextExtraKeys, key => {
+        return deepEqual(get(prevExtra, key), get(nextExtra, key))
+    })
 }
 
-// Extensions are optional, so we'll do the previous check first
 function extensionsAreEqual(prevExts, nextExts) {
-    const prevExtensionKeys = Object.keys(prevExts)
-    const nextExtensionKeys = Object.keys(nextExts)
-    if (prevExtensionKeys !== nextExtensionKeys) {
+    if (!(prevExts && nextExts)) {
+        return true
+    }
+
+    const prevExtensionKeys = Object.keys(prevExts) || []
+    const nextExtensionKeys = Object.keys(nextExts) || []
+
+    if (!deepEqual(prevExtensionKeys, nextExtensionKeys)) {
         return false
     }
 
     return every(nextExtensionKeys, key => {
-        return deepEqual(get(prevExts, key), get(nextExts, key))
+        return deepEqual(
+            get(prevExts, [key, 'meta']),
+            get(nextExts, [key, 'meta']),
+        )
     })
 }
 
@@ -35,6 +55,10 @@ function objectsAreEqual(prevObject, nextObject) {
     const objectExists = obj => {
         if (obj === null || obj === undefined) {
             return false
+        }
+
+        if (obj._exists !== undefined && obj._exists) {
+            return obj._exists
         }
 
         if (obj instanceof Array) {
@@ -101,26 +125,29 @@ export function areMergedPropsEqual(nextProps, props) {
         const prevResource = props.nion[propKey]
         const nextResource = nextProps.nion[propKey]
 
-        // TODO: Compare resource.extra, write tests for this comparison
-
         // Compare request state
         if (!requestsAreEqual(prevResource.request, nextResource.request)) {
+            console.log('requests unequal')
             return false
         }
 
-        // Compare extensions (if they exist)
-        if (extensionsExist(prevResource)) {
-            if (
-                !extensionsAreEqual(
-                    prevResource.extensions,
-                    nextResource.extensions,
-                )
-            ) {
-                return false
-            }
+        if (!extrasAreEqual(prevResource.extra, nextResource.extra)) {
+            console.log('extras unequal')
+            return false
+        }
+
+        // Compare extensions
+        if (
+            !extensionsAreEqual(
+                prevResource.extensions,
+                nextResource.extensions,
+            )
+        ) {
+            return false
         }
 
         // Compare selected denormalized data
+
         return dataAreEqual(prevResource.data, nextResource.data)
     })
 }

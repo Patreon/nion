@@ -1,7 +1,7 @@
 import Immutable from 'seamless-immutable'
 const areMergedPropsEqual = require('./should-rerender').areMergedPropsEqual
 
-const makeDataObject = data => {
+const makeDataObject = (data = {}) => {
     return { data: Immutable({ type: 'test', id: '123', ...data }) }
 }
 
@@ -9,7 +9,7 @@ describe('nion: should-rerender', () => {
     describe('when there are extra or different top-level keys on nion', () => {
         describe('that are significant', () => {
             it('should return false', () => {
-                let prevProps = { user: makeDataObject({}) }
+                let prevProps = { user: makeDataObject() }
                 let nextProps = {}
                 expect(
                     areMergedPropsEqual(
@@ -18,8 +18,8 @@ describe('nion: should-rerender', () => {
                     ),
                 ).toEqual(false)
 
-                prevProps = { user: makeDataObject({}) }
-                nextProps = { post: makeDataObject({}) }
+                prevProps = { user: makeDataObject() }
+                nextProps = { post: makeDataObject() }
                 expect(
                     areMergedPropsEqual(
                         { nion: prevProps },
@@ -31,7 +31,7 @@ describe('nion: should-rerender', () => {
 
         describe('that are ignored', () => {
             it('should return true', () => {
-                const user = makeDataObject({})
+                const user = makeDataObject()
                 const keysToIgnore = [
                     '_initializeDataKey',
                     'updateEntity',
@@ -57,7 +57,7 @@ describe('nion: should-rerender', () => {
     describe('when there are extra or different keys on the nion resource', () => {
         it('should return false', () => {
             let prevProps = { user: makeDataObject({ foo: 'bar' }) }
-            let nextProps = { user: makeDataObject({}) }
+            let nextProps = { user: makeDataObject() }
 
             expect(
                 areMergedPropsEqual({ nion: prevProps }, { nion: nextProps }),
@@ -83,12 +83,12 @@ describe('nion: should-rerender', () => {
 
         describe('when the requests have different status or timestamps', () => {
             it('should return false', () => {
-                let prevProps = { user: makeDataObject({}) }
+                let prevProps = { user: makeDataObject() }
                 prevProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aTimestamp,
                 })
-                let nextProps = { user: makeDataObject({}) }
+                let nextProps = { user: makeDataObject() }
                 nextProps.user.request = Immutable({
                     status: 'success',
                     fetchedAt: aLaterTimestamp,
@@ -100,12 +100,12 @@ describe('nion: should-rerender', () => {
                     ),
                 ).toEqual(false)
 
-                prevProps = { user: makeDataObject({}) }
+                prevProps = { user: makeDataObject() }
                 prevProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aTimestamp,
                 })
-                nextProps = { user: makeDataObject({}) }
+                nextProps = { user: makeDataObject() }
                 nextProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aLaterTimestamp,
@@ -117,12 +117,12 @@ describe('nion: should-rerender', () => {
                     ),
                 ).toEqual(false)
 
-                prevProps = { user: makeDataObject({}) }
+                prevProps = { user: makeDataObject() }
                 prevProps.user.request = Immutable({
                     status: 'pending',
                     fetchedAt: aTimestamp,
                 })
-                nextProps = { user: makeDataObject({}) }
+                nextProps = { user: makeDataObject() }
                 nextProps.user.request = Immutable({
                     status: 'success',
                     fetchedAt: aTimestamp,
@@ -138,7 +138,7 @@ describe('nion: should-rerender', () => {
 
         describe('when the requests all have the same status and timestamps', () => {
             it('should return true', () => {
-                let user = makeDataObject({})
+                let user = makeDataObject()
                 let prevProps = { user }
                 prevProps.user.request = Immutable({
                     status: 'pending',
@@ -203,7 +203,28 @@ describe('nion: should-rerender', () => {
     })
 
     describe('extra data', () => {
-        // TODO: test `nion[key].extra` comparisons
+        describe('when the extra data is all the same', () => {
+            it.only('should return true', () => {
+                let prevProps = { user: makeDataObject() }
+                prevProps.user.extra = {
+                    links: { self: '' },
+                    meta: { count: 25 },
+                }
+
+                let nextProps = { user: makeDataObject() }
+                nextProps.user.extra = {
+                    links: { self: '' },
+                    meta: { count: 25 },
+                }
+
+                expect(
+                    areMergedPropsEqual(
+                        { nion: prevProps },
+                        { nion: nextProps },
+                    ),
+                ).toEqual(true)
+            })
+        })
     })
 
     describe('extensions metadata', () => {

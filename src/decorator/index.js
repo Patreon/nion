@@ -16,8 +16,6 @@ import { connect } from 'react-redux'
 import { INITIALIZE_DATAKEY, UPDATE_REF } from '../actions/types'
 import { selectResourcesForKeys } from '../selectors'
 
-import { configuration } from '../configure'
-
 const getDefaultDeclarationOptions = () => ({
     // Component / API Lifecycle methods
     fetchOnInit: false, // Should the component load the data when a new dataKey is created?
@@ -126,6 +124,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 nion[key].actions = {}
                 nion[key].request = selected.request
                 nion[key].extra = selected.extra
+                nion[key].extensions = {}
             })
 
             return { nion }
@@ -482,9 +481,7 @@ export function exists(input = {}) {
     }
 
     const testExists = obj =>
-        !!(obj.data.id && obj.data.type) ||
-        input._exists ||
-        false
+        !!(obj.data.id && obj.data.type) || input._exists || false
 
     if (input instanceof Array) {
         return true
