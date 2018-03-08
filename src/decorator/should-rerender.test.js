@@ -204,18 +204,18 @@ describe('nion: should-rerender', () => {
 
     describe('extra data', () => {
         describe('when the extra data is all the same', () => {
-            it.only('should return true', () => {
+            it('should return true', () => {
                 let prevProps = { user: makeDataObject() }
-                prevProps.user.extra = {
+                prevProps.user.extra = Immutable({
                     links: { self: '' },
                     meta: { count: 25 },
-                }
+                })
 
                 let nextProps = { user: makeDataObject() }
-                nextProps.user.extra = {
+                nextProps.user.extra = Immutable({
                     links: { self: '' },
                     meta: { count: 25 },
-                }
+                })
 
                 expect(
                     areMergedPropsEqual(
@@ -223,6 +223,56 @@ describe('nion: should-rerender', () => {
                         { nion: nextProps },
                     ),
                 ).toEqual(true)
+            })
+        })
+
+        describe('when the extra data has changed', () => {
+            it('should return false', () => {
+                let prevProps = { user: makeDataObject() }
+                prevProps.user.extra = Immutable({
+                    links: { self: '' },
+                    meta: { count: 25 },
+                })
+
+                let nextProps = { user: makeDataObject() }
+                nextProps.user.extra = Immutable({
+                    links: { self: 'http://link.to.self' },
+                    meta: { count: 25 },
+                })
+
+                expect(
+                    areMergedPropsEqual(
+                        { nion: prevProps },
+                        { nion: nextProps },
+                    ),
+                ).toEqual(false)
+            })
+        })
+
+        describe('when the extra data has new keys', () => {
+            it('should return false', () => {
+                let prevProps = { user: makeDataObject() }
+                prevProps.user.extra = Immutable({
+                    links: { self: '' },
+                    meta: { count: 25 },
+                })
+
+                let nextProps = { user: makeDataObject() }
+                nextProps.user.extra = Immutable({
+                    links: {
+                        self: 'http://link.to.self',
+                        next: 'http://link.to.next',
+                        last: 'http://link.to.last',
+                    },
+                    meta: { count: 25 },
+                })
+
+                expect(
+                    areMergedPropsEqual(
+                        { nion: prevProps },
+                        { nion: nextProps },
+                    ),
+                ).toEqual(false)
             })
         })
     })

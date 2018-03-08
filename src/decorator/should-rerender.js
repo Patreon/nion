@@ -17,18 +17,14 @@ function extrasAreEqual(prevExtra, nextExtra) {
         return true
     }
 
-    const prevExtraKeys = Object.keys(prevExtra) || []
-    const nextExtraKeys = Object.keys(nextExtra) || []
+    const prevExtraEntries = Object.entries(prevExtra) || []
+    const nextExtraEntries = Object.entries(nextExtra) || []
 
-    console.log(prevExtraKeys, nextExtraKeys)
-
-    if (!deepEqual(prevExtraKeys, nextExtraKeys)) {
+    if (prevExtraEntries.length !== nextExtraEntries.length) {
         return false
     }
 
-    return every(nextExtraKeys, key => {
-        return deepEqual(get(prevExtra, key), get(nextExtra, key))
-    })
+    return deepEqual(prevExtraEntries, nextExtraEntries)
 }
 
 function extensionsAreEqual(prevExts, nextExts) {
@@ -54,14 +50,17 @@ function extensionsAreEqual(prevExts, nextExts) {
 function objectsAreEqual(prevObject, nextObject) {
     const objectExists = obj => {
         if (obj === null || obj === undefined) {
+            console.log('obj is null or undefined')
             return false
         }
 
         if (obj._exists !== undefined && obj._exists) {
+            console.log(`obj._exists is ${obj._exists}`)
             return obj._exists
         }
 
         if (obj instanceof Array) {
+            console.log('obj is an array')
             return true
         }
 
@@ -71,8 +70,10 @@ function objectsAreEqual(prevObject, nextObject) {
     // If the selected data do not exist yet, the ad-hoc created nonexistence objects should be
     // treated as equal
     if (!objectExists(prevObject) && !objectExists(nextObject)) {
+        console.log('existence escape hatch')
         return true
     } else {
+        console.log(`prevObject === nextObject: ${prevObject === nextObject}`)
         return prevObject === nextObject
     }
 }
@@ -94,9 +95,15 @@ function dataAreEqual(prevData, nextData) {
 
     for (let i = 0; i < prevData.length; i++) {
         if (!objectsAreEqual(prevData[i], nextData[i])) {
+            console.log(
+                `unequal objects:
+                ${JSON.stringify(prevData[i])}
+                ${JSON.stringify(nextData[i])}`,
+            )
             return false
         }
     }
+
     return true
 }
 
@@ -127,12 +134,10 @@ export function areMergedPropsEqual(nextProps, props) {
 
         // Compare request state
         if (!requestsAreEqual(prevResource.request, nextResource.request)) {
-            console.log('requests unequal')
             return false
         }
 
         if (!extrasAreEqual(prevResource.extra, nextResource.extra)) {
-            console.log('extras unequal')
             return false
         }
 
