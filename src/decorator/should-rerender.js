@@ -24,7 +24,7 @@ function extrasAreEqual(prevExtra, nextExtra) {
         return false
     }
 
-    return prevExtra === nextExtra
+    return shallowEqual(prevExtra, nextExtra)
 }
 
 function extensionsAreEqual(prevExts, nextExts) {
@@ -70,11 +70,9 @@ function objectsAreEqual(prevObject, nextObject) {
     // If the selected data do not exist yet, the ad-hoc created nonexistence objects should be
     // treated as equal
     if (!objectExists(prevObject) && !objectExists(nextObject)) {
-        console.log('existence escape hatch')
         return true
     } else {
-        console.log(`prevObject === nextObject: ${prevObject === nextObject}`)
-        return prevObject === nextObject
+        return deepEqual(prevObject, nextObject)
     }
 }
 

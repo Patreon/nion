@@ -205,17 +205,20 @@ describe('nion: should-rerender', () => {
     describe('extra data', () => {
         describe('when the extra data is all the same', () => {
             it('should return true', () => {
+                const extraLinks = { self: '' }
+                const extraMeta = { count: 25 }
+
                 let prevProps = { user: makeDataObject() }
-                prevProps.user.extra = Immutable({
-                    links: { self: '' },
-                    meta: { count: 25 },
-                })
+                prevProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
 
                 let nextProps = { user: makeDataObject() }
-                nextProps.user.extra = Immutable({
-                    links: { self: '' },
-                    meta: { count: 25 },
-                })
+                nextProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
 
                 expect(
                     areMergedPropsEqual(
@@ -228,17 +231,21 @@ describe('nion: should-rerender', () => {
 
         describe('when the extra data has changed', () => {
             it('should return false', () => {
+                let extraLinks = { self: '' }
+                const extraMeta = { count: 25 }
+
                 let prevProps = { user: makeDataObject() }
-                prevProps.user.extra = Immutable({
-                    links: { self: '' },
-                    meta: { count: 25 },
-                })
+                prevProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
 
                 let nextProps = { user: makeDataObject() }
-                nextProps.user.extra = Immutable({
-                    links: { self: 'http://link.to.self' },
-                    meta: { count: 25 },
-                })
+                extraLinks = { self: 'http://link.to.self' }
+                nextProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
 
                 expect(
                     areMergedPropsEqual(
@@ -251,21 +258,24 @@ describe('nion: should-rerender', () => {
 
         describe('when the extra data has new keys', () => {
             it('should return false', () => {
+                let extraLinks = { self: '' }
+                const extraMeta = { count: 25 }
+
                 let prevProps = { user: makeDataObject() }
-                prevProps.user.extra = Immutable({
-                    links: { self: '' },
-                    meta: { count: 25 },
-                })
+                prevProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
 
                 let nextProps = { user: makeDataObject() }
-                nextProps.user.extra = Immutable({
-                    links: {
-                        self: 'http://link.to.self',
-                        next: 'http://link.to.next',
-                        last: 'http://link.to.last',
-                    },
-                    meta: { count: 25 },
-                })
+                extraLinks = {
+                    self: 'http://link.to.self',
+                    next: 'http://link.to.next',
+                }
+                nextProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
 
                 expect(
                     areMergedPropsEqual(
