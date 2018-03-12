@@ -1,9 +1,18 @@
 import Immutable from 'seamless-immutable'
-const areMergedPropsEqual = require('./should-rerender').areMergedPropsEqual
+import {
+    areMergedPropsEqual,
+    passedPropsAreEqual,
+    requestsAreEqual,
+    extrasAreEqual,
+    extensionsAreEqual,
+    dataAreEqual,
+} from './should-rerender.js'
 
 const makeDataObject = (data = {}) => {
     return { data: Immutable({ type: 'test', id: '123', ...data }) }
 }
+
+const nionize = obj => ({ nion: obj })
 
 describe('nion: should-rerender', () => {
     describe('when there are extra or different top-level keys on nion', () => {
@@ -12,19 +21,14 @@ describe('nion: should-rerender', () => {
                 let prevProps = { user: makeDataObject() }
                 let nextProps = {}
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
                 ).toEqual(false)
 
                 prevProps = { user: makeDataObject() }
                 nextProps = { post: makeDataObject() }
+                expect(passedPropsAreEqual(prevProps, nextProps)).toEqual(false)
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
                 ).toEqual(false)
             })
         })
@@ -45,8 +49,8 @@ describe('nion: should-rerender', () => {
                     const nextProps = { user }
                     expect(
                         areMergedPropsEqual(
-                            { nion: prevProps },
-                            { nion: nextProps },
+                            nionize(prevProps),
+                            nionize(nextProps),
                         ),
                     ).toEqual(true)
                 })
@@ -60,19 +64,19 @@ describe('nion: should-rerender', () => {
             let nextProps = { user: makeDataObject() }
 
             expect(
-                areMergedPropsEqual({ nion: prevProps }, { nion: nextProps }),
+                areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
             ).toEqual(false)
 
             prevProps = { user: makeDataObject({ foo: 'bar' }) }
             nextProps = { user: makeDataObject({ foo: 'baz' }) }
             expect(
-                areMergedPropsEqual({ nion: prevProps }, { nion: nextProps }),
+                areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
             ).toEqual(false)
 
             prevProps = { user: makeDataObject({ foo: 'bar' }) }
             nextProps = { user: makeDataObject({ baz: 'biz' }) }
             expect(
-                areMergedPropsEqual({ nion: prevProps }, { nion: nextProps }),
+                areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
             ).toEqual(false)
         })
     })
@@ -94,10 +98,13 @@ describe('nion: should-rerender', () => {
                     fetchedAt: aLaterTimestamp,
                 })
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
+                    requestsAreEqual(
+                        prevProps.user.request,
+                        nextProps.user.request,
                     ),
+                ).toEqual(false)
+                expect(
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
                 ).toEqual(false)
 
                 prevProps = { user: makeDataObject() }
@@ -111,10 +118,13 @@ describe('nion: should-rerender', () => {
                     fetchedAt: aLaterTimestamp,
                 })
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
+                    requestsAreEqual(
+                        prevProps.user.request,
+                        nextProps.user.request,
                     ),
+                ).toEqual(false)
+                expect(
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
                 ).toEqual(false)
 
                 prevProps = { user: makeDataObject() }
@@ -128,10 +138,7 @@ describe('nion: should-rerender', () => {
                     fetchedAt: aTimestamp,
                 })
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
                 ).toEqual(false)
             })
         })
@@ -150,10 +157,7 @@ describe('nion: should-rerender', () => {
                     fetchedAt: aTimestamp,
                 })
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
                 ).toEqual(true)
             })
         })
@@ -165,123 +169,129 @@ describe('nion: should-rerender', () => {
                 let prevProps = { user: makeDataObject({ _exists: false }) }
                 let nextProps = { user: makeDataObject({ _exists: false }) }
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
                 ).toEqual(false)
             })
         })
 
         describe('when the denormalized data objects are equal', () => {
+            const user = makeDataObject({ name: 'test' })
+            let prevProps = { user: user }
+            let nextProps = { user: user }
+
             it('should return true', () => {
-                const user = makeDataObject({ name: 'test' })
-                let prevProps = { user: user }
-                let nextProps = { user: user }
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
                 ).toEqual(true)
+            })
+            it('should pass a dataAreEqual check', () => {
+                expect(
+                    dataAreEqual(prevProps.data, nextProps.data)
+                ).toBe(true)
             })
         })
 
         describe('when the denormalized data objects are not equal', () => {
-            it('should return false', () => {
-                let prevProps = { user: makeDataObject({ name: 'test' }) }
-                let nextProps = { user: makeDataObject({ name: 'other' }) }
+            let prevProps = { user: makeDataObject({ name: 'test' }) }
+            let nextProps = { user: makeDataObject({ name: 'other' }) }
 
+            it('should return false', () => {
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
                 ).toEqual(false)
+            })
+            it('should fail a dataAreEqual check', () => {
+                expect(dataAreEqual(prevProps.data, nextProps.data)).toBeFalsy()
             })
         })
     })
 
     describe('extra data', () => {
         describe('when the extra data is all the same', () => {
+            const extraLinks = { self: '' }
+            const extraMeta = { count: 25 }
+
+            let prevProps = { user: makeDataObject() }
+            prevProps.user.extra = {
+                links: extraLinks,
+                meta: extraMeta,
+            }
+
+            let nextProps = { user: makeDataObject() }
+            nextProps.user.extra = {
+                links: extraLinks,
+                meta: extraMeta,
+            }
+
             it('should return true', () => {
-                const extraLinks = { self: '' }
-                const extraMeta = { count: 25 }
-
-                let prevProps = { user: makeDataObject() }
-                prevProps.user.extra = {
-                    links: extraLinks,
-                    meta: extraMeta,
-                }
-
-                let nextProps = { user: makeDataObject() }
-                nextProps.user.extra = {
-                    links: extraLinks,
-                    meta: extraMeta,
-                }
-
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
+                ).toEqual(true)
+            })
+            it('should pass an extrasAreEqual check', () => {
+                expect(
+                    extrasAreEqual(prevProps.user.extra, nextProps.user.extra),
                 ).toEqual(true)
             })
         })
 
         describe('when the extra data has changed', () => {
+            let extraLinks = { self: '' }
+            const extraMeta = { count: 25 }
+
+            let prevProps = { user: makeDataObject() }
+            prevProps.user.extra = {
+                links: extraLinks,
+                meta: extraMeta,
+            }
+
+            let nextProps = { user: makeDataObject() }
+            extraLinks = { self: 'http://link.to.self' }
+            nextProps.user.extra = {
+                links: extraLinks,
+                meta: extraMeta,
+            }
+
             it('should return false', () => {
-                let extraLinks = { self: '' }
-                const extraMeta = { count: 25 }
-
-                let prevProps = { user: makeDataObject() }
-                prevProps.user.extra = {
-                    links: extraLinks,
-                    meta: extraMeta,
-                }
-
-                let nextProps = { user: makeDataObject() }
-                extraLinks = { self: 'http://link.to.self' }
-                nextProps.user.extra = {
-                    links: extraLinks,
-                    meta: extraMeta,
-                }
-
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
+                ).toEqual(false)
+            })
+            it('should fail an extrasAreEqual check', () => {
+                expect(
+                    extrasAreEqual(prevProps.user.extra, nextProps.user.extra),
                 ).toEqual(false)
             })
         })
 
         describe('when the extra data has new keys', () => {
+            let extraLinks = { self: '' }
+            const extraMeta = { count: 25 }
+
+            let prevProps = { user: makeDataObject() }
+            prevProps.user.extra = {
+                links: extraLinks,
+                meta: extraMeta,
+            }
+
+            let nextProps = { user: makeDataObject() }
+            extraLinks = {
+                self: 'http://link.to.self',
+                next: 'http://link.to.next',
+            }
+            nextProps.user.extra = {
+                links: extraLinks,
+                meta: extraMeta,
+            }
+
             it('should return false', () => {
-                let extraLinks = { self: '' }
-                const extraMeta = { count: 25 }
-
-                let prevProps = { user: makeDataObject() }
-                prevProps.user.extra = {
-                    links: extraLinks,
-                    meta: extraMeta,
-                }
-
-                let nextProps = { user: makeDataObject() }
-                extraLinks = {
-                    self: 'http://link.to.self',
-                    next: 'http://link.to.next',
-                }
-                nextProps.user.extra = {
-                    links: extraLinks,
-                    meta: extraMeta,
-                }
-
                 expect(
-                    areMergedPropsEqual(
-                        { nion: prevProps },
-                        { nion: nextProps },
-                    ),
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
+                ).toEqual(false)
+            })
+            it('should fail an extrasAreEqual check', () => {
+                expect(
+                    extrasAreEqual(prevProps.user.extra, nextProps.user.extra),
                 ).toEqual(false)
             })
         })

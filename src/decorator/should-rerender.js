@@ -5,20 +5,22 @@ import omit from 'lodash.omit'
 import deepEqual from 'deep-equal'
 import shallowEqual from '../utilities/shallow-equal'
 
-function requestsAreEqual(prevRequests, nextRequests) {
+export function requestsAreEqual(prevRequests, nextRequests) {
     return (
         get(prevRequests, 'status') === get(nextRequests, 'status') &&
         get(prevRequests, 'fetchedAt') === get(nextRequests, 'fetchedAt')
     )
 }
 
-function extrasAreEqual(prevExtra, nextExtra) {
+export function extrasAreEqual(prevExtra, nextExtra) {
     if (!(prevExtra && nextExtra)) {
         return true
     }
 
     const prevExtraKeys = Object.keys(prevExtra) || []
     const nextExtraKeys = Object.keys(nextExtra) || []
+
+    console.log(prevExtra, nextExtra)
 
     if (prevExtraKeys.length !== nextExtraKeys.length) {
         return false
@@ -27,7 +29,7 @@ function extrasAreEqual(prevExtra, nextExtra) {
     return shallowEqual(prevExtra, nextExtra)
 }
 
-function extensionsAreEqual(prevExts, nextExts) {
+export function extensionsAreEqual(prevExts, nextExts) {
     if (!(prevExts && nextExts)) {
         return true
     }
@@ -47,20 +49,17 @@ function extensionsAreEqual(prevExts, nextExts) {
     })
 }
 
-function objectsAreEqual(prevObject, nextObject) {
+export function objectsAreEqual(prevObject, nextObject) {
     const objectExists = obj => {
         if (obj === null || obj === undefined) {
-            console.log('obj is null or undefined')
             return false
         }
 
         if (obj._exists !== undefined && obj._exists) {
-            console.log(`obj._exists is ${obj._exists}`)
             return obj._exists
         }
 
         if (obj instanceof Array) {
-            console.log('obj is an array')
             return true
         }
 
@@ -72,7 +71,7 @@ function objectsAreEqual(prevObject, nextObject) {
     if (!objectExists(prevObject) && !objectExists(nextObject)) {
         return true
     } else {
-        return deepEqual(prevObject, nextObject)
+        return prevObject === nextObject
     }
 }
 
@@ -81,7 +80,7 @@ function objectsAreEqual(prevObject, nextObject) {
 // it's probably more straightforward to compare immutable arrays. In addition, this would make
 // it easier to handle the subtle weirdness around non-existent objects, which we'll probably want
 // to change up how we handle as we transition towards injecting data under the "data" named prop
-function dataAreEqual(prevData, nextData) {
+export function dataAreEqual(prevData, nextData) {
     // Cast all input data to an array to make comparisons between non-existent and existent
     // collections more straightforward
     prevData = prevData instanceof Array ? prevData : [prevData]
@@ -93,11 +92,6 @@ function dataAreEqual(prevData, nextData) {
 
     for (let i = 0; i < prevData.length; i++) {
         if (!objectsAreEqual(prevData[i], nextData[i])) {
-            console.log(
-                `unequal objects:
-                ${JSON.stringify(prevData[i])}
-                ${JSON.stringify(nextData[i])}`,
-            )
             return false
         }
     }
@@ -105,7 +99,7 @@ function dataAreEqual(prevData, nextData) {
     return true
 }
 
-function passedPropsAreEqual(nextProps, props) {
+export function passedPropsAreEqual(nextProps, props) {
     return shallowEqual(omit(nextProps, 'nion'), omit(props, 'nion'))
 }
 
@@ -116,7 +110,7 @@ export function areMergedPropsEqual(nextProps, props) {
     if (prevNionKeys.length !== nextNionKeys.length) {
         return false
     }
-    if (!deepEqual(prevNionKeys, nextNionKeys)) {
+    if (!shallowEqual(prevNionKeys, nextNionKeys)) {
         return false
     }
 
@@ -150,7 +144,6 @@ export function areMergedPropsEqual(nextProps, props) {
         }
 
         // Compare selected denormalized data
-
         return dataAreEqual(prevResource.data, nextResource.data)
     })
 }
