@@ -62,7 +62,7 @@ describe('JSON API Pagination extension', () => {
         expect(user.request.status).toEqual('success')
         expect(user.request.isLoading).toEqual(false)
 
-        expect(user.extensions).toBeUndefined()
+        expect(user.extensions.jsonApiPagination).toBeUndefined()
     })
 
     test(`adds actions and meta to resources with pagination links`, async () => {
