@@ -20,8 +20,6 @@ export function extrasAreEqual(prevExtra, nextExtra) {
     const prevExtraKeys = Object.keys(prevExtra) || []
     const nextExtraKeys = Object.keys(nextExtra) || []
 
-    console.log(prevExtra, nextExtra)
-
     if (prevExtraKeys.length !== nextExtraKeys.length) {
         return false
     }
@@ -63,7 +61,7 @@ export function objectsAreEqual(prevObject, nextObject) {
             return true
         }
 
-        return !!(obj.id && obj.type)
+        return !!(obj.id && obj.type) || obj._exists || false
     }
 
     // If the selected data do not exist yet, the ad-hoc created nonexistence objects should be
