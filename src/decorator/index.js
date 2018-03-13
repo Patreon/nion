@@ -24,7 +24,7 @@ const getDefaultDeclarationOptions = () => ({
     // Manual ref initialization, for parent/child data management relationships
     initialRef: null,
 
-    // Extend basic actions
+    // Compose basic actions and add handy custom meta values
     extensions: {},
 
     // Specify the API used to request and parse API data
