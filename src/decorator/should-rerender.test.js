@@ -9,7 +9,17 @@ import {
 } from './should-rerender.js'
 
 const makeDataObject = (data = {}) => {
-    return { data: Immutable({ type: 'test', id: '123', ...data }) }
+    return Immutable({ type: 'test', id: '123', ...data })
+}
+
+const makeExtension = (actions = {}, meta = {}) => {
+    return {
+        get: () => {},
+        ...actions,
+        meta: {
+            ...meta,
+        },
+    }
 }
 
 const nionize = obj => ({ nion: obj })
@@ -17,9 +27,13 @@ const nionize = obj => ({ nion: obj })
 describe('nion: should-rerender', () => {
     describe('when there are extra or different top-level keys on nion', () => {
         describe('that are significant', () => {
-            const data = makeDataObject()
-            let prevProps = { user: { data } }
-            let nextProps = {}
+            let data, prevProps, nextProps
+
+            beforeEach(() => {
+                data = makeDataObject()
+                prevProps = { user: { data } }
+                nextProps = {}
+            })
             it('should return false', () => {
                 expect(
                     areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
@@ -59,21 +73,21 @@ describe('nion: should-rerender', () => {
 
     describe('when there are extra or different keys on the nion resource', () => {
         it('should return false', () => {
-            let prevProps = { user: makeDataObject({ foo: 'bar' }) }
-            let nextProps = { user: makeDataObject() }
+            let prevProps = { user: { data: makeDataObject({ foo: 'bar' }) } }
+            let nextProps = { user: { data: makeDataObject() } }
 
             expect(
                 areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
             ).toEqual(false)
 
-            prevProps = { user: makeDataObject({ foo: 'bar' }) }
-            nextProps = { user: makeDataObject({ foo: 'baz' }) }
+            prevProps = { user: { data: makeDataObject({ foo: 'bar' }) } }
+            nextProps = { user: { data: makeDataObject({ foo: 'baz' }) } }
             expect(
                 areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
             ).toEqual(false)
 
-            prevProps = { user: makeDataObject({ foo: 'bar' }) }
-            nextProps = { user: makeDataObject({ baz: 'biz' }) }
+            prevProps = { user: { data: makeDataObject({ foo: 'bar' }) } }
+            nextProps = { user: { data: makeDataObject({ baz: 'biz' }) } }
             expect(
                 areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
             ).toEqual(false)
@@ -167,25 +181,32 @@ describe('nion: should-rerender', () => {
 
     describe('entity data', () => {
         describe('when the denormalized data object is empty', () => {
-            let prevProps = { user: makeDataObject({ _exists: false }) }
-            let nextProps = { user: makeDataObject({ _exists: false }) }
-            it('should return false', () => {
+            let prevProps, nextProps
+
+            beforeEach(() => {
+                prevProps = { user: { data: {} } }
+                nextProps = { user: { data: {} } }
+            })
+            it('should return true', () => {
                 expect(
                     areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
-                ).toEqual(false)
+                ).toEqual(true)
             })
-            it('should fail a dataAreEqual check', () => {
+            it('should pass a dataAreEqual check', () => {
                 expect(
                     dataAreEqual(prevProps.user.data, nextProps.user.data),
-                ).toBe(false)
+                ).toBe(true)
             })
         })
 
         describe('when the denormalized data objects are equal', () => {
-            const data = makeDataObject({ name: 'test' })
-            let prevProps = { user: { data } }
-            let nextProps = { user: { data } }
+            let data, prevProps, nextProps
 
+            beforeEach(() => {
+                data = makeDataObject({ name: 'test' })
+                prevProps = { user: { data } }
+                nextProps = { user: { data } }
+            })
             it('should return true', () => {
                 expect(
                     areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
@@ -199,9 +220,16 @@ describe('nion: should-rerender', () => {
         })
 
         describe('when the denormalized data objects are not equal', () => {
-            let prevProps = { user: makeDataObject({ name: 'test' }) }
-            let nextProps = { user: makeDataObject({ name: 'other' }) }
+            let prevProps, nextProps
 
+            beforeEach(() => {
+                prevProps = {
+                    user: { data: makeDataObject({ name: 'test' }) },
+                }
+                nextProps = {
+                    user: { data: makeDataObject({ name: 'other' }) },
+                }
+            })
             it('should return false', () => {
                 expect(
                     areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
@@ -217,22 +245,25 @@ describe('nion: should-rerender', () => {
 
     describe('extra data', () => {
         describe('when the extra data is all the same', () => {
-            const data = makeDataObject({ name: 'test' })
-            const extraLinks = { self: '' }
-            const extraMeta = { count: 25 }
+            let data, extraLinks, extraMeta, prevProps, nextProps
 
-            let prevProps = { user: { data } }
-            prevProps.user.extra = {
-                links: extraLinks,
-                meta: extraMeta,
-            }
+            beforeEach(() => {
+                data = makeDataObject({ name: 'test' })
+                extraLinks = { self: '' }
+                extraMeta = { count: 25 }
 
-            let nextProps = { user: { data } }
-            nextProps.user.extra = {
-                links: extraLinks,
-                meta: extraMeta,
-            }
+                prevProps = { user: { data } }
+                prevProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
 
+                nextProps = { user: { data } }
+                nextProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
+            })
             it('should return true', () => {
                 expect(
                     areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
@@ -246,23 +277,26 @@ describe('nion: should-rerender', () => {
         })
 
         describe('when the extra data has changed', () => {
-            const data = makeDataObject({ name: 'test' })
-            let extraLinks = { self: '' }
-            const extraMeta = { count: 25 }
+            let data, extraLinks, extraMeta, prevProps, nextProps
 
-            let prevProps = { user: { data } }
-            prevProps.user.extra = {
-                links: extraLinks,
-                meta: extraMeta,
-            }
+            beforeEach(() => {
+                data = makeDataObject({ name: 'test' })
+                extraLinks = { self: '' }
+                extraMeta = { count: 25 }
 
-            let nextProps = { user: { data } }
-            extraLinks = { self: 'http://link.to.self' }
-            nextProps.user.extra = {
-                links: extraLinks,
-                meta: extraMeta,
-            }
+                prevProps = { user: { data } }
+                prevProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
 
+                nextProps = { user: { data } }
+                extraLinks = { self: 'http://link.to.self' }
+                nextProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
+            })
             it('should return false', () => {
                 expect(
                     areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
@@ -276,26 +310,29 @@ describe('nion: should-rerender', () => {
         })
 
         describe('when the extra data has new keys', () => {
-            const data = makeDataObject({ name: 'test' })
-            let extraLinks = { self: '' }
-            const extraMeta = { count: 25 }
+            let data, extraLinks, extraMeta, prevProps, nextProps
 
-            let prevProps = { user: { data } }
-            prevProps.user.extra = {
-                links: extraLinks,
-                meta: extraMeta,
-            }
+            beforeEach(() => {
+                data = makeDataObject({ name: 'test' })
+                extraLinks = { self: '' }
+                extraMeta = { count: 25 }
 
-            let nextProps = { user: { data } }
-            extraLinks = {
-                self: 'http://link.to.self',
-                next: 'http://link.to.next',
-            }
-            nextProps.user.extra = {
-                links: extraLinks,
-                meta: extraMeta,
-            }
+                prevProps = { user: { data } }
+                prevProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
 
+                nextProps = { user: { data } }
+                extraLinks = {
+                    self: 'http://link.to.self',
+                    next: 'http://link.to.next',
+                }
+                nextProps.user.extra = {
+                    links: extraLinks,
+                    meta: extraMeta,
+                }
+            })
             it('should return false', () => {
                 expect(
                     areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
@@ -310,6 +347,80 @@ describe('nion: should-rerender', () => {
     })
 
     describe('extensions metadata', () => {
-        // TODO: test `nion[key].extensions[extensionName].meta` comparisons
+        describe('when extensions not significantly changed', () => {
+            let data, prevProps, nextProps
+
+            beforeEach(() => {
+                data = makeDataObject()
+                prevProps = {
+                    user: {
+                        data,
+                        extensions: {
+                            foo: makeExtension({}, { bar: 'baz' }),
+                        },
+                    },
+                }
+                nextProps = {
+                    user: {
+                        data,
+                        extensions: {
+                            foo: makeExtension({}, { bar: 'baz' }),
+                        },
+                    },
+                }
+            })
+
+            it('should return true', () => {
+                expect(
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
+                ).toBe(true)
+            })
+            it('should pass an extensionsAreEqual check', () => {
+                expect(
+                    extensionsAreEqual(
+                        prevProps.user.extensions,
+                        nextProps.user.extensions,
+                    ),
+                ).toBe(true)
+            })
+        })
+
+        describe('when extension meta has changed', () => {
+            let data, prevProps, nextProps
+
+            beforeEach(() => {
+                data = makeDataObject()
+                prevProps = {
+                    user: {
+                        data,
+                        extensions: {
+                            foo: makeExtension({}, { bar: 'baz' }),
+                        },
+                    },
+                }
+                nextProps = {
+                    user: {
+                        data,
+                        extensions: {
+                            foo: makeExtension({}, { bar: 'farb' }),
+                        },
+                    },
+                }
+            })
+
+            it('should return false', () => {
+                expect(
+                    areMergedPropsEqual(nionize(prevProps), nionize(nextProps)),
+                ).toBe(false)
+            })
+            it('should fail an extensionsAreEqual check', () => {
+                expect(
+                    extensionsAreEqual(
+                        prevProps.user.extensions,
+                        nextProps.user.extensions,
+                    ),
+                ).toBe(false)
+            })
+        })
     })
 })

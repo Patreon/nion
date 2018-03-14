@@ -53,15 +53,11 @@ export function objectsAreEqual(prevObject, nextObject) {
             return false
         }
 
-        if (obj._exists !== undefined && obj._exists) {
-            return obj._exists
-        }
-
         if (obj instanceof Array) {
             return true
         }
 
-        return !!(obj.id && obj.type) || obj._exists || false
+        return !!(obj.id && obj.type)
     }
 
     // If the selected data do not exist yet, the ad-hoc created nonexistence objects should be
@@ -73,11 +69,6 @@ export function objectsAreEqual(prevObject, nextObject) {
     }
 }
 
-// TODO: We can probably make this situation a bit more elegant - right now, we're forced to compare
-// each element of an array containing denormalized objects to see if any of them have changed...
-// it's probably more straightforward to compare immutable arrays. In addition, this would make
-// it easier to handle the subtle weirdness around non-existent objects, which we'll probably want
-// to change up how we handle as we transition towards injecting data under the "data" named prop
 export function dataAreEqual(prevData, nextData) {
     // Cast all input data to an array to make comparisons between non-existent and existent
     // collections more straightforward
