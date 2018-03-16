@@ -116,9 +116,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 // hidden property) to pass down to the child component. This can interface with the
                 // "exists" function to tell if the data exists yet
                 const refDoesNotExist = selected.obj === undefined || null
-                nion[key].data = refDoesNotExist
-                    ? makeNonExistingObject()
-                    : selected.obj
+                nion[key].data = refDoesNotExist ? null : selected.obj
 
                 // Define the nion-specific properties as properties on the dataKey prop.
                 nion[key].actions = {}
@@ -476,33 +474,11 @@ export function exists(input = {}) {
         return false
     }
 
-    if (input._exists !== undefined && input._exists) {
-        return input._exists
+    if (typeof input.data !== 'undefined' && input.data === null) {
+        return false
     }
 
-    const testExists = obj =>
-        !!(obj.data.id && obj.data.type) || input._exists || false
-
-    if (input instanceof Array) {
-        return true
-    }
-
-    return testExists(input)
-}
-
-function makeNonExistingObject() {
-    const obj = {}
-    Object.defineProperty(obj, '_exists', { value: false, enumerable: false })
-    return obj
-}
-
-function makeExistingObject(existingObj = {}) {
-    const obj = { ...existingObj }
-    Object.defineProperty(obj, '_exists', {
-        value: true,
-        enumerable: false,
-    })
-    return obj
+    return true
 }
 
 function getDisplayName(WrappedComponent) {

@@ -492,7 +492,7 @@ describe('nion : integration tests', () => {
             class Container extends Component {
                 render() {
                     const { test } = this.props.nion
-                    return exists(test.data) ? (
+                    return exists(test) ? (
                         <ChildContainer inputData={test.data} />
                     ) : (
                         <span />
@@ -529,7 +529,7 @@ describe('nion : integration tests', () => {
             getProp = () => ChildWrapped.props().nion.child
 
             let child = getProp()
-            expect(exists(child.data)).toEqual(true)
+            expect(exists(child)).toEqual(true)
         })
     })
 })

@@ -4,6 +4,7 @@ import get from 'lodash.get'
 import omit from 'lodash.omit'
 import deepEqual from 'deep-equal'
 import shallowEqual from '../utilities/shallow-equal'
+import { exists } from './index'
 
 export function requestsAreEqual(prevRequests, nextRequests) {
     return (
@@ -47,45 +48,21 @@ export function extensionsAreEqual(prevExts, nextExts) {
     })
 }
 
-export function objectsAreEqual(prevObject, nextObject) {
-    const objectExists = obj => {
-        if (obj === null || obj === undefined) {
-            return false
-        }
-
-        if (obj instanceof Array) {
-            return true
-        }
-
-        return !!(obj.id && obj.type)
-    }
-
-    // If the selected data do not exist yet, the ad-hoc created nonexistence objects should be
-    // treated as equal
-    if (!objectExists(prevObject) && !objectExists(nextObject)) {
-        return true
-    } else {
-        return prevObject === nextObject
-    }
-}
-
 export function dataAreEqual(prevData, nextData) {
-    // Cast all input data to an array to make comparisons between non-existent and existent
-    // collections more straightforward
-    prevData = prevData instanceof Array ? prevData : [prevData]
-    nextData = nextData instanceof Array ? nextData : [nextData]
+    const prevKeys = Object.keys(prevData)
+    const nextKeys = Object.keys(nextData)
 
-    if (prevData.length !== nextData.length) {
+    if (prevKeys.length !== nextKeys.length) {
         return false
     }
 
-    for (let i = 0; i < prevData.length; i++) {
-        if (!objectsAreEqual(prevData[i], nextData[i])) {
-            return false
+    return every(prevKeys, key => {
+        if (!exists(prevData[key]) && !exists(nextData[key])) {
+            return true
         }
-    }
 
-    return true
+        return prevData[key] === nextData[key]
+    })
 }
 
 export function passedPropsAreEqual(nextProps, props) {
