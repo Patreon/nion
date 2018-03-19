@@ -2,8 +2,6 @@ import decorator, * as decoratorHelpers from './decorator'
 import * as selectors from './selectors'
 import * as transforms from './transforms'
 
-console.log('nion is linked')
-
 export const { exists } = decoratorHelpers
 export const { selectData, selectRequest, selectResourcesForKeys } = selectors
 export const { makeRef } = transforms
