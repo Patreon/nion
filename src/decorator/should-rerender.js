@@ -49,8 +49,11 @@ export function extensionsAreEqual(prevExts, nextExts) {
 }
 
 export function dataAreEqual(prevData, nextData) {
-    const prevKeys = Object.keys(prevData)
-    const nextKeys = Object.keys(nextData)
+    const safeKeys = object =>
+        typeof object === 'object' ? Object.keys(object) : []
+
+    const prevKeys = safeKeys(prevData)
+    const nextKeys = safeKeys(nextData)
 
     if (prevKeys.length !== nextKeys.length) {
         return false
