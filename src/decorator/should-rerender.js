@@ -50,7 +50,8 @@ export function extensionsAreEqual(prevExts, nextExts) {
 
 export function dataAreEqual(prevData, nextData) {
     const safeKeys = object =>
-        typeof object === 'object' ? Object.keys(object) : []
+        // typeof null => 'object', hence both these checks
+        typeof object === 'object' && object !== null ? Object.keys(object) : []
 
     const prevKeys = safeKeys(prevData)
     const nextKeys = safeKeys(nextData)
