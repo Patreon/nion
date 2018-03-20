@@ -16,8 +16,6 @@ import { connect } from 'react-redux'
 import { INITIALIZE_DATAKEY, UPDATE_REF } from '../actions/types'
 import { selectResourcesForKeys } from '../selectors'
 
-import { configuration } from '../configure'
-
 const getDefaultDeclarationOptions = () => ({
     // Component / API Lifecycle methods
     fetchOnInit: false, // Should the component load the data when a new dataKey is created?
@@ -26,7 +24,7 @@ const getDefaultDeclarationOptions = () => ({
     // Manual ref initialization, for parent/child data management relationships
     initialRef: null,
 
-    // Extend basic actions
+    // Compose basic actions and add handy custom meta values
     extensions: {},
 
     // Specify the API used to request and parse API data
@@ -118,14 +116,13 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 // hidden property) to pass down to the child component. This can interface with the
                 // "exists" function to tell if the data exists yet
                 const refDoesNotExist = selected.obj === undefined || null
-                nion[key].data = refDoesNotExist
-                    ? makeNonExistingObject()
-                    : selected.obj
+                nion[key].data = refDoesNotExist ? null : selected.obj
 
                 // Define the nion-specific properties as properties on the dataKey prop.
                 nion[key].actions = {}
                 nion[key].request = selected.request
                 nion[key].extra = selected.extra
+                nion[key].extensions = {}
             })
 
             return { nion }
@@ -473,36 +470,15 @@ export default nion
 // manage loading the corresponding data. This method tests to see if that object has data
 // associated with it.
 export function exists(input = {}) {
-    if (input === null || input === undefined) {
+    if (input === null || typeof input === 'undefined') {
         return false
     }
 
-    if (input._exists !== undefined && input._exists) {
-        return input._exists
+    if (typeof input.data !== 'undefined' && input.data === null) {
+        return false
     }
 
-    const testExists = obj => !!(obj.id && obj.type) || input._exists || false
-
-    if (input instanceof Array) {
-        return true
-    }
-
-    return testExists(input)
-}
-
-function makeNonExistingObject() {
-    const obj = {}
-    Object.defineProperty(obj, '_exists', { value: false, enumerable: false })
-    return obj
-}
-
-function makeExistingObject(existingObj = {}) {
-    const obj = { ...existingObj }
-    Object.defineProperty(obj, '_exists', {
-        value: true,
-        enumerable: false,
-    })
-    return obj
+    return true
 }
 
 function getDisplayName(WrappedComponent) {
@@ -528,47 +504,7 @@ function finalProcessProps(nionProp) {
     output.getDeclarations = () => nionProp._declarations
     output.updateEntity = nionProp.updateEntity
 
-    if (!configuration.flattenSelectedData) {
-        return { ...nionProp, ...output }
-    }
-
-    map(nionProp, (dataProp, key) => {
-        // Now, transform the dataProp.data object or array to be the first class dataProp value
-        // TODO: Do we want to expose the nion selected data as a first class object / array on the
-        // dataProp or do we want to namespace it under the dataProp.data key?
-        const { data, actions, request, extra, ...rest } = dataProp
-
-        const hasData = data ? data._exists : false
-        const checkedData = hasData
-            ? makeExistingObject(data)
-            : makeNonExistingObject()
-        const reconstructedData =
-            data instanceof Array ? [...data] : checkedData
-
-        defineNonEnumerable(reconstructedData, 'actions', actions)
-        defineNonEnumerable(reconstructedData, 'request', request)
-        defineNonEnumerable(reconstructedData, 'extra', extra)
-
-        // We also need to apply the properties of extra to the exposed data for
-        // backwards-compatibility reasons. TODO: Look through the codebase and try to excise these
-        // splatted out extra ref properties (most likely links and meta) and keep them on "extra"
-        // We also need to think about how these work with non-json-api data... currently we're
-        // just putting all data retrieved from a generic API request onto the reference reducer,
-        // and this is a bit weird (are they non-enumerable? Should they be handled via entities?)
-        map(extra, (extraValue, extraKey) => {
-            reconstructedData[extraKey] = extraValue
-        })
-
-        // Apply any other ad-hoc added props for legacy-compatibility reasons... the data contained
-        // on extra used to be applied here, but that's namespaced on that key now... TODO: make
-        // sure we're not adding any more ad-hoc props to the nion dataProp and get rid of this step
-        map(rest, (restValue, restKey) => {
-            reconstructedData[restKey] = restValue
-        })
-
-        output[key] = reconstructedData
-    })
-    return output
+    return { ...nionProp, ...output }
 }
 
 // Yes, a bit funny - but it turns out this is a safe, fast, and terse way of deep cloning data
