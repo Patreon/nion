@@ -48,7 +48,6 @@
         "async": "^2.5.0",
         "babel-cli": "^6.24.1",
         "babel-eslint": "6.0.0",
-        "babel-jest": "^23.0.0-alpha.0",
         "babel-loader": "^7.1.1",
         "babel-plugin-add-module-exports": "^0.2.1",
         "babel-plugin-transform-async-to-generator": "^6.24.1",
