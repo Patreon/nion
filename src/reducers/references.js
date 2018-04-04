@@ -47,13 +47,21 @@ const refsReducer = (state = initialState, action) => {
                     'entities',
                     [],
                 )
-                return state.merge({
-                    [action.meta.dataKey]: {
-                        ...nextPageRef,
-                        isCollection: true,
-                        entities: oldEntities.concat(nextPageRef.entities),
+                return state.merge(
+                    {
+                        [action.meta.dataKey]: {
+                            ...nextPageRef,
+                            isCollection: true,
+                            entities: oldEntities.concat(nextPageRef.entities),
+                            links: {
+                                next: null,
+                                prev: null,
+                                ...nextPageRef.links,
+                            },
+                        },
                     },
-                })
+                    { deep: true },
+                )
             } else if (action.meta.refToDelete) {
                 // Else, if the result of a DELETE request, we must process delete corresponding
                 // refs off of the references state

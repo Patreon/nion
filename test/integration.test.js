@@ -115,9 +115,11 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             const request = test.actions.get()
@@ -130,7 +132,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
         })
 
         it('fetches data on mount', async () => {
@@ -162,14 +164,11 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
-
-            // Wait until the request reducer has been updated
-            while (getProp().request.status === 'not called') {
-                await P.delay(1) // Wait 5ms for the request reducer to update
-            }
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             expect(test.request.status).toEqual('pending')
@@ -179,7 +178,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
         })
 
         it('fetches data from props', async () => {
@@ -212,9 +211,11 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container, { id }))
-            const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             // Wait until the request reducer has been updated
             while (getProp().request.status === 'not called') {
@@ -229,7 +230,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
         })
 
         it('patches data', async () => {
@@ -268,9 +269,11 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -283,7 +286,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
 
             // Patch request
             request = test.actions.patch()
@@ -296,7 +299,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(newName)
+            expect(test.data.name).toEqual(newName)
         })
 
         it('deletes data', async () => {
@@ -328,9 +331,11 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -343,7 +348,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
 
             // Delete request
             request = test.actions.delete()
@@ -374,9 +379,11 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -389,78 +396,6 @@ describe('nion : integration tests', () => {
             expect(test.request.status).toEqual('error')
             expect(test.request.isError).toEqual(true)
             expect(test.request.isLoading).toEqual(false)
-        })
-
-        it('handles pagination', async () => {
-            const pathname = 'pages'
-
-            const endpoint = buildUrl(`${pathname}/1`)
-            const next = buildUrl(`${pathname}/2`)
-            nock(endpoint)
-                .get('')
-                .query(true)
-                .reply(200, {
-                    data: [
-                        {
-                            id: 1,
-                            type: 'page',
-                            attributes: { name: 'A' },
-                        },
-                    ],
-                    links: {
-                        next,
-                    },
-                })
-
-            nock(next)
-                .get('')
-                .query(true)
-                .reply(200, {
-                    data: [
-                        {
-                            id: 2,
-                            type: 'page',
-                            attributes: { name: 'B' },
-                        },
-                    ],
-                })
-
-            @nion({
-                pages: {
-                    endpoint,
-                    paginated: true,
-                },
-            })
-            class Container extends Component {
-                render() {
-                    return null
-                }
-            }
-
-            const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
-
-            const getProp = () => Wrapped.props().nion.pages
-
-            let pages = getProp()
-            let request = pages.actions.get()
-
-            await request
-
-            pages = getProp()
-            expect(pages.request.status).toEqual('success')
-            expect(pages.length).toEqual(1)
-            expect(pages.request.isLoading).toEqual(false)
-
-            request = pages.actions.next()
-
-            await request
-
-            pages = getProp()
-            expect(pages.request.status).toEqual('success')
-            expect(pages.length).toEqual(2)
-            expect(pages.request.isLoading).toEqual(false)
-            expect(pages.request.canLoadMore).toBeFalsey
         })
 
         it('handles optimistic updates', async () => {
@@ -490,7 +425,10 @@ describe('nion : integration tests', () => {
             const Wrapper = mount(Wrap(Container))
             const Wrapped = Wrapper.find('Container')
 
-            const getProp = () => Wrapped.props().nion.test
+            const getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -503,7 +441,7 @@ describe('nion : integration tests', () => {
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
 
             // Optimistic Update
 
@@ -519,7 +457,7 @@ describe('nion : integration tests', () => {
             )
 
             test = getProp()
-            expect(test.name).toEqual(newName)
+            expect(test.data.name).toEqual(newName)
         })
 
         it('creates children with initial refs', async () => {
@@ -555,7 +493,7 @@ describe('nion : integration tests', () => {
                 render() {
                     const { test } = this.props.nion
                     return exists(test) ? (
-                        <ChildContainer inputData={test} />
+                        <ChildContainer inputData={test.data} />
                     ) : (
                         <span />
                     )
@@ -563,9 +501,11 @@ describe('nion : integration tests', () => {
             }
 
             const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('Container')
 
-            let getProp = () => Wrapped.props().nion.test
+            let getProp = () =>
+                Wrapper.update()
+                    .find('Container')
+                    .props().nion.test
 
             let test = getProp()
             let request = test.actions.get()
@@ -574,17 +514,17 @@ describe('nion : integration tests', () => {
             expect(test.request.status).toEqual('pending')
             expect(test.request.isLoading).toEqual(true)
 
-            let ChildWrapped = Wrapped.find('ChildContainer')
+            let ChildWrapped = Wrapper.update().find('ChildContainer')
             expect(ChildWrapped.exists()).toEqual(false)
 
             await request
 
             test = getProp()
             expect(test.request.status).toEqual('success')
-            expect(test.name).toEqual(name)
+            expect(test.data.name).toEqual(name)
 
             // Child component
-            ChildWrapped = Wrapped.find('ChildContainer')
+            ChildWrapped = Wrapper.update().find('ChildContainer')
 
             getProp = () => ChildWrapped.props().nion.child
 

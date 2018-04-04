@@ -1,12 +1,11 @@
 import map from 'lodash.map'
 import * as includedApiModules from '../api-modules'
+
 const DEFAULT_API_TYPE = 'jsonApi'
 
 // The singleton class that will manage all of nion's API modules. API modules handle URL building,
 // request generation, and response parsing, supplying correctly formed action/payloads to the nion
 // core reducers.
-const noop = () => {}
-
 class ApiManager {
     apiMap = {}
     defaultApiType = null
@@ -54,10 +53,6 @@ class ApiManager {
 
     getErrorClass = apiType => {
         return this.getApiModule(apiType).ErrorClass
-    }
-
-    getPagination = apiType => {
-        return this.getApiModule(apiType).pagination || noop
     }
 
     getParser = apiType => {

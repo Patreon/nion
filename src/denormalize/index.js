@@ -4,13 +4,15 @@ import map from 'lodash.map'
 import { camelize, camelizeKeys } from 'humps'
 import cache from './cache'
 
-export default function denormalizeWithCache(reference, entityStore, dataKey) {
-    const refs = reference.entities
-    return refs.map(ref => {
-        const { denormalized } = denormalize(ref, entityStore)
-        return denormalized
-    })
+class GenericData {
+    constructor(data) {
+        map(data, (value, key) => {
+            this[key] = value
+        })
+    }
 }
+
+GenericData.prototype._exists = true
 
 class Data {
     constructor(type, id, attributes) {
@@ -21,9 +23,37 @@ class Data {
         })
     }
 }
+
 Data.prototype._exists = true
 
-export const addEntityReference = (obj, value) => obj.set('_ref', value)
+export default function denormalizeWithCache(reference, entityStore, dataKey) {
+    const refs = reference.entities
+    return refs.map(ref => {
+        const { denormalized } = denormalize(ref, entityStore)
+        return denormalized
+    })
+}
+
+const makeGenericData = obj => {
+    const genericData = Immutable(new GenericData(obj), {
+        prototype: GenericData.prototype,
+    })
+    return genericData
+}
+
+export function getGenericRefData(ref) {
+    if (ref === null || ref === undefined) {
+        return null
+    }
+
+    const genericData =
+        ref instanceof Array ? ref.map(makeGenericData) : makeGenericData(ref)
+    return genericData
+}
+
+export const addEntityReference = (obj, value) => {
+    return obj && obj.set('_ref', value)
+}
 
 export const getEntityReference = obj => get(obj, '_ref')
 

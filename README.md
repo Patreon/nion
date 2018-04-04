@@ -92,11 +92,8 @@ The requests reducer maintains a map of `dataKeys` that tracks all network reque
 
 Internally, the nion suite of redux tools handles everything necessary to maintain application state and provide a clear interface to the higher-level component tooling.
 
-##### nion flow chart
-
-![nion flow chart](docs/nion%20decorator.png)
-
-Reference-style:
+### Get started
+Learn more in the [guide](docs/getting-started.md)
 
 ### Learn More
 
@@ -105,6 +102,10 @@ Reference-style:
 [deep dive](docs/deep-dive.md)
 
 [api](docs/api.md)
+
+[extensions](docs/extensions.md)
+
+[api-modules](docs/api-modules.md)
 
 [nion-core](docs/core.md)
 

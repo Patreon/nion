@@ -2,12 +2,15 @@ import Immutable from 'seamless-immutable'
 import { createSelector } from 'reselect'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
-import denormalizeWithCache from '../denormalize'
+import denormalizeWithCache, { getGenericRefData } from '../denormalize'
+import { ActionStatus } from '../constants'
 
 const selectNion = state => state.nion
-const selectEntities = state => get(selectNion(state), 'entities')
-const selectRequests = state => get(selectNion(state), 'requests')
-const selectReferences = state => get(selectNion(state), 'references')
+const selectEntities = createSelector(selectNion, nion => get(nion, 'entities'))
+const selectRequests = createSelector(selectNion, nion => get(nion, 'requests'))
+const selectReferences = createSelector(selectNion, nion =>
+    get(nion, 'references'),
+)
 
 const isGeneric = ref => {
     // This may not be the best way to check if something is a ref to entities or not
@@ -32,8 +35,12 @@ export const selectEntityFromKey = key =>
 export const selectObject = dataKey =>
     createSelector(selectRef(dataKey), selectEntities, (ref, entityStore) => {
         // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
+
+        // JB (in ref to the comment above)
+        // We know the API type, we should be storing this information with the payload
+        // this will simplify our assumptions
         if (isGeneric(ref)) {
-            return ref
+            return getGenericRefData(ref)
         }
 
         const { isCollection } = ref
@@ -52,7 +59,7 @@ const selectExtraRefProps = dataKey =>
 // TODO: We might want to refactor this so that each request dataKey in the requests reducer is
 // initialized with this immutable state
 const defaultRequest = Immutable({
-    status: 'not called',
+    status: ActionStatus.NOT_CALLED,
 })
 
 export const selectRequest = key =>
@@ -104,9 +111,13 @@ export const selectResource = keyOrKeys => {
 export const selectData = (key, defaultValue) => {
     // If we pass in an object of { type, id } signature, denormalize the corresponding entity
     if (typeof key === 'object' && key.type && key.id !== undefined) {
-        const entityRef = key
-        return createSelector(selectEntities, entityStore =>
-            denormalizeWithCache(entityRef, entityStore),
+        const entityRef = {
+            entities: [{ type: key.type, id: key.id }],
+        }
+
+        return createSelector(
+            selectEntities,
+            entityStore => denormalizeWithCache(entityRef, entityStore)[0],
         )
     }
 

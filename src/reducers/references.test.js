@@ -102,6 +102,47 @@ describe('nion: reducers', () => {
             expect(isCollection).toEqual(true)
         })
 
+        it('adds links', () => {
+            const reducer = new Reducer()
+            const dataKey = 'users'
+
+            const action = makeAction(types.NION_API_SUCCESS, dataKey, {
+                entryRef: {
+                    links: { next: 'place', prev: 'otherplace' },
+                },
+            })
+
+            reducer.applyAction(action)
+
+            const currentLinks = get(reducer.state, [dataKey, 'links'])
+            expect(currentLinks.next).toBe('place')
+            expect(currentLinks.prev).toBe('otherplace')
+        })
+
+        it('keeps links up to date', () => {
+            const reducer = new Reducer()
+            const dataKey = 'users'
+
+            const action = makeAction(types.NION_API_SUCCESS, dataKey, {
+                entryRef: {
+                    links: { next: 'place', prev: 'place' },
+                },
+            })
+            reducer.applyAction(action)
+
+            const nextAction = makeAction(types.NION_API_SUCCESS, dataKey, {
+                entryRef: {
+                    links: {},
+                },
+                append: true,
+            })
+            reducer.applyAction(nextAction)
+
+            const currentLinks = get(reducer.state, [dataKey, 'links'])
+            expect(currentLinks.next).toBe(null)
+            expect(currentLinks.prev).toBe(null)
+        })
+
         it('handles a NION_API_SUCCESS with meta.refToDelete', () => {
             const reducer = new Reducer()
             const dataKey = 'users'
