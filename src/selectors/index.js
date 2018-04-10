@@ -3,11 +3,14 @@ import { createSelector } from 'reselect'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
 import denormalizeWithCache, { getGenericRefData } from '../denormalize'
+import { ActionStatus } from '../constants'
 
 const selectNion = state => state.nion
-const selectEntities = state => get(selectNion(state), 'entities')
-const selectRequests = state => get(selectNion(state), 'requests')
-const selectReferences = state => get(selectNion(state), 'references')
+const selectEntities = createSelector(selectNion, nion => get(nion, 'entities'))
+const selectRequests = createSelector(selectNion, nion => get(nion, 'requests'))
+const selectReferences = createSelector(selectNion, nion =>
+    get(nion, 'references'),
+)
 
 const isGeneric = ref => {
     // This may not be the best way to check if something is a ref to entities or not
@@ -56,7 +59,7 @@ const selectExtraRefProps = dataKey =>
 // TODO: We might want to refactor this so that each request dataKey in the requests reducer is
 // initialized with this immutable state
 const defaultRequest = Immutable({
-    status: 'not called',
+    status: ActionStatus.NOT_CALLED,
 })
 
 export const selectRequest = key =>

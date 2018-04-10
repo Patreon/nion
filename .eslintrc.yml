@@ -11,6 +11,10 @@ ecmaFeatures:
 parserOptions:
     ecmaFeatures:
         jsx: true
+        ecmaVersion: 7
+        sourceType: 'module'
+        experimentalDecorators: true
+
 
 env:
     browser: true
