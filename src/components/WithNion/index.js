@@ -16,9 +16,7 @@ function withNion(WrappedComponent) {
 
     return class WithNion extends Component {
         static displayName = `WithNion(${getDisplayName(WrappedComponent)})`
-        static propTypes = {
-            nion: PropTypes.object.isRequired,
-        }
+        static propTypes = { nion: PropTypes.object.isRequired }
 
         constructor(props) {
             super(props)
@@ -27,6 +25,12 @@ function withNion(WrappedComponent) {
 
         componentWillReceiveProps(nextProps) {
             this.initializeDataKeys(nextProps)
+        }
+
+        fetchDataAndUpdatePending(action, dataKey) {
+            fetchesByDataKey[dataKey] = action().then(() => {
+                fetchesByDataKey[dataKey] = null
+            })
         }
 
         initializeDataKeys(props) {
@@ -53,19 +57,15 @@ function withNion(WrappedComponent) {
                 // request status will be misleading because it will not have been updated
                 const isFetchPending = !!fetchesByDataKey[dataKey]
 
+                if (!!isFetchPending) {
+                    return
+                }
+
                 // If the fetch is only to be performed once, don't fetch if already loaded
-                if (declaration.fetchOnce) {
-                    if (isNotLoaded(status) && !isFetchPending) {
-                        fetchesByDataKey[dataKey] = get().then(() => {
-                            fetchesByDataKey[dataKey] = null
-                        })
-                    }
-                } else {
-                    if (isNotLoading(status) && !isFetchPending) {
-                        fetchesByDataKey[dataKey] = get().then(() => {
-                            fetchesByDataKey[dataKey] = null
-                        })
-                    }
+                if (declaration.fetchOnce && isNotLoaded(status)) {
+                    this.fetchDataAndUpdatePending(get, dataKey)
+                } else if (isNotLoading(status)) {
+                    this.fetchDataAndUpdatePending(get, dataKey)
                 }
             })
         }
