@@ -147,11 +147,13 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                 params,
                 options = {},
             ) => {
+                // TODO: Refactor ref to delete to not be mutative.
                 if (options.refToDelete) {
                     refToDelete = options.refToDelete
                 }
                 const endpoint = getUrl(declaration, params, buildUrl)
                 return nionActions.delete(dataKey, {
+                    ...options,
                     declaration,
                     endpoint,
                     refToDelete,
