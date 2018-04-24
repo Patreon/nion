@@ -2,7 +2,7 @@
 nion uses api modules internally to set up and handle requests to the API, and parse the corresponding responses. An API module is defined as an object that has an interface defined below:
 
 ### Usage
-To use an API module other that your default add 
+To use an API module other than the default module defined in configuration, add
 ```
 apiType: MY_API_MODULE_NAME
 ```
