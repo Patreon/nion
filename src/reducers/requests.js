@@ -6,7 +6,6 @@ import {
     NION_API_SUCCESS,
     NION_API_FAILURE,
 } from '../actions/types'
-import { ActionStatus } from '../constants'
 
 const initialState = Immutable({})
 
@@ -19,7 +18,7 @@ const requestsReducer = (state = initialState, action) => {
                 {
                     [action.meta.dataKey]: {
                         ...existing,
-                        status: ActionStatus.PENDING,
+                        status: 'pending',
                         isLoading: true,
                         pending: action.meta.method,
                     },
@@ -31,7 +30,7 @@ const requestsReducer = (state = initialState, action) => {
                 {
                     [action.meta.dataKey]: {
                         ...existing,
-                        status: ActionStatus.SUCCESS,
+                        status: 'success',
                         fetchedAt: action.meta.fetchedAt,
                         isError: false,
                         isLoaded: true,
@@ -45,7 +44,7 @@ const requestsReducer = (state = initialState, action) => {
                 {
                     [action.meta.dataKey]: {
                         ...existing,
-                        status: ActionStatus.ERROR,
+                        status: 'error',
                         name: action.payload.name,
                         errors: action.payload.errors,
                         fetchedAt: action.meta.fetchedAt,

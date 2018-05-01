@@ -4,7 +4,7 @@ import get from 'lodash.get'
 import omit from 'lodash.omit'
 import deepEqual from 'deep-equal'
 import shallowEqual from '../utilities/shallow-equal'
-import exists from '../utilities/exists'
+import { exists } from './index'
 
 export function requestsAreEqual(prevRequests, nextRequests) {
     return (
