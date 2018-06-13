@@ -7,7 +7,7 @@ import {
     UPDATE_ENTITY,
 } from '../actions/types'
 
-import { updateRelationships, relationBelongsToEntity } from './utils'
+import { filterRelationshipsFromState } from './utils'
 
 const initialState = Immutable({})
 
@@ -40,38 +40,7 @@ const entitiesReducer = (state = initialState, action) => {
                     nextState = nextState.set(type, removed)
                 }
 
-                // now go through each entity in store, then their relationships
-                // if any relationships have a type of ${reftodelete.type}
-                // filter those relationships
-                const entityNames = Object.keys(nextState)
-                entityNames.forEach(entityName => {
-                    const entityIndex = nextState[entityName]
-                    for (const entityId in entityIndex) {
-                        if (!entityIndex.hasOwnProperty(entityId)) {
-                            return
-                        }
-                        const entity = entityIndex[entityId]
-                        for (const relationshipName in entity.relationships) {
-                            if (
-                                relationBelongsToEntity(
-                                    entity,
-                                    relationshipName,
-                                    id,
-                                    type,
-                                )
-                            ) {
-                                nextState = updateRelationships(
-                                    nextState,
-                                    entityName,
-                                    entityId,
-                                    relationshipName,
-                                    id,
-                                    type,
-                                )
-                            }
-                        }
-                    }
-                })
+                nextState = filterRelationshipsFromState(nextState, id, type)
             }
             return nextState
         }
