@@ -19,22 +19,6 @@ class StoreFragment {
     }
 }
 
-class ArrayFragment {
-    fragment = { campaign: [] }
-    addEntity = (type, id, attributes = {}, relationships = {}) => {
-        this.fragment = {
-            campaign: [
-                ...this.fragment.campaign,
-                { attributes, relationships, id },
-            ],
-        }
-    }
-
-    toPayload = dbg => {
-        return this.fragment
-    }
-}
-
 class Reducer {
     reducer = _reducer
     state = undefined
