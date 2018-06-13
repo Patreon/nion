@@ -19,6 +19,22 @@ class StoreFragment {
     }
 }
 
+class ArrayFragment {
+    fragment = { campaign: [] }
+    addEntity = (type, id, attributes = {}, relationships = {}) => {
+        this.fragment = {
+            campaign: [
+                ...this.fragment.campaign,
+                { attributes, relationships, id },
+            ],
+        }
+    }
+
+    toPayload = dbg => {
+        return this.fragment
+    }
+}
+
 class Reducer {
     reducer = _reducer
     state = undefined
@@ -305,8 +321,8 @@ describe('nion: reducers', () => {
             }
 
             reducer.applyAction(nextAction)
-            const campaign = get(reducer.state, `campaign.${456}`)
-            expect(campaign).toEqual(undefined)
+
+            expect(get(reducer.state, 'campaign')).not.toHaveProperty('456')
 
             // It doesn't delete other entities from the store
             const user = get(reducer.state, `user.${123}`)
@@ -314,6 +330,61 @@ describe('nion: reducers', () => {
 
             const otherCampaign = get(reducer.state, `campaign.${789}`)
             expect(otherCampaign).toBeDefined()
+        })
+
+        it('deletes relationship refs with meta.refToDelete', () => {
+            const firstStoreFragment = new StoreFragment()
+            const reducer = new Reducer()
+
+            firstStoreFragment.addEntity(
+                'user',
+                123,
+                { name: 'Test User' },
+                {
+                    campaigns: [
+                        { id: 456, type: 'campaign' },
+                        { id: 789, type: 'campaign' },
+                    ],
+                },
+            )
+            firstStoreFragment.addEntity('campaign', 456, {
+                name: 'Test Campaign',
+            })
+            firstStoreFragment.addEntity('campaign', 789, {
+                name: 'Test Campaign 2',
+            })
+
+            const action = makeActionWithFragment(
+                types.NION_API_SUCCESS,
+                firstStoreFragment.toPayload(),
+            )
+            reducer.applyAction(action)
+            const campaignName = get(
+                reducer.state,
+                `campaign.${456}.attributes.name`,
+            )
+            expect(campaignName).toEqual('Test Campaign')
+
+            // Ad hoc create an action that deletes the campaign ref
+            const nextAction = {
+                type: types.NION_API_SUCCESS,
+                payload: {
+                    responseData: {
+                        storeFragment: {},
+                    },
+                },
+                meta: {
+                    refToDelete: {
+                        type: 'campaign',
+                        id: 456,
+                    },
+                },
+            }
+
+            reducer.applyAction(nextAction)
+            expect(
+                get(reducer.state, `user.${123}.relationships.campaigns`),
+            ).toHaveLength(1)
         })
 
         it('handles the UPDATE_ENTITY action', () => {
