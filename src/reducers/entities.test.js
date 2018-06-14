@@ -325,10 +325,12 @@ describe('nion: reducers', () => {
                 123,
                 { name: 'Test User' },
                 {
-                    campaigns: [
-                        { id: 456, type: 'campaign' },
-                        { id: 789, type: 'campaign' },
-                    ],
+                    campaigns: {
+                        data: [
+                            { id: 456, type: 'campaign' },
+                            { id: 789, type: 'campaign' },
+                        ],
+                    },
                 },
             )
             firstStoreFragment.addEntity('campaign', 456, {

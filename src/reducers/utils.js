@@ -1,3 +1,4 @@
+import get from 'lodash.get'
 function relationDoesMatch(relation, id, type) {
     return relation.id === id && relation.type === type
 }
@@ -18,9 +19,11 @@ function updateRelationships(
 }
 
 function relationBelongsToEntity(entity, relationshipName, id, type) {
-    return entity.relationships[relationshipName].find(relation =>
-        relationDoesMatch(relation, id, type),
-    )
+    return get(
+        entity,
+        `relationships[${relationshipName}].data`,
+        [],
+    ).find(relation => relationDoesMatch(relation, id, type))
 }
 
 export function filterRelationshipsFromState(state, id, type) {
