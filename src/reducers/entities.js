@@ -7,6 +7,8 @@ import {
     UPDATE_ENTITY,
 } from '../actions/types'
 
+import { filterRelationshipsFromState } from './utils'
+
 const initialState = Immutable({})
 
 // The core reducer for maintaining a normalized entity store of entities that are fetched / updated
@@ -37,6 +39,8 @@ const entitiesReducer = (state = initialState, action) => {
                     const removed = Immutable.without(nextState[type], id)
                     nextState = nextState.set(type, removed)
                 }
+
+                nextState = filterRelationshipsFromState(nextState, id, type)
             }
             return nextState
         }
