@@ -1,6 +1,6 @@
 import ExtensionManager from './'
 import configure from '../configure'
-import { polling, jsonApiPagination } from './manifest'
+import { polling } from './manifest'
 
 const minimalExtensionShape = {
     composeActions: jest.fn(),
@@ -19,6 +19,19 @@ describe('ExtensionManager', () => {
             expect(badRegistration).toThrow()
         })
 
+        test('should throw a validation error for poorly-formed extension names', () => {
+            const badNames = ['a', '1number', 'Stuff', 'some-punctuation']
+
+            const registration = name =>
+                ExtensionManager.registerExtension(name, minimalExtensionShape)
+
+            badNames.forEach(name => {
+                const badRegistration = registration.bind(this, name)
+
+                expect(badRegistration).toThrow()
+            })
+        })
+
         test('should add valid extension to internal extensionMap property', () => {
             expect(ExtensionManager.extensionMap).toEqual({})
 
@@ -31,10 +44,6 @@ describe('ExtensionManager', () => {
     describe('getExtension', () => {
         beforeAll(() => {
             ExtensionManager.registerExtension('polling', polling)
-            ExtensionManager.registerExtension(
-                'jsonApiPagination',
-                jsonApiPagination,
-            )
         })
 
         test('should return registered extensions by name', () => {
