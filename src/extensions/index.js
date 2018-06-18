@@ -1,18 +1,13 @@
-import map from 'lodash.map'
-import * as includedExtensions from './manifest'
-
 class ExtensionManager {
     extensionMap = {}
 
-    constructor() {
-        map(includedExtensions, (extension, name) => {
-            if (!extension.composeActions || !extension.composeMeta) {
-                throw new Error(
-                    `Extension "${name}" isn't correctly shaped. It should generate both actions and meta values, even if they're just empty objects.`,
-                )
-            }
-            this.registerExtension(name, extension)
-        })
+    validateExtension = extension => {
+        if (!extension.composeActions || !extension.composeMeta) {
+            throw new Error(
+                `Extension "${name}" isn't correctly shaped. It should generate both actions and meta values, even if they're just empty objects.`,
+            )
+        }
+        return true
     }
 
     getExtension = name => {
@@ -33,7 +28,9 @@ class ExtensionManager {
     }
 
     registerExtension = (name, extension) => {
-        this.extensionMap[name] = extension
+        if (this.validateExtension(extension)) {
+            this.extensionMap[name] = extension
+        }
     }
 }
 
