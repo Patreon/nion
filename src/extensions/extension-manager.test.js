@@ -1,5 +1,6 @@
 import ExtensionManager from './'
 import configure from '../configure'
+import { polling } from './manifest'
 
 const minimalExtensionShape = {
     composeActions: jest.fn(),
@@ -11,10 +12,43 @@ const minimalExtensionMatcher = {
 }
 
 describe('ExtensionManager', () => {
+    describe('registerExtension', () => {
+        test('should throw a validation error for non-extension objects', () => {
+            const badRegistration = () =>
+                ExtensionManager.registerExtension('stuff', {})
+            expect(badRegistration).toThrow()
+        })
+
+        test('should throw a validation error for poorly-formed extension names', () => {
+            const badNames = ['a', '1number', 'Stuff', 'some-punctuation']
+
+            const registration = name =>
+                ExtensionManager.registerExtension(name, minimalExtensionShape)
+
+            badNames.forEach(name => {
+                const badRegistration = registration.bind(this, name)
+
+                expect(badRegistration).toThrow()
+            })
+        })
+
+        test('should add valid extension to internal extensionMap property', () => {
+            expect(ExtensionManager.extensionMap).toEqual({})
+
+            ExtensionManager.registerExtension('polling', polling)
+
+            expect(ExtensionManager.extensionMap).toEqual({ polling: polling })
+        })
+    })
+
     describe('getExtension', () => {
+        beforeAll(() => {
+            ExtensionManager.registerExtension('polling', polling)
+        })
+
         test('should return registered extensions by name', () => {
-            const polling = ExtensionManager.getExtension('polling')
-            expect(polling).toMatchObject(minimalExtensionMatcher)
+            const pollingExtension = ExtensionManager.getExtension('polling')
+            expect(pollingExtension).toMatchObject(minimalExtensionMatcher)
         })
 
         test('should return named extensions registered through configuration', () => {
