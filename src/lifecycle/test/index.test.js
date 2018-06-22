@@ -26,15 +26,15 @@ describe('Lifecycle', () => {
     })
 
     it('should call onRequest if set', () => {
-        const methods = {
+        const lifecycleConfig = {
             onRequest: jest.fn(),
         }
 
-        lifecycle.registerMethods(methods)
+        lifecycle.registerLifecycleConfig(lifecycleConfig)
 
         lifecycle.onRequest(method, dataKey, request, meta, declaration)
 
-        expect(methods.onRequest).toHaveBeenCalledWith(
+        expect(lifecycleConfig.onRequest).toHaveBeenCalledWith(
             method,
             dataKey,
             request,
@@ -44,11 +44,11 @@ describe('Lifecycle', () => {
     })
 
     it('should call onSuccess if set', () => {
-        const methods = {
+        const lifecycleConfig = {
             onSuccess: jest.fn(),
         }
 
-        lifecycle.registerMethods(methods)
+        lifecycle.registerLifecycleConfig(lifecycleConfig)
 
         lifecycle.onSuccess(
             method,
@@ -59,7 +59,7 @@ describe('Lifecycle', () => {
             declaration,
         )
 
-        expect(methods.onSuccess).toHaveBeenCalledWith(
+        expect(lifecycleConfig.onSuccess).toHaveBeenCalledWith(
             method,
             dataKey,
             request,
@@ -70,15 +70,15 @@ describe('Lifecycle', () => {
     })
 
     it('should call onFailure if set', () => {
-        const methods = {
+        const lifecycleConfig = {
             onFailure: jest.fn(),
         }
 
-        lifecycle.registerMethods(methods)
+        lifecycle.registerLifecycleConfig(lifecycleConfig)
 
         lifecycle.onFailure(method, dataKey, error, meta, declaration)
 
-        expect(methods.onFailure).toHaveBeenCalledWith(
+        expect(lifecycleConfig.onFailure).toHaveBeenCalledWith(
             method,
             dataKey,
             error,
@@ -88,14 +88,17 @@ describe('Lifecycle', () => {
     })
 
     it('should call onDeclare if set', () => {
-        const methods = {
+        const lifecycleConfig = {
             onDeclare: jest.fn(),
         }
 
-        lifecycle.registerMethods(methods)
+        lifecycle.registerLifecycleConfig(lifecycleConfig)
 
         lifecycle.onDeclare(declaration, props)
 
-        expect(methods.onDeclare).toHaveBeenCalledWith(declaration, props)
+        expect(lifecycleConfig.onDeclare).toHaveBeenCalledWith(
+            declaration,
+            props,
+        )
     })
 })

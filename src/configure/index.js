@@ -10,7 +10,7 @@ class Configuration {}
 export const configuration = new Configuration()
 
 export default (options = {}) => {
-    const { apiModules, extensions, defaultApi, lifecycle } = options
+    const { apiModules, extensions, defaultApi, lifecycleConfig } = options
 
     if (apiModules) {
         map(apiModules, (apiModule, name) => {
@@ -26,8 +26,8 @@ export default (options = {}) => {
         })
     }
 
-    if (lifecycle) {
-        Lifecycle.registerMethods(lifecycle)
+    if (lifecycleConfig) {
+        Lifecycle.registerLifecycleConfig(lifecycleConfig)
     }
 
     return {

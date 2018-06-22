@@ -31,11 +31,11 @@ export class Lifecycle {
         return this._onDeclare && this._onDeclare(declaration, props)
     }
 
-    registerMethods(methods = {}) {
-        this._onRequest = methods.onRequest
-        this._onSuccess = methods.onSuccess
-        this._onFailure = methods.onFailure
-        this._onDeclare = methods.onDeclare
+    registerLifecycleConfig(lifecycleConfig = {}) {
+        this._onRequest = lifecycleConfig.onRequest
+        this._onSuccess = lifecycleConfig.onSuccess
+        this._onFailure = lifecycleConfig.onFailure
+        this._onDeclare = lifecycleConfig.onDeclare
     }
 }
 
