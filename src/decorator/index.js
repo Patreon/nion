@@ -8,6 +8,7 @@ import set from 'lodash.set'
 import nionActions from '../actions'
 import { makeRef } from '../transforms'
 import ApiManager from '../api'
+import Lifecycle from '../lifecycle'
 import ExtensionManager from '../extensions'
 import { areMergedPropsEqual } from './should-rerender'
 
@@ -76,6 +77,8 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
             // Apply default options to the declarations
             processDefaultOptions(declarations)
+
+            Lifecycle.onDeclare({ declarations, ownProps })
 
             // We want to pass in the selected data to the wrapped component by the key (ie pledge),
             // even though we may be storing the data on the store by an id-specific dataKey (ie
