@@ -1,5 +1,5 @@
 {
-    "name": "nion",
+    "name": "@nion/core",
     "version": "0.0.1",
     "license": "MIT",
     "main": "lib/index.js",
@@ -36,6 +36,7 @@
         "build": "npm run build:lib",
         "build:watch": "npm run build:lib -- --watch",
         "prebuild": "rimraf lib/*",
+        "prepublish": "npm run build",
         "build:lib": "babel --out-dir lib src",
         "prebuild:dist": "rimraf dist/*",
         "prebuild:watch": "rimraf lib/*",
