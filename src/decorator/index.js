@@ -78,7 +78,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
             // Apply default options to the declarations
             processDefaultOptions(declarations)
 
-            Lifecycle.onDeclare(declarations, ownProps)
+            Lifecycle.onDeclare({ declarations, ownProps })
 
             // We want to pass in the selected data to the wrapped component by the key (ie pledge),
             // even though we may be storing the data on the store by an id-specific dataKey (ie

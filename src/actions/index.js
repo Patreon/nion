@@ -39,13 +39,13 @@ const apiAction = (method, dataKey, options) => _dispatch => {
                 options,
             )
 
-            Lifecycle.onRequest(
+            Lifecycle.onRequest({
                 method,
                 dataKey,
                 requestParams,
                 meta,
                 declaration,
-            )
+            })
 
             // Add the request body if present
             if (body) {
@@ -58,14 +58,14 @@ const apiAction = (method, dataKey, options) => _dispatch => {
                 ...declaration.requestParams,
             })
 
-            Lifecycle.onSuccess(
+            Lifecycle.onSuccess({
                 method,
                 dataKey,
                 requestParams,
                 response,
                 meta,
                 declaration,
-            )
+            })
 
             // Handle the case that calling response.json() on null responses throws a syntax error
             const text = await response.text()
@@ -94,7 +94,7 @@ const apiAction = (method, dataKey, options) => _dispatch => {
 
             return selectData(dataKey)(getState())
         } catch (error) {
-            Lifecycle.onFailure(method, dataKey, error, meta, declaration)
+            Lifecycle.onFailure({ method, dataKey, error, meta, declaration })
             try {
                 await dispatch({
                     type: NION_API_FAILURE,

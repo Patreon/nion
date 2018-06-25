@@ -21,7 +21,7 @@ describe('Lifecycle', () => {
 
     it('should be able to call all the methods without error', () => {
         expect(() => {
-            lifecycle.onRequest(method, dataKey, request, meta, declaration)
+            lifecycle.onRequest({ method, dataKey, request, meta, declaration })
         }).not.toThrow()
     })
 
@@ -32,15 +32,15 @@ describe('Lifecycle', () => {
 
         lifecycle.registerLifecycleConfig(lifecycleConfig)
 
-        lifecycle.onRequest(method, dataKey, request, meta, declaration)
+        lifecycle.onRequest({ method, dataKey, request, meta, declaration })
 
-        expect(lifecycleConfig.onRequest).toHaveBeenCalledWith(
+        expect(lifecycleConfig.onRequest).toHaveBeenCalledWith({
             method,
             dataKey,
             request,
             meta,
             declaration,
-        )
+        })
     })
 
     it('should call onSuccess if set', () => {
@@ -50,23 +50,23 @@ describe('Lifecycle', () => {
 
         lifecycle.registerLifecycleConfig(lifecycleConfig)
 
-        lifecycle.onSuccess(
+        lifecycle.onSuccess({
             method,
             dataKey,
             request,
             response,
             meta,
             declaration,
-        )
+        })
 
-        expect(lifecycleConfig.onSuccess).toHaveBeenCalledWith(
+        expect(lifecycleConfig.onSuccess).toHaveBeenCalledWith({
             method,
             dataKey,
             request,
             response,
             meta,
             declaration,
-        )
+        })
     })
 
     it('should call onFailure if set', () => {
@@ -76,15 +76,15 @@ describe('Lifecycle', () => {
 
         lifecycle.registerLifecycleConfig(lifecycleConfig)
 
-        lifecycle.onFailure(method, dataKey, error, meta, declaration)
+        lifecycle.onFailure({ method, dataKey, error, meta, declaration })
 
-        expect(lifecycleConfig.onFailure).toHaveBeenCalledWith(
+        expect(lifecycleConfig.onFailure).toHaveBeenCalledWith({
             method,
             dataKey,
             error,
             meta,
             declaration,
-        )
+        })
     })
 
     it('should call onDeclare if set', () => {
@@ -94,11 +94,11 @@ describe('Lifecycle', () => {
 
         lifecycle.registerLifecycleConfig(lifecycleConfig)
 
-        lifecycle.onDeclare(declaration, props)
+        lifecycle.onDeclare({ declaration, props })
 
-        expect(lifecycleConfig.onDeclare).toHaveBeenCalledWith(
+        expect(lifecycleConfig.onDeclare).toHaveBeenCalledWith({
             declaration,
             props,
-        )
+        })
     })
 })
