@@ -1,6 +1,6 @@
 {
-    "name": "@nion/core",
-    "version": "0.0.1",
+    "name": "@nion/nion",
+    "version": "1.0.0-rc1",
     "license": "MIT",
     "main": "lib/index.js",
     "eslintConfig": {
