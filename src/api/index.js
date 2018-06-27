@@ -6,7 +6,7 @@ const DEFAULT_API_TYPE = 'jsonApi'
 // The singleton class that will manage all of nion's API modules. API modules handle URL building,
 // request generation, and response parsing, supplying correctly formed action/payloads to the nion
 // core reducers.
-class ApiManager {
+export class ApiManager {
     apiMap = {}
     defaultApiType = null
 
