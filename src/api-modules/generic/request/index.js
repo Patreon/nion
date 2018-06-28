@@ -7,15 +7,12 @@ export const afterRequest = (method, options) => {
     return Promise.resolve()
 }
 
-export const getRequestParameters = (
-    method,
-    { endpoint, body, meta, declaration = {} },
-) => {
-    const defaultHeaders = {
-        'Content-Type': 'application/json',
-        Accept: 'application/json, application/xml, text/plain, text/html, *.*',
-    }
+export const defaultHeaders = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json, application/xml, text/plain, text/html, *.*',
+}
 
+export const getRequestParameters = (_method, { declaration = {} } = {}) => {
     return {
         headers: declaration.headers || defaultHeaders,
     }
