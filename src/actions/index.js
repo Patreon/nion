@@ -136,16 +136,9 @@ const deleteAction = (dataKey, options) => {
     })
 }
 
-const nextAction = (dataKey, options) => {
-    return apiAction('GET', dataKey, {
-        ...options,
-        meta: {
-            ...options.meta,
-            isNextPage: true,
-        },
-    })
-}
-
+/**
+ * @deprecated
+ */
 const bootstrapAction = ({ apiType, dataKey, data }) => {
     const parse = ApiManager.getParser(apiType)
     return {
@@ -158,6 +151,9 @@ const bootstrapAction = ({ apiType, dataKey, data }) => {
     }
 }
 
+/**
+ * @deprecated Will be renamed
+ */
 const updateEntityAction = ({ type, id }, attributes) => {
     return {
         type: UPDATE_ENTITY,
@@ -170,7 +166,6 @@ export default {
     post: postAction,
     patch: patchAction,
     delete: deleteAction,
-    next: nextAction,
     bootstrap: bootstrapAction,
     updateEntity: updateEntityAction,
 }

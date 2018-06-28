@@ -3,3 +3,6 @@ node_modules
 
 # OS files
 .DS_Store
+
+# coverage output from jest
+coverage
