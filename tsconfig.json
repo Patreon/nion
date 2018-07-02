@@ -2,7 +2,6 @@
     "include": ["./src/**/*"],
     "exclude": ["./src/**/*.test.js", "./src/**/*.test.ts"],
     "compilerOptions": {
-        /* Basic Options */
         "target": "es5",
         "module": "commonjs",
         "lib": ["es2017"],
@@ -12,10 +11,7 @@
         "outDir": "./lib",
         "rootDir": "./src",
         "downlevelIteration": true,
-        // "isolatedModules": true,               /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
-
-        /* Strict Type-Checking Options */
-        "strict": true /* Enable all strict type-checking options. */,
+        "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
