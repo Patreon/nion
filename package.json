@@ -14,7 +14,8 @@
         "deep-equal": "^1.0.1",
         "humps": "^2.0.1",
         "is-equal-shallow": "^0.1.3",
-        "isomorphic-fetch": "github:patreon/isomorphic-fetch#32ca40ad8a03c192f2f41217a674f8e5a2a35280",
+        "isomorphic-fetch":
+            "github:patreon/isomorphic-fetch#32ca40ad8a03c192f2f41217a674f8e5a2a35280",
         "lodash.difference": "^4.5.0",
         "lodash.every": "^4.6.0",
         "lodash.get": "^4.4.2",
@@ -30,6 +31,7 @@
         "redux": "^3.7.1",
         "reselect": "^3.0.1",
         "seamless-immutable": "^7.1.2",
+        "typescript": "^2.9.2",
         "url": "^0.11.0"
     },
     "scripts": {
@@ -40,10 +42,12 @@
         "prebuild:dist": "rimraf dist/*",
         "prebuild:watch": "rimraf lib/*",
         "lint:all": "eslint . --ext=js,jsx",
-        "lint": "git diff --name-only master... | grep -E '\\.jsx?$' | xargs eslint",
+        "lint":
+            "git diff --name-only master... | grep -E '\\.jsx?$' | xargs eslint",
         "test": "NODE_ENV=test jest"
     },
     "devDependencies": {
+        "@types/jest": "^23.1.4",
         "async": "^2.5.0",
         "babel-cli": "^6.24.1",
         "babel-eslint": "6.0.0",
@@ -72,18 +76,23 @@
         "recompose": "^0.25.0",
         "redux-mock-store": "^1.3.0",
         "redux-thunk": "^2.2.0",
-        "rimraf": "^2.6.1"
+        "rimraf": "^2.6.1",
+        "ts-jest": "^23.0.0"
     },
     "jest": {
         "automock": false,
         "verbose": true,
-        "setupTestFrameworkScriptFile": "./test/setup.js",
-        "moduleFileExtensions": [
-            "js",
-            "jsx"
-        ],
-        "collectCoverageFrom": [
-            "src/**/*.js"
-        ]
+        "setupFiles": ["./test/setupTests.js", "./test/setup.js"],
+        "moduleFileExtensions": ["ts", "tsx", "js", "jsx"],
+        "transform": {
+            "^.+\\.(ts|tsx|js|jsx)$": "ts-jest"
+        },
+
+        "collectCoverageFrom": ["src/**/*.js"],
+        "globals": {
+            "ts-jest": {
+                "tsConfigFile": "tsconfig.json"
+            }
+        }
     }
 }
