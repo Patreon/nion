@@ -5,12 +5,8 @@ import Lifecycle from '../lifecycle'
 
 import map from 'lodash.map'
 
-class Configuration {}
-
-export const configuration = new Configuration()
-
 export default (options = {}) => {
-    const { apiModules, extensions, defaultApi, lifecycleConfig } = options
+    const { apiModules, defaultApi, extensions, lifecycleConfig } = options
 
     if (apiModules) {
         map(apiModules, (apiModule, name) => {
