@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`titleFormatter should format a regular string 1`] = `"action yay (in 500.00 ms)"`;
+
+exports[`titleFormatter should format a symbol 1`] = `"action nion/NION_API/currentUser (in 500.00 ms)"`;
