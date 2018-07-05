@@ -1,15 +1,6 @@
 # nion
 
-Redux is awesome. It's an extremely elegant solution to the central problem facing frontend web developers - how to manage complex application state. However, there are two fundamental issues with redux that have made themselves more and more apparent as both applications and development teams grow.
-
-##### Problem 1: Data Fetching
-Data Fetching is hard. Managing network requests and the data that comes back is hard enough, but doing it using redux can be downright maddening. This is because redux, at it's core, is a system that relies on **pure functions** - functions that always return the same thing given the same input. By their very nature, network requests are **impure** - they can return errors, for instance. In order to accommodate these **side effects**, the redux ecosystem has come up with a [number](https://github.com/agraboso/redux-api-middleware) of [solutions](https://github.com/yelouafi/redux-saga). However, using these tools can be anything but straightforward due to tricky syntax, complexity, and lack of community consensus.
-
-##### Problem 2: Conventions / Patterns
-Since redux is so low level, much of an app's redux implementation is left up to the developer. While certain practices have become *de rigeur*, there really isn't anything close to an opinionated framework that developers can use as a guide. Because of this, setting and enforcing code conventions and patterns become **extremely** important as an application and team grows.
-
-### Thus, nion
-nion is our best attempt at addressing the main issues that come with developing a complex redux web application. It's an **opinionated** solution to the problems we faced building a React web application **at Patreon**. nion was designed with the specific purpose of making the development experience **predictable**, **clear**, and **consistent**. nion always emphasizes the pragmatic solution over the theoretical, and aims to expose the minimum surface area possible to the developer. In short, nion aims to **simplify** the process of managing data in a React app.
+nion is a library that makes it easy to fetch, update, and manage API data in a Redux store as well as bind it to React components. Nion strives to make working with data as **flexible**, **consistent**, and **predictable** as possible. :heart:
 
 nion is heavily inspired by [Apollo](http://www.apollodata.com/http://www.apollodata.com/) and [GraphQL](http://graphql.org/).
 
@@ -33,7 +24,7 @@ class UserContainer extends Component {
         return (
             <Card>
                 { request.isLoading ? <LoadingSpinner /> : loadButton }
-                { exists(currentUser.data) ? <UserCard user={currentUser.data} /> : null }
+                { exists(currentUser) ? <UserCard user={data} /> : null }
             </Card>
         )
     }
@@ -92,21 +83,38 @@ The requests reducer maintains a map of `dataKeys` that tracks all network reque
 
 Internally, the nion suite of redux tools handles everything necessary to maintain application state and provide a clear interface to the higher-level component tooling.
 
-### Get started
-Learn more in the [guide](docs/getting-started.md)
+## Getting started
 
-### Learn More
+nion requires `redux-thunk` in order to handle its async actions, so you should install that along with the `nion` package.
 
-[examples](docs/examples.md)
+```
+npm install nion redux-thunk --save
+```
 
-[deep dive](docs/deep-dive.md)
+Also, nion is best used as a decorator function, so you might also want to make sure you've got babel configured to handle decorator transpilation:
 
-[api](docs/api.md)
+```
+npm install babel-plugin-transform-decorators-legacy --save-dev
+```
 
-[extensions](docs/extensions.md)
+Finally, nion has to be wired up to the redux store and optionally configured. Here's a very simple setup:
 
-[api-modules](docs/api-modules.md)
+```
+import { applyMiddleware, createStore, combineReducers } from 'redux'
+import thunkMiddleware from 'redux-thunk'
 
-[nion-core](docs/core.md)
+import { configureNion } from 'nion'
 
-[definitions](docs/definitions.md)
+export default function configureStore() {
+    const configurationOptions = {}
+    const { reducer: nionReducer } = configureNion(configurationOptions)
+
+    const reducers = combineReducers({
+        nion: nionReducer,
+    })
+
+    let store = createStore(reducers, applyMiddleware(thunkMiddleware))
+
+    return store
+}
+```

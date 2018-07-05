@@ -86,7 +86,7 @@ nion can be broken down to 3 reducers: `entities`, `references`, and `requests`.
 ### Normalizers / Denormalizers
 Entities that are stored must be normalized into the entity cache. Once a json-api response is successfully returned we parse out all included entities and meta information before it is dispatched. Reciprocally when selectData is called the entity hierarchy is denormalized making consumption in your components much nicer.
 
-The screenshot below, from left to right, show the action request, then the normalized reducer state, and finally what the selected denormalized data looks like. You may also use our internal tool to make nion requests and see the data results for yourself: [json-api-tool](https://www.patreon.com/internal/json-api).
+The screenshot below, from left to right, show the action request, then the normalized reducer state, and finally what the selected denormalized data looks like.
 
 ![data flow image](https://c4.patreon.com/internal/transformations2.jpg "State Example")
 
