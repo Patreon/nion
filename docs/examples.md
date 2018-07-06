@@ -327,7 +327,7 @@ class Paginated extends Component {
         const { stream } = this.props.nion
 
         const { loading, canLoadMore } = stream.request.isLoading
-        const fetchNext = stream.actions.next
+        const fetchNext = stream.extensions.jsonApiPagination.next
 
         return (
             <Card>
