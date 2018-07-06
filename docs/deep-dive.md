@@ -4,42 +4,39 @@ nion is our best attempt at addressing the main issues that come with developing
 
 A canonical example of a challenging data management problem is a **stream**. Our **stream** is a paginated list of posts, which can be liked and unliked, and have comments and replies, which are both also independently paginated. This presents a number of challenges that have guided the design process of nion.
 
-1. How do I paginate a list?
-1. How do I optimistically update data?
-1. How do I pass off management of data from one component to another?
-1. How do I do all of this while keeping my code clear and consistent?
-
+1.  How do I paginate a list?
+1.  How do I optimistically update data?
+1.  How do I pass off management of data from one component to another?
+1.  How do I do all of this while keeping my code clear and consistent?
 
 <hr>
-
 
 In the following walkthrough, we'll be building a fully functional stream using nion, thus learning how nion allows us to solve the problems involved in a clean and elegant way.
 
 ## table of contents
 
-1. [a stream of posts](#1-a-stream-of-posts)
-2. [loading data on mount](#2-loading-data-on-mount)
-3. [include and fields](#3-include-and-fields)
-4. [pagination](#4-pagination)
-5. [render post details](#5-render-post-details)
-6. [like a post](#6-like-posts)
-7. [mutating data](#7-mutating-data)
-8. [unlike a post](#8-unlike-a-post)
-9. [mutating data optimistically](#9-mutating-data-optimistically)
+1.  [a stream of posts](#1-a-stream-of-posts)
+2.  [loading data on mount](#2-loading-data-on-mount)
+3.  [include and fields](#3-include-and-fields)
+4.  [pagination](#4-pagination)
+5.  [render post details](#5-render-post-details)
+6.  [like a post](#6-like-posts)
+7.  [mutating data](#7-mutating-data)
+8.  [unlike a post](#8-unlike-a-post)
+9.  [mutating data optimistically](#9-mutating-data-optimistically)
 10. [loading more comments](#10-loading-more-comments)
 11. [loading replies](#11-loading-replies)
 
-
 <hr>
-
 
 ## 1. a stream of posts
 
-Let's begin by fetching and rendering a stream of posts. We begin by wrapping a **Stream** component with the nion decorator function. The nion decorator accepts a map of **declarations** as its parameters, which tell nion *what* data to manage and *where* to load it from. *What* data nion will manage is determined by the **dataKey**, and *where* it will load it from is determined by the endpoint.
+Let's begin by fetching and rendering a stream of posts. We begin by wrapping a **Stream** component with the nion decorator function. The nion decorator accepts a map of **declarations** as its parameters, which tell nion _what_ data to manage and _where_ to load it from. _What_ data nion will manage is determined by the **dataKey**, and _where_ it will load it from is determined by the endpoint.
 
 In the example below, our **dataKey** is `"stream"`, and our **endpoint** is the output of the function `buildUrl("/stream")`. (note - we're using our own custom function to construct a fully-formed url, and nion needs a fully-formed url to fetch data from) In this most basic case, the **dataKey** is determined by the key of the declaration passed into the nion decorator. The nion decorator creates a set of selectors and actions based on this information and passes the selected data and actions into the child component as props mapped to the key of the declarative.
 
 #### Stream.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import nion, { exists } from 'nion'
@@ -49,8 +46,8 @@ import Post from './Post'
 
 @nion({
     stream: {
-        endpoint: buildUrl('/stream')
-    }
+        endpoint: buildUrl('/stream'),
+    },
 })
 class Stream extends Component {
     componentDidMount() {
@@ -64,10 +61,11 @@ class Stream extends Component {
 
         return (
             <Card>
-                { exists(stream.data) && stream.data.map((post, index) => (
-                    <Post key={index} post={post} />
-                )) }
-                { loading ? <LoadingSpinner /> : null }
+                {exists(stream.data) &&
+                    stream.data.map((post, index) => (
+                        <Post key={index} post={post} />
+                    ))}
+                {loading ? <LoadingSpinner /> : null}
             </Card>
         )
     }
@@ -81,6 +79,7 @@ The `requests` property contains the result of applying the selector `selectRequ
 Notice the `exists` method we're using to check existence of the stream data. This is a convenience method for checking whether or not any data has been attached to the dataKey, since falsiness bugs in selected data can lead to some strange bugs.
 
 #### Post.jsx
+
 ```javascript
 import React, { Component } from 'react'
 
@@ -90,7 +89,8 @@ class Post extends Component {
 
         return (
             <Card>
-                <strong>Post id: {post.id}</strong><br/>
+                <strong>Post id: {post.id}</strong>
+                <br />
             </Card>
         )
     }
@@ -98,24 +98,23 @@ class Post extends Component {
 ```
 
 #### note
+
 For brevity's sake, we'll omit importing a few files that are used throughout the examples. These are
 
 ```javascript
 import Card from 'components/Card'
 import Button from 'components/Button'
 import LoadingSpinner from 'components/LoadingSpinner'
-
 ```
 
-
 <hr>
-
 
 ## 2. loading data on mount
 
 It's a very common pattern to load data for a component when that component mounts. The nion decorator exposes a shorthand `fetchOnInit` property for handling this automatically. Note that this functionality is hard-wired to dispatch a `get` action. For more complex, non-standard behavior it's best to directly use the component lifecycle methods.
 
 #### Stream.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import nion, { exists } from 'libs/nion'
@@ -126,8 +125,8 @@ import Post from './Post'
 @nion({
     stream: {
         endpoint: '/stream',
-        fetchOnInit: true
-    }
+        fetchOnInit: true,
+    },
 })
 class Stream extends Component {
     render() {
@@ -136,25 +135,25 @@ class Stream extends Component {
 
         return (
             <Card>
-                { exists(stream.data) && stream.data.map((post, index) => (
-                    <Post key={index} post={post} />
-                )) }
-                { loading ? <LoadingSpinner /> : null }
+                {exists(stream.data) &&
+                    stream.data.map((post, index) => (
+                        <Post key={index} post={post} />
+                    ))}
+                {loading ? <LoadingSpinner /> : null}
             </Card>
         )
     }
 }
 ```
 
-
 <hr>
-
 
 ## 3. include and fields
 
 JSON API allows us to specify which fields and related entities are fetched in a request. We can specify these JSON API parameters by passing a fully formed JSON API url with these url-encoded fields to the `endpoint` parameter of the declarative. We can include these data requirements directly inside the declaration, but we import them from an external file here for clarity.
 
 #### Stream.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import nion, { exists } from 'libs/nion'
@@ -167,9 +166,9 @@ import Post from './Post'
     stream: {
         endpoint: buildUrl(`/stream`, {
             include: streamInclude,
-            fields: streamFields
+            fields: streamFields,
         }),
-    }
+    },
 })
 class Stream extends Component {
     render() {
@@ -178,10 +177,11 @@ class Stream extends Component {
 
         return (
             <Card>
-                { exists(stream.data) && stream.data.map((post, index) => (
-                    <Post key={index} post={post} />
-                )) }
-                { loading ? <LoadingSpinner /> : null }
+                {exists(stream.data) &&
+                    stream.data.map((post, index) => (
+                        <Post key={index} post={post} />
+                    ))}
+                {loading ? <LoadingSpinner /> : null}
             </Card>
         )
     }
@@ -191,6 +191,7 @@ class Stream extends Component {
 Notice that we're importing the `include` and `fields` parameters from an external file. This is a handy pattern for making the decorator more readable, and allows us to share commonly required fields across decorated components.
 
 #### dataRequirements.js
+
 ```javascript
 export const streamInclude = [
     'recent_comments.commenter',
@@ -198,11 +199,11 @@ export const streamInclude = [
     'recent_comments.post',
     'recent_comments.first_reply.commenter',
     'recent_comments.first_reply.parent',
-    'recent_comments.first_reply.post'
+    'recent_comments.first_reply.post',
 ]
 
 export const streamFields = {
-    'comment': [
+    comment: [
         'body',
         'created',
         'deleted_at',
@@ -210,16 +211,10 @@ export const streamFields = {
         'is_by_creator',
         'vote_sum',
         'current_user_vote',
-        'reply_count'
+        'reply_count',
     ],
-    'post': [
-        'comment_count'
-    ],
-    'user': [
-        'image_url',
-        'full_name',
-        'url'
-    ]
+    post: ['comment_count'],
+    user: ['image_url', 'full_name', 'url'],
 }
 
 export const commentIncludes = [
@@ -228,23 +223,22 @@ export const commentIncludes = [
     'post',
     'first_reply.commenter',
     'first_reply.parent',
-    'first_reply.post'
+    'first_reply.post',
 ]
 ```
 
-
 <hr>
-
 
 ## 4. pagination
 
-Since our JSON-API interface uses a simple, cursor-based pagination system across API resources, the nion decorator can handle pagination in a consistent and elegant way.
+We have created an extension, which may be installed using
 
-Paginated resources are managed by simply setting the `paginated` parameter of the declarative, which tells the nion decorator to expose a few pagination-related properties to the child component. These pagination behaviors are fully defined by the nion API module, which can be customized to handle any pagination system. The main focus is the `next` action method, which is simply a `get` action method curried with the next page cursor returned from the initial request to the paginated resource's endpoint. In addition to dispatching this curried `get` request, the `next` method also dispatches the underlying `NION_API_SUCCESS` redux action with a special `isNextPage` meta property, which tells the internal reducers to append the result of the `next` request to the existing reference rather than overwriting it.
-
-In addition to the next action method, the nion decorator also exposes a `canLoadMore` property to the `request` property - This is a convenience property indicating whether or not a next cursor link exists for a given paginated ref.
+```
+$ npm i --save @nion/extension-json-api-pagination
+```
 
 #### Stream.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import nion, { exists } from 'libs/nion'
@@ -257,41 +251,42 @@ import Post from './Post'
     stream: {
         endpoint: buildUrl(`/stream`, {
             include: streamInclude,
-            fields: streamFields
+            fields: streamFields,
         }),
         fetchOnInit: true,
-        paginated: true
-    }
+    },
 })
 class Stream extends Component {
     render() {
         const { stream } = this.props.nion
         const { canLoadMore, isLoading } = stream.request
 
-        const fetchNext = () => stream.actions.next()
+        const fetchNext = () => stream.extensions.jsonApiPagination.next()
 
         return (
             <div>
-                { exists(stream.data) && stream.data.map((post, index) => (
-                    <Post key={index} post={post} />
-                )) }
-                { loading ? <LoadingSpinner /> : null }
-                { canLoadMore ? <Button onClick={fetchNext}>Load More</Button> : null }
+                {exists(stream.data) &&
+                    stream.data.map((post, index) => (
+                        <Post key={index} post={post} />
+                    ))}
+                {loading ? <LoadingSpinner /> : null}
+                {canLoadMore ? (
+                    <Button onClick={fetchNext}>Load More</Button>
+                ) : null}
             </div>
         )
     }
 }
 ```
 
-
 <hr>
-
 
 ## 5. render post details
 
 Let's go ahead and create the **Comments**, **Comment**, and **Like** components we'll need to render out all of the information we've fetched from the stream.
 
 #### Post.jsx
+
 ```javascript
 import React, { Component } from 'react'
 
@@ -305,20 +300,24 @@ class Post extends Component {
 
         return (
             <div>
-                <strong>Post id: {post.id}</strong><br/>
-                { commentCount } total { commentCount === 1 ? 'comment' : 'comments' }
-                { commentCount ?
-                    <Comments comments={recentComments} /> :
+                <strong>Post id: {post.id}</strong>
+                <br />
+                {commentCount} total{' '}
+                {commentCount === 1 ? 'comment' : 'comments'}
+                {commentCount ? (
+                    <Comments comments={recentComments} />
+                ) : (
                     <span />
-                }
+                )}
                 <Like liked={currentUserHasLiked} />
-        </div>
+            </div>
         )
     }
 }
 ```
 
 #### Comments.jsx
+
 ```javascript
 import React, { Component } from 'react'
 
@@ -340,6 +339,7 @@ class Comments extends Component {
 ```
 
 #### Comment.jsx
+
 ```javascript
 import React, { Component } from 'react'
 
@@ -352,7 +352,8 @@ class Comment extends Component {
 
         return (
             <div>
-                <strong>{ name }: </strong>{ body }
+                <strong>{name}: </strong>
+                {body}
             </div>
         )
     }
@@ -360,20 +361,17 @@ class Comment extends Component {
 ```
 
 #### Like.jsx
+
 ```javascript
 import React from 'react'
 
 const Like = ({ liked, onClick }) => (
-    <div onClick={onClick}>
-        { liked ? '❤️' : 'like' }
-    </div>
+    <div onClick={onClick}>{liked ? '❤️' : 'like'}</div>
 )
 export default Like
 ```
 
-
 <hr>
-
 
 ## 6. like a post
 
@@ -382,6 +380,7 @@ In order to like a post, we need to create a new `like` resource on the server c
 The nion decorator can accept a function that creates a `declaration` from props, and we use this syntax to create a **dataKey** corresponding to each like. Notice that our decorator is now passed a function that accepts the incoming post prop, using its id to create a new `like:<post.id>` **dataKey** for each component. This means that when we call `like.actions.post()` to create a new like resource for a specific post, it's request lifecycle and data is managed on the redux state tree under it's own specific **dataKey**.
 
 #### Post.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import nion from 'nion'
@@ -392,8 +391,8 @@ import Comments from './Comments'
 @nion(({ post }) => ({
     like: {
         dataKey: `like:${post.id}`,
-        endpoint: buildUrl(`posts/${post.id}/likes`)
-    }
+        endpoint: buildUrl(`posts/${post.id}/likes`),
+    },
 }))
 class Post extends Component {
     handleLikeClick = () => {
@@ -413,13 +412,19 @@ class Post extends Component {
 
         return (
             <div>
-                <strong>Post id: {post.id}</strong><br/>
-                { commentCount } total { commentCount === 1 ? 'comment' : 'comments' }
-                { commentCount ?
-                    <Comments comments={recentComments} /> :
+                <strong>Post id: {post.id}</strong>
+                <br />
+                {commentCount} total{' '}
+                {commentCount === 1 ? 'comment' : 'comments'}
+                {commentCount ? (
+                    <Comments comments={recentComments} />
+                ) : (
                     <span />
-                }
-                <LikeHeart liked={currentUserHasLiked} onClick={this.handleLikeClick} />
+                )}
+                <LikeHeart
+                    liked={currentUserHasLiked}
+                    onClick={this.handleLikeClick}
+                />
             </div>
         )
     }
@@ -428,9 +433,7 @@ class Post extends Component {
 
 One interesting detail in this component is that the `liked` property passed to the child **Like** component is determined by the existence of the server-computed `currentUserHasLikedproperty` of the post itself. In this case, displaying the correct like status won't work until we refresh the page or reload the stream, since we haven't changed the underlying post data when we create the new like. We'll see how to do this in the next section.
 
-
 <hr>
-
 
 ## 7. mutating data
 
@@ -439,6 +442,7 @@ In Patreon's real-life code, the display logic for rendering post likes is actua
 The `updateEntity` nion action is extremely simple under the hood - it simply merges the passed in attributes object into the attributes of the relevant entity.
 
 #### Post.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import nion from 'nion'
@@ -449,8 +453,8 @@ import Comments from './Comments'
 @nion(({ post }) => ({
     like: {
         dataKey: `like:${post.id}`,
-        endpoint: buildUrl(`posts/${post.id}/likes`)
-    }
+        endpoint: buildUrl(`posts/${post.id}/likes`),
+    },
 }))
 class Post extends Component {
     handleLikeClick = () => {
@@ -459,7 +463,10 @@ class Post extends Component {
 
         if (!currentUserHasLiked) {
             like.actions.post().then(() => {
-                updateEntity({ id: postId, type: 'post' }, { currentUserHasLiked: true })
+                updateEntity(
+                    { id: postId, type: 'post' },
+                    { currentUserHasLiked: true },
+                )
             })
         }
     }
@@ -471,13 +478,19 @@ class Post extends Component {
 
         return (
             <div>
-                <strong>Post id: {post.id}</strong><br/>
-                { commentCount } total { commentCount === 1 ? 'comment' : 'comments' }
-                { commentCount ?
-                    <Comments comments={recentComments} /> :
+                <strong>Post id: {post.id}</strong>
+                <br />
+                {commentCount} total{' '}
+                {commentCount === 1 ? 'comment' : 'comments'}
+                {commentCount ? (
+                    <Comments comments={recentComments} />
+                ) : (
                     <span />
-                }
-                <LikeHeart liked={currentUserHasLiked} onClick={this.handleLikeClick} />
+                )}
+                <LikeHeart
+                    liked={currentUserHasLiked}
+                    onClick={this.handleLikeClick}
+                />
             </div>
         )
     }
@@ -486,15 +499,14 @@ class Post extends Component {
 
 Notice also that all actions are functions that return a promise - this allows us to handle success and error of a given network request right next to the place where that action was called. In the example above, we're waiting until we successfully post a new like to the server before updating the underlying post data.
 
-
 <hr>
-
 
 ## 8. unlike a post
 
 In order to unlike a post, we're simply deleting the corresponding like resource from the server. This is functionally identical to the post action, and, just like any REST request action, it returns a promise that allows us to follow up on the result of the request.
 
 #### Post.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import nion from 'nion'
@@ -505,8 +517,8 @@ import Comments from './Comments'
 @nion(({ post }) => ({
     like: {
         dataKey: `like:${post.id}`,
-        endpoint: buildUrl(`posts/${post.id}/likes`)
-    }
+        endpoint: buildUrl(`posts/${post.id}/likes`),
+    },
 }))
 class Post extends Component {
     handleLikeClick = () => {
@@ -515,11 +527,17 @@ class Post extends Component {
 
         if (!currentUserHasLiked) {
             like.actions.post().then(() => {
-                updateEntity({ id: postId, type: 'post' }, { currentUserHasLiked: true })
+                updateEntity(
+                    { id: postId, type: 'post' },
+                    { currentUserHasLiked: true },
+                )
             })
         } else {
             like.actions.delete().then(() => {
-                updateEntity({ id: postId, type: 'post' }, { currentUserHasLiked: false })
+                updateEntity(
+                    { id: postId, type: 'post' },
+                    { currentUserHasLiked: false },
+                )
             })
         }
     }
@@ -531,22 +549,26 @@ class Post extends Component {
 
         return (
             <div>
-                <strong>Post id: {post.id}</strong><br/>
-                { commentCount } total { commentCount === 1 ? 'comment' : 'comments' }
-                { commentCount ?
-                    <Comments comments={recentComments} /> :
+                <strong>Post id: {post.id}</strong>
+                <br />
+                {commentCount} total{' '}
+                {commentCount === 1 ? 'comment' : 'comments'}
+                {commentCount ? (
+                    <Comments comments={recentComments} />
+                ) : (
                     <span />
-                }
-                <LikeHeart liked={currentUserHasLiked} onClick={this.handleLikeClick} />
+                )}
+                <LikeHeart
+                    liked={currentUserHasLiked}
+                    onClick={this.handleLikeClick}
+                />
             </div>
         )
     }
 }
 ```
 
-
 <hr>
-
 
 ## 9. mutating data optimistically
 
@@ -555,6 +577,7 @@ In order to display the information indicating the intended action to the user a
 Since the `updateEntity` method returns a promise, we can chain it with nion REST actions to handle success / failure of network actions in a clear an concise manner. This allows us to undo our optimistic updates if the corresponding response fails.
 
 #### Post.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import nion from 'nion'
@@ -565,12 +588,15 @@ import Comments from './Comments'
 @nion(({ post }) => ({
     like: {
         dataKey: `like:${post.id}`,
-        endpoint: buildUrl(`posts/${post.id}/likes`)
-    }
+        endpoint: buildUrl(`posts/${post.id}/likes`),
+    },
 }))
 class Post extends Component {
-    setCurrentUserHasLiked = (currentUserHasLiked) => {
-        return updateEntity({ id: this.props.post.id, type: 'post' }, { currentUserHasLiked })
+    setCurrentUserHasLiked = currentUserHasLiked => {
+        return updateEntity(
+            { id: this.props.post.id, type: 'post' },
+            { currentUserHasLiked },
+        )
     }
 
     handleLikeClick = () => {
@@ -581,12 +607,12 @@ class Post extends Component {
             this.setCurrentUserHasLiked(true)
                 .then(() => like.actions.post())
                 .catch(() => setCurrentUserHasLiked(false))
-            } else {
-                this.setCurrentUserHasLiked(false)
-                    .then(() => like.actions.delete())
-                    .catch(() => setCurrentUserHasLiked(true))
-            }
+        } else {
+            this.setCurrentUserHasLiked(false)
+                .then(() => like.actions.delete())
+                .catch(() => setCurrentUserHasLiked(true))
         }
+    }
 
     render() {
         const { post } = this.props
@@ -595,26 +621,30 @@ class Post extends Component {
 
         return (
             <div>
-                <strong>Post id: {post.id}</strong><br/>
-                { commentCount } total { commentCount === 1 ? 'comment' : 'comments' }
-                { commentCount ?
-                    <Comments comments={recentComments} /> :
+                <strong>Post id: {post.id}</strong>
+                <br />
+                {commentCount} total{' '}
+                {commentCount === 1 ? 'comment' : 'comments'}
+                {commentCount ? (
+                    <Comments comments={recentComments} />
+                ) : (
                     <span />
-                }
-                <LikeHeart liked={currentUserHasLiked} onClick={this.handleLikeClick} />
+                )}
+                <LikeHeart
+                    liked={currentUserHasLiked}
+                    onClick={this.handleLikeClick}
+                />
             </div>
         )
     }
 }
 ```
 
-
 <hr>
-
 
 ## 10. loading more comments
 
-In our stream so far, we only load the 2 most recent comments for each post. However, we'd like to be able to load more comments, adding them to the list of comments already loaded. In order to achieve this advanced data management scenario, we need to create a new **dataKey** for the comments that is *pre-populated* with a reference to the already-loaded comments. We do this by using the `initialRef` property of the declarative to attach a reference to the already loaded comments to the nion state.
+In our stream so far, we only load the 2 most recent comments for each post. However, we'd like to be able to load more comments, adding them to the list of comments already loaded. In order to achieve this advanced data management scenario, we need to create a new **dataKey** for the comments that is _pre-populated_ with a reference to the already-loaded comments. We do this by using the `initialRef` property of the declarative to attach a reference to the already loaded comments to the nion state.
 
 How does this work under the hood? It's actually quite simple. When we fetch a post, we're actually fetching `recentComments` as a relationship, which is just an array of `{type, id}` tuples pointing to the underlying comment entities. This is how the data is stored in the entities reducer, it's only through the `selectData` selector that the data becomes denormalized into a nested object. This underlying relationship pointer is a **ref**, and we can simply attach this to the references reducer by setting it as the `initialRef` property of the declarative.
 
@@ -623,10 +653,11 @@ Now, when we load the component, we do two things: First, we create a new **data
 One final detail - notice the `makeRef` function used to supply the ref to the **initialRef** property. This function actually constructs a **ref** to the data from the underlying entity store's **refs**. This means that when we pass in `recentComments` to the makeRef function, it creates a ref with all of the corresponding pagination information brought along!
 
 #### Comments.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import map from 'lodash.map'
-import nion, { makeRef } from 'libs/nion'
+import nion, { makeRef } from 'nion'
 import { buildUrl } from 'utilities/json-api'
 
 import { commentInclude, commentStreamFields } from './dataRequirements'
@@ -639,26 +670,27 @@ import Comment from './Comment'
             include: commentInclude,
             fields: streamIncludes,
             page: {
-                count: 10
-            }
+                count: 10,
+            },
         }),
-        paginated: true,
-        initialRef: makeRef(recentComments)
-    }
+        initialRef: makeRef(recentComments),
+    },
 }))
 class Comments extends Component {
     render() {
         const { comments } = this.props.nion
         const { canLoadMore, isLoading } = comments.request
-        const fetchNext = comments.actions.next
+        const fetchNext = comments.extensions.jsonApiPagination.next
 
         return (
             <div>
-                { map(comments.data, (comment, index) => (
+                {map(comments.data, (comment, index) => (
                     <Comment comment={comment} />
-                )) }
-                { isLoading ? <LoadingSpinner /> : null }
-                { canLoadMore ? <Button onClick={fetchNext}>Load More</Button> : null }
+                ))}
+                {isLoading ? <LoadingSpinner /> : null}
+                {canLoadMore ? (
+                    <Button onClick={fetchNext}>Load More</Button>
+                ) : null}
             </div>
         )
     }
@@ -666,14 +698,13 @@ class Comments extends Component {
 ```
 
 #### Post.jsx
+
 ```javascript
 /* <Comments comments={recentComments} /> */
 <Comments postId={post.id} recentComments={recentComments}
 ```
 
-
 <hr>
-
 
 ## 11. loading replies
 
@@ -682,6 +713,7 @@ Now we'd like to load the replies to a given comment. Just like loading addition
 Notice that everything is almost exactly the same as above - we're passing in the `firstReply` as a prop to the **Replies** component, which then creates an **initialRef** using the `makeRef` function, thus "seeding" our references reducer with a pointer to the supplied first reply. The only wrinkle here is that we're manually setting the ref as a collection using the `isCollection` option. This ensures that we both pass in an array to the child component, and handle the result of fetching the next page properly.
 
 #### Comment.jsx
+
 ```javascript
 import React, { Component } from 'react'
 
@@ -698,14 +730,15 @@ class Comment extends Component {
 
         return (
             <div>
-                <strong>{ name }: </strong>{ body }
-                { firstReply ?
+                <strong>{name}: </strong>
+                {body}
+                {firstReply ? (
                     <Replies
                         parentCommentId={comment.id}
                         count={replyCount}
                         firstReply={firstReply}
-                    /> : null
-                }
+                    />
+                ) : null}
             </div>
         )
     }
@@ -713,6 +746,7 @@ class Comment extends Component {
 ```
 
 #### Replies.jsx
+
 ```javascript
 import React, { Component } from 'react'
 import nion, { buildUrl, exists, makeRef } from 'libs/nion'
@@ -725,10 +759,10 @@ import Comment from './Comment'
         dataKey: `commentReplies:${parentCommentId}`,
         endpoint: buildUrl(`/comments/${parentCommentId}/replies`, {
             include: commentInclude,
-            fields: streamFields
+            fields: streamFields,
         }),
-        initialRef: makeRef(firstReply, { isCollection: true })
-    }
+        initialRef: makeRef(firstReply, { isCollection: true }),
+    },
 }))
 class Replies extends Component {
     loadRemaining = () => {
@@ -742,26 +776,27 @@ class Replies extends Component {
         const { isLoading } = replies.request
 
         const remaining = count > 1 ? count - 1 : 0
-        const canLoadMore = count > replies.data.length && remaining && !isLoading
+        const canLoadMore =
+            count > replies.data.length && remaining && !isLoading
 
         return (
             <Card>
-                { exists(replies.data) && replies.data.map(reply => {
-                    return <Comment comment={reply} />
-                })}
-                { canLoadMore ?
-                    <Button onClick={this.loadRemaining}>Load {remaining} replies</Button> : null
-                }
-                { isLoading ? <LoadingSpinner /> : null }
+                {exists(replies.data) &&
+                    replies.data.map(reply => {
+                        return <Comment comment={reply} />
+                    })}
+                {canLoadMore ? (
+                    <Button onClick={this.loadRemaining}>
+                        Load {remaining} replies
+                    </Button>
+                ) : null}
+                {isLoading ? <LoadingSpinner /> : null}
             </Card>
         )
     }
 }
-
 ```
 
-
 <hr>
-
 
 the end
