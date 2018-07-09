@@ -1,17 +1,17 @@
 # nion
 
-nion is a library that makes it easy to fetch, update, and manage API data in a Redux store as well as bind it to React components. Nion strives to make working with data as **flexible**, **consistent**, and **predictable** as possible. :heart:
+nion is a library that makes it easy to fetch, update, and manage API data in a Redux store as well as bind it to React components. Nion strives to make working with data as **flexible**, **consistent**, and **predictable** as possible. 💖
 
 nion is heavily inspired by [Apollo](http://www.apollodata.com/http://www.apollodata.com/) and [GraphQL](http://graphql.org/).
 
-## How it works
+## In a Nutshell 🌰
 
-nion is best used as a **decorator function** which declares what data will be managed by the decorated component and passes in props for managing that data.
+nion is used as a **decorator function** which declares what data will be managed by the decorated component and passes in props for managing that data.
 
 ```javascript
 @nion({
     currentUser: {
-        endpoint: buildUrl('/current_user'),
+        endpoint: 'https://patreon.com/api/current_user',
     }
 })
 class UserContainer extends Component {
@@ -33,7 +33,7 @@ class UserContainer extends Component {
 
 We simply pass in an object with a special `declaration` that tells nion **what** to fetch, and nion automatically handles fetching the data and passing both it and the corresponding request status in as props to the decorated component.
 
-nion significantly reduces the complexity of managing data by both abstracting away all of the logic and code needed to select data and handle requests, and by offering a clear and consistent pattern for doing so. As we'll see later, nion offers simple solutions for nearly every type of common application scenario, including component/request lifecycles, updates, multiple requests, and pagination.
+nion significantly reduces the complexity of managing data by both abstracting away all of the logic and code needed to select data and handle requests, and by offering a clear and consistent pattern for doing so.
 
 The central component to understanding nion is the `dataKey`. In the above example, the `dataKey` is `"currentUser"`. The `dataKey` is the address on the state tree with which nion manages a given resource. A resource is composed of both the underlying data and corresponding network request status for a given piece of application state.
 
@@ -72,18 +72,26 @@ nion: {
 
 nion manages three internal reducers that handle data fetching and management across the application:
 
-##### Entities
+### Entities
 The entities reducer keeps a **normalized** map of all given entities in the system, keyed by `type` and `id`. This means that all data is kept consistent regardless of where it's being accessed from.
 
-##### References
+### References
 The references reducer maintains a map of `dataKeys` pointing to the corresponding entities (as an object with `type` and `id` fields).
 
-##### Requests
+### Requests
 The requests reducer maintains a map of `dataKeys` that tracks all network request details around fetching / updating data.
 
 Internally, the nion suite of redux tools handles everything necessary to maintain application state and provide a clear interface to the higher-level component tooling.
 
-## Getting started
+## Read More
+
+* [Declarations](https://github.com/Patreon/nion/blob/master/docs/declaration.md)
+* [Configuration](https://github.com/Patreon/nion/blob/master/docs/configuration.md)
+* [How it Works](https://github.com/Patreon/nion/blob/master/docs/howitworks.md)
+
+## Getting Started
+
+### Installation
 
 nion requires `redux-thunk` in order to handle its async actions, so you should install that along with the `nion` package.
 
@@ -97,9 +105,11 @@ Also, nion is best used as a decorator function, so you might also want to make 
 npm install babel-plugin-transform-decorators-legacy --save-dev
 ```
 
+### Configuration
+
 Finally, nion has to be wired up to the redux store and optionally configured. Here's a very simple setup:
 
-```
+```javascript
 import { applyMiddleware, createStore, combineReducers } from 'redux'
 import thunkMiddleware from 'redux-thunk'
 
@@ -118,3 +128,9 @@ export default function configureStore() {
     return store
 }
 ```
+
+For more about configuration options, [check out the docs](https://github.com/Patreon/nion/blob/master/docs/configuration.md).
+
+## Licensing
+
+[MIT](https://github.com/Patreon/nion/blob/master/license.txt)
