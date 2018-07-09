@@ -33,9 +33,9 @@ class UserContainer extends Component {
 
 We simply pass in an object with a special `declaration` that tells nion **what** to fetch, and nion automatically handles fetching the data and passing both it and the corresponding request status in as props to the decorated component.
 
-For more on how nion works its magic, [take a look at the docs](https://github.com/Patreon/nion/blob/master/docs/howitworks.md).
+[Read more about how nion works in the docs.](docs/howitworks.md).
 
-## Getting Started
+## Up and Running 🏃🏾‍♀️
 
 ### Installation
 
@@ -75,15 +75,15 @@ export default function configureStore() {
 }
 ```
 
-For more about configuration options, [check out the docs](https://github.com/Patreon/nion/blob/master/docs/configuration.md).
+[Read more about configuring nion in the docs.](docs/configuration.md).
 
-## Read More
+## Read More 📚
 
-* [Declarations](https://github.com/Patreon/nion/blob/master/docs/declaration.md)
-* [Configuring Nion](https://github.com/Patreon/nion/blob/master/docs/configuration.md)
-* [Glossary](https://github.com/Patreon/nion/blob/master/docs/glossary.md)
-* [How it Works](https://github.com/Patreon/nion/blob/master/docs/howitworks.md)
+* [Declarations](docs/declaration.md)
+* [Configuring Nion](docs/configuration.md)
+* [Glossary](docs/glossary.md)
+* [How it Works](docs/howitworks.md)
 
-## Licensing
+## Licensing 🍴
 
-[MIT](https://github.com/Patreon/nion/blob/master/license.txt)
+[MIT](license.txt)

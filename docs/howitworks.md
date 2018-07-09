@@ -8,21 +8,6 @@ nion significantly reduces the complexity of managing data by both abstracting a
         endpoint: 'https://patreon.com/api/current_user',
     }
 })
-class UserContainer extends Component {
-    render() {
-        const { currentUser } = this.props.nion
-        const { request, actions, data } = currentUser
-
-        const loadButton = <Button onClick={() => actions.get()}>Load</Button>
-
-        return (
-            <Card>
-                { request.isLoading ? <LoadingSpinner /> : loadButton }
-                { exists(currentUser) ? <UserCard user={data} /> : null }
-            </Card>
-        )
-    }
-}
 ```
 
 The central component to understanding nion is the `dataKey`. In the above example, the `dataKey` is `"currentUser"`. The `dataKey` is the address on the state tree with which nion manages a given resource. A resource is composed of both the underlying data and corresponding network request status for a given piece of application state.
