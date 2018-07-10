@@ -33,7 +33,7 @@ class UserContainer extends Component {
 
 We simply pass in an object with a special `declaration` that tells nion **what** to fetch, and nion automatically handles fetching the data and passing both it and the corresponding request status in as props to the decorated component.
 
-[Read more about how nion works in the docs.](docs/howitworks.md).
+[Read more about how nion works in the docs.](docs/howitworks.md)
 
 ## Up and Running 🏃🏾‍♀️
 
@@ -75,7 +75,7 @@ export default function configureStore() {
 }
 ```
 
-[Read more about configuring nion in the docs.](docs/configuration.md).
+[Read more about configuring nion in the docs.](docs/configuration.md)
 
 ## Read More 📚
 
