@@ -79,7 +79,7 @@ export default function configureStore() {
 
 ## Read More 📚
 
-* [Declarations](docs/declaration.md)
+* [Declarations](docs/declarations.md)
 * [Configuring Nion](docs/configuration.md)
 * [Glossary](docs/glossary.md)
 * [How it Works](docs/howitworks.md)
