@@ -34,6 +34,27 @@ describe('nion: reducers', () => {
             expect(request.pending).toEqual('GET')
         })
 
+        it('handles a NION_API_REQUEST action after a success', () => {
+            const reducer = new Reducer()
+            const dataKey = 'currentUser'
+
+            const action = makeAction(types.NION_API_SUCCESS, dataKey, {
+                method: 'GET',
+            })
+            reducer.applyAction(action)
+
+            const requestAction = makeAction(types.NION_API_REQUEST, dataKey, {
+                method: 'GET',
+            })
+
+            reducer.applyAction(requestAction)
+
+            const request = get(reducer.state, dataKey)
+            expect(request.isError).toEqual(false)
+            expect(request.isLoaded).toEqual(true)
+            expect(request.isLoading).toEqual(true)
+        })
+
         it('handles a NION_API_SUCCESS action', () => {
             const reducer = new Reducer()
             const dataKey = 'currentUser'
@@ -52,7 +73,7 @@ describe('nion: reducers', () => {
             expect(request.isLoading).toEqual(false)
         })
 
-        it('handles a NION_API_SUCCESS action', () => {
+        it('handles a NION_API_FAILURE action', () => {
             const reducer = new Reducer()
             const dataKey = 'currentUser'
 
