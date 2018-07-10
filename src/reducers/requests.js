@@ -10,14 +10,11 @@ import {
 const initialState = Immutable({})
 
 const requestsReducer = (state = initialState, action) => {
-    const existing = get(state, 'action.meta.dataKey')
-
     switch (action.type) {
         case NION_API_REQUEST:
             return state.merge(
                 {
                     [action.meta.dataKey]: {
-                        ...existing,
                         status: 'pending',
                         isLoading: true,
                         pending: action.meta.method,
@@ -29,7 +26,6 @@ const requestsReducer = (state = initialState, action) => {
             return state.merge(
                 {
                     [action.meta.dataKey]: {
-                        ...existing,
                         status: 'success',
                         fetchedAt: action.meta.fetchedAt,
                         isError: false,
@@ -43,7 +39,6 @@ const requestsReducer = (state = initialState, action) => {
             return state.merge(
                 {
                     [action.meta.dataKey]: {
-                        ...existing,
                         status: 'error',
                         name: action.payload.name,
                         errors: action.payload.errors,
