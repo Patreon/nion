@@ -40,9 +40,7 @@ A representation of an API endpoint that is injected into a nion-decorated compo
 		(meta values returned along with api data)
 	},
 	request: {
-		(meta values concerning the state of the resource's last request)
+		(meta values reflecting the state of the resource's last request)
 	}
 }
 ```
-
-## Frequently-used terms
