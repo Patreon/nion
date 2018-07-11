@@ -83,6 +83,7 @@ export default function configureStore() {
 * [Configuring Nion](docs/configuration.md)
 * [API Modules](docs/api-modules.md)
 * [Extensions](docs/extensions.md)
+* [Lifecycle](docs/lifecycle.md)
 * [Glossary](docs/glossary.md)
 * [How it Works](docs/howitworks.md)
 
