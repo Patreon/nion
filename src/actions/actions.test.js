@@ -29,10 +29,11 @@ describe('nion: actions', () => {
         it('GET api action should create the correct actions ', async () => {
             const apiEndpoint = new ApiEndpoint()
             const jsonPayload = { body: {} }
+            const statusCode = 200
 
             nock(apiEndpoint.baseUrl)
                 .get(apiEndpoint.route)
-                .reply(200, jsonPayload)
+                .reply(statusCode, jsonPayload)
 
             const dataKey = 'items'
             const expectedActions = [
@@ -42,6 +43,7 @@ describe('nion: actions', () => {
                         dataKey,
                         endpoint: apiEndpoint.url,
                         method: 'GET',
+                        isProcessing: true,
                     },
                 },
                 {
@@ -51,6 +53,59 @@ describe('nion: actions', () => {
                         fetchedAt: Date.now(),
                         endpoint: apiEndpoint.url,
                         method: 'GET',
+                        statusCode: statusCode,
+                        isProcessing: false,
+                    },
+                    payload: {
+                        requestType: ApiManager.getDefaultApi(),
+                        responseData: ApiManager.getParser()(jsonPayload),
+                    },
+                },
+            ]
+
+            const store = mockStore({})
+
+            await store.dispatch(
+                apiActions.get(dataKey, {
+                    endpoint: apiEndpoint.url,
+                }),
+            )
+
+            const observedActions = store.getActions()
+            expectedActions.forEach((expectedAction, index) => {
+                assertEqualAction(expectedAction, observedActions[index])
+            })
+        })
+
+        it('GET api action should inform the request is still processing', async () => {
+            const apiEndpoint = new ApiEndpoint()
+            const jsonPayload = { body: {} }
+            const statusCode = 202
+
+            nock(apiEndpoint.baseUrl)
+                .get(apiEndpoint.route)
+                .reply(statusCode, jsonPayload)
+
+            const dataKey = 'items'
+            const expectedActions = [
+                {
+                    type: actionTypes.NION_API_REQUEST,
+                    meta: {
+                        dataKey,
+                        endpoint: apiEndpoint.url,
+                        method: 'GET',
+                        isProcessing: true,
+                    },
+                },
+                {
+                    type: actionTypes.NION_API_SUCCESS,
+                    meta: {
+                        dataKey,
+                        fetchedAt: Date.now(),
+                        endpoint: apiEndpoint.url,
+                        method: 'GET',
+                        statusCode: statusCode,
+                        isProcessing: true,
                     },
                     payload: {
                         requestType: ApiManager.getDefaultApi(),
@@ -76,10 +131,11 @@ describe('nion: actions', () => {
         it('GET api action should handle errors with the correct actions ', async () => {
             const apiEndpoint = new ApiEndpoint()
             const jsonPayload = { body: {} }
+            const statusCode = 500
 
             nock(apiEndpoint.baseUrl)
                 .get(apiEndpoint.route)
-                .reply(500, jsonPayload)
+                .reply(statusCode, jsonPayload)
 
             const dataKey = 'items'
             const expectedActions = [
@@ -89,6 +145,7 @@ describe('nion: actions', () => {
                         dataKey,
                         endpoint: apiEndpoint.url,
                         method: 'GET',
+                        isProcessing: true,
                     },
                 },
                 {
@@ -98,6 +155,8 @@ describe('nion: actions', () => {
                         fetchedAt: Date.now(),
                         endpoint: apiEndpoint.url,
                         method: 'GET',
+                        statusCode: statusCode,
+                        isProcessing: false,
                     },
                 },
             ]
@@ -137,7 +196,7 @@ function assertEqualAction(expected, observed) {
         if (metaKey === 'fetchedAt') {
             // Check to see that our fetchedAt value is within 30ms of our actual value
             const diff = expected.meta.fetchedAt - observed.meta.fetchedAt
-            expect(Math.abs(diff)).toBeLessThan(100)
+            expect(Math.abs(diff)).toBeLessThan(500)
         } else {
             expect(expected.meta[metaKey]).toEqual(observed.meta[metaKey])
         }

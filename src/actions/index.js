@@ -18,10 +18,10 @@ const apiAction = (method, dataKey, options) => _dispatch => {
         dataKey,
         endpoint,
         method,
+        isProcessing: true,
     }
 
     const { apiType = ApiManager.getDefaultApi() } = declaration
-
     const parse = ApiManager.getParser(apiType)
     const ErrorClass = ApiManager.getErrorClass(apiType)
 
@@ -85,6 +85,8 @@ const apiAction = (method, dataKey, options) => _dispatch => {
                 meta: {
                     ...meta,
                     fetchedAt: Date.now(),
+                    statusCode: response.status,
+                    isProcessing: response.status === 202 ? true : false,
                 },
                 payload: {
                     requestType: apiType,
@@ -101,6 +103,8 @@ const apiAction = (method, dataKey, options) => _dispatch => {
                     meta: {
                         ...meta,
                         fetchedAt: Date.now(),
+                        statusCode: error.status,
+                        isProcessing: false,
                     },
                     payload: error,
                 })
