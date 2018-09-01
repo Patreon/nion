@@ -5,7 +5,7 @@ import union from 'lodash.union'
 import ApiManager from '../api'
 
 import * as actionTypes from './types'
-import * as apiActions from './index'
+import apiActions from './index'
 
 const middlewares = [thunk]
 const mockStore = configureMockStore(middlewares)
@@ -116,8 +116,13 @@ describe('nion: actions', () => {
 
             const store = mockStore({})
 
+            const newActions = apiActions
+
+            console.log(newActions)
+            console.log(newActions.get)
+
             await store.dispatch(
-                apiActions.get(dataKey, {
+                newActions.get(dataKey, {
                     endpoint: apiEndpoint.url,
                 }),
             )
