@@ -4,5 +4,8 @@ node_modules
 # OS files
 .DS_Store
 
+# built files
+lib
+
 # coverage output from jest
 coverage
