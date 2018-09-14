@@ -1,4 +1,4 @@
-# api modules
+# API Modules
 nion uses api modules internally to set up and handle requests to the API, and parse the corresponding responses. An API module is defined as an object that has an interface defined below:
 
 ### Usage

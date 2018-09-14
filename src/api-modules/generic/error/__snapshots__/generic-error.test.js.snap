@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GenericError should behave consistently 1`] = `[ApiError: 500 - Server Error]`;

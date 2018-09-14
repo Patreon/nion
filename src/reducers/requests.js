@@ -1,5 +1,4 @@
 import Immutable from 'seamless-immutable'
-import get from 'lodash.get'
 
 import {
     NION_API_REQUEST,
@@ -10,17 +9,16 @@ import {
 const initialState = Immutable({})
 
 const requestsReducer = (state = initialState, action) => {
-    const existing = get(state, 'action.meta.dataKey')
-
     switch (action.type) {
         case NION_API_REQUEST:
             return state.merge(
                 {
                     [action.meta.dataKey]: {
-                        ...existing,
-                        status: 'pending',
                         isLoading: true,
+                        isProcessing: action.meta.isProcessing,
                         pending: action.meta.method,
+                        status: 'pending',
+                        statusCode: undefined,
                     },
                 },
                 { deep: true },
@@ -29,12 +27,13 @@ const requestsReducer = (state = initialState, action) => {
             return state.merge(
                 {
                     [action.meta.dataKey]: {
-                        ...existing,
-                        status: 'success',
                         fetchedAt: action.meta.fetchedAt,
                         isError: false,
                         isLoaded: true,
                         isLoading: false,
+                        isProcessing: action.meta.isProcessing,
+                        status: 'success',
+                        statusCode: action.meta.statusCode,
                     },
                 },
                 { deep: true },
@@ -43,15 +42,16 @@ const requestsReducer = (state = initialState, action) => {
             return state.merge(
                 {
                     [action.meta.dataKey]: {
-                        ...existing,
-                        status: 'error',
-                        name: action.payload.name,
                         errors: action.payload.errors,
                         fetchedAt: action.meta.fetchedAt,
                         isError: true,
                         isLoaded: false,
                         isLoading: false,
+                        isProcessing: action.meta.isProcessing,
+                        name: action.payload.name,
                         pending: undefined,
+                        status: 'error',
+                        statusCode: action.meta.statusCode,
                     },
                 },
                 { deep: true },

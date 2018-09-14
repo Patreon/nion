@@ -1,6 +1,5 @@
 import ExtensionManager from './'
 import configure from '../configure'
-import { polling } from './manifest'
 
 const minimalExtensionShape = {
     composeActions: jest.fn(),
@@ -35,20 +34,22 @@ describe('ExtensionManager', () => {
         test('should add valid extension to internal extensionMap property', () => {
             expect(ExtensionManager.extensionMap).toEqual({})
 
-            ExtensionManager.registerExtension('polling', polling)
+            ExtensionManager.registerExtension('minimal', minimalExtensionShape)
 
-            expect(ExtensionManager.extensionMap).toEqual({ polling: polling })
+            expect(ExtensionManager.extensionMap).toEqual({
+                minimal: minimalExtensionShape,
+            })
         })
     })
 
     describe('getExtension', () => {
         beforeAll(() => {
-            ExtensionManager.registerExtension('polling', polling)
+            ExtensionManager.registerExtension('minimal', minimalExtensionShape)
         })
 
         test('should return registered extensions by name', () => {
-            const pollingExtension = ExtensionManager.getExtension('polling')
-            expect(pollingExtension).toMatchObject(minimalExtensionMatcher)
+            const minimalExtension = ExtensionManager.getExtension('minimal')
+            expect(minimalExtension).toMatchObject(minimalExtensionMatcher)
         })
 
         test('should return named extensions registered through configuration', () => {

@@ -18,10 +18,10 @@ const apiAction = (method, dataKey, options) => _dispatch => {
         dataKey,
         endpoint,
         method,
+        isProcessing: true,
     }
 
     const { apiType = ApiManager.getDefaultApi() } = declaration
-
     const parse = ApiManager.getParser(apiType)
     const ErrorClass = ApiManager.getErrorClass(apiType)
 
@@ -85,6 +85,8 @@ const apiAction = (method, dataKey, options) => _dispatch => {
                 meta: {
                     ...meta,
                     fetchedAt: Date.now(),
+                    statusCode: response.status,
+                    isProcessing: response.status === 202 ? true : false,
                 },
                 payload: {
                     requestType: apiType,
@@ -101,6 +103,8 @@ const apiAction = (method, dataKey, options) => _dispatch => {
                     meta: {
                         ...meta,
                         fetchedAt: Date.now(),
+                        statusCode: error.status,
+                        isProcessing: false,
                     },
                     payload: error,
                 })
@@ -136,16 +140,9 @@ const deleteAction = (dataKey, options) => {
     })
 }
 
-const nextAction = (dataKey, options) => {
-    return apiAction('GET', dataKey, {
-        ...options,
-        meta: {
-            ...options.meta,
-            isNextPage: true,
-        },
-    })
-}
-
+/**
+ * @deprecated
+ */
 const bootstrapAction = ({ apiType, dataKey, data }) => {
     const parse = ApiManager.getParser(apiType)
     return {
@@ -158,6 +155,9 @@ const bootstrapAction = ({ apiType, dataKey, data }) => {
     }
 }
 
+/**
+ * @deprecated Will be renamed
+ */
 const updateEntityAction = ({ type, id }, attributes) => {
     return {
         type: UPDATE_ENTITY,
@@ -170,7 +170,6 @@ export default {
     post: postAction,
     patch: patchAction,
     delete: deleteAction,
-    next: nextAction,
     bootstrap: bootstrapAction,
     updateEntity: updateEntityAction,
 }
