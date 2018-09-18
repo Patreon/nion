@@ -351,6 +351,10 @@ describe('nion: reducers', () => {
             )
             expect(campaignName).toEqual('Test Campaign')
 
+            expect(
+                get(reducer.state, `user.${123}.relationships.campaigns.data`),
+            ).toHaveLength(2)
+
             // Ad hoc create an action that deletes the campaign ref
             const nextAction = {
                 type: types.NION_API_SUCCESS,
@@ -368,9 +372,31 @@ describe('nion: reducers', () => {
             }
 
             reducer.applyAction(nextAction)
+
             expect(
-                get(reducer.state, `user.${123}.relationships.campaigns`),
+                get(reducer.state, `user.${123}.relationships.campaigns.data`),
             ).toHaveLength(1)
+
+            const finalAction = {
+                type: types.NION_API_SUCCESS,
+                payload: {
+                    responseData: {
+                        storeFragment: {},
+                    },
+                },
+                meta: {
+                    refToDelete: {
+                        type: 'campaign',
+                        id: 789,
+                    },
+                },
+            }
+
+            reducer.applyAction(finalAction)
+
+            expect(
+                get(reducer.state, `user.${123}.relationships.campaigns.data`),
+            ).toHaveLength(0)
         })
 
         it('handles the UPDATE_ENTITY action', () => {
