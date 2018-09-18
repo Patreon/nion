@@ -1,4 +1,5 @@
 import get from 'lodash.get'
+import Immutable from 'seamless-immutable'
 function relationDoesMatch(relation, id, type) {
     return relation.id === id && relation.type === type
 }
@@ -11,19 +12,30 @@ function updateRelationships(
     id,
     type,
 ) {
+    const relationships = Immutable.getIn(state, [
+        entityName,
+        entityId,
+        'relationships',
+        relationshipName,
+        'data',
+    ])
+
+    const updated = relationships.filter(
+        relation => !relationDoesMatch(relation, id, type),
+    )
+
     return state.setIn(
-        [entityName, entityId, 'relationships', relationshipName],
-        value =>
-            value.filter(relation => !relationDoesMatch(relation, id, type)),
+        [entityName, entityId, 'relationships', relationshipName, 'data'],
+        updated,
     )
 }
 
 function relationBelongsToEntity(entity, relationshipName, id, type) {
-    return get(
-        entity,
-        `relationships[${relationshipName}].data`,
-        [],
-    ).find(relation => relationDoesMatch(relation, id, type))
+    const relationshipData =
+        get(entity, `relationships[${relationshipName}].data`) || []
+    return relationshipData.find(relation =>
+        relationDoesMatch(relation, id, type),
+    )
 }
 
 export function filterRelationshipsFromState(state, id, type) {
