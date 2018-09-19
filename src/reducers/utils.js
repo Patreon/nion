@@ -41,7 +41,7 @@ function relationBelongsToEntity(entity, relationshipName, id, type) {
         ? relationshipData.find(relation =>
               relationDoesMatch(relation, id, type),
           )
-        : relationDoesMatch(relationshipData)
+        : relationshipData && relationDoesMatch(relationshipData)
 }
 
 export function filterRelationshipsFromState(state, id, type) {
