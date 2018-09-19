@@ -20,9 +20,11 @@ function updateRelationships(
         'data',
     ])
 
-    const updated = relationships.filter(
-        relation => !relationDoesMatch(relation, id, type),
-    )
+    const updated = Array.isArray(relationships)
+        ? relationships.filter(
+              relation => !relationDoesMatch(relation, id, type),
+          )
+        : !relationDoesMatch(relationships, id, type) ? relationships : null
 
     return state.setIn(
         [entityName, entityId, 'relationships', relationshipName, 'data'],
@@ -31,11 +33,15 @@ function updateRelationships(
 }
 
 function relationBelongsToEntity(entity, relationshipName, id, type) {
-    const relationshipData =
-        get(entity, `relationships[${relationshipName}].data`) || []
-    return relationshipData.find(relation =>
-        relationDoesMatch(relation, id, type),
+    const relationshipData = get(
+        entity,
+        `relationships[${relationshipName}].data`,
     )
+    return Array.isArray(relationshipData)
+        ? relationshipData.find(relation =>
+              relationDoesMatch(relation, id, type),
+          )
+        : relationDoesMatch(relationshipData)
 }
 
 export function filterRelationshipsFromState(state, id, type) {
