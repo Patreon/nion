@@ -2,7 +2,7 @@
 
 nion is a library that makes it easy to fetch, update, and manage API data in a Redux store as well as bind it to React components. Nion strives to make working with data as **flexible**, **consistent**, and **predictable** as possible. 💖
 
-nion is heavily inspired by [Apollo](http://www.apollodata.com/http://www.apollodata.com/) and [GraphQL](http://graphql.org/).
+nion is heavily inspired by [Apollo](http://www.apollodata.com/) and [GraphQL](http://graphql.org/).
 
 ## In a Nutshell 🌰
 
