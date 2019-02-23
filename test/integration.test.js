@@ -170,10 +170,6 @@ describe('nion : integration tests', () => {
                     .find('Container')
                     .props().nion.test
 
-            let test = getProp()
-            expect(test.request.status).toEqual('pending')
-            expect(test.request.isLoading).toEqual(true)
-
             await P.delay(15) // Wait 15ms for the request reducer to update
 
             test = getProp()

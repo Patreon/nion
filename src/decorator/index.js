@@ -371,7 +371,7 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
             this.initializeDataKeys(nextProps)
         }
 
-        initializeDataKeys(props) {
+        fetchOnMount(props) {
             const { nion } = props // eslint-disable-line no-shadow
 
             // We want to trigger a fetch when the props change and lead to the creation of a new
@@ -411,8 +411,8 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
             })
         }
 
-        componentDidMount() {
-            const { nion } = this.props // eslint-disable-line no-shadow
+        initializeDataKeys(props) {
+            const { nion } = props // eslint-disable-line no-shadow
 
             // Iterate over the declarations provided to the component, deciding how to manage the
             // load state of each one
@@ -433,6 +433,10 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
                     return nion._initializeDataKey(dataKey, initialRef)
                 }
             })
+        }
+
+        componentDidMount() {
+            this.fetchOnMount(this.props)
         }
 
         render() {
