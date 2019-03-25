@@ -18,7 +18,7 @@ env:
     jest: true
     node: true
 
-plugins: [ 'react', 'prettier' ]
+plugins: [ 'react', 'prettier', 'react-hooks' ]
 
 rules:
     camelcase: [2, {'properties': 'never'}]
@@ -69,3 +69,5 @@ rules:
     react/require-render-return: 2
     react/self-closing-comp: 1
     react/jsx-wrap-multilines: ["error", {"declaration": false, "assignment": false}]
+    react-hooks/rules-of-hooks: "error"
+    react-hooks/exhaustive-deps: "warn"
