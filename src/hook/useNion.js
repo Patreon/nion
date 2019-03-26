@@ -1,12 +1,13 @@
 import { useEffect, useCallback, useMemo } from 'react'
+import { useDispatch, useMappedState } from 'redux-react-hook'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
 
 import { selectResourcesForKeys } from '../selectors'
 import nionActions from '../actions'
 import ApiManager from '../api'
-import { INITIALIZE_DATAKEY } from '../actions/types'
-import { useDispatch, useMappedState } from 'redux-react-hook'
+import { INITIALIZE_DATAKEY, UPDATE_REF } from '../actions/types'
+import { makeRef } from '../transforms'
 
 function useNion(declaration, deps = []) {
     const dispatch = useDispatch()
@@ -28,7 +29,7 @@ function useNion(declaration, deps = []) {
                 ? { dataKey: declaration }
                 : declaration
         },
-        [declaration],
+        deps,
     )
 
     // pull existing data from store by ref if you need to
@@ -98,7 +99,7 @@ function useNion(declaration, deps = []) {
                 },
             })(dispatch)
         },
-        [coercedDeclaration, dispatch],
+        [coercedDeclaration],
     )
 
     const postResource = useCallback(
@@ -114,7 +115,7 @@ function useNion(declaration, deps = []) {
                 },
             })(dispatch)
         },
-        [coercedDeclaration, dispatch],
+        [coercedDeclaration],
     )
 
     const patchResource = useCallback(
@@ -126,10 +127,10 @@ function useNion(declaration, deps = []) {
                 body,
             })(dispatch)
         },
-        [coercedDeclaration, dispatch],
+        [coercedDeclaration],
     )
 
-    const deleteResource = useCallback(
+    const deleteDispatchFn = useCallback(
         (refToDelete = {}, params, options = {}) => {
             // TODO: Refactor ref to delete to not be mutative.
             if (options.refToDelete) {
@@ -143,16 +144,48 @@ function useNion(declaration, deps = []) {
                 refToDelete,
             })(dispatch)
         },
-        [coercedDeclaration, dispatch],
+        [coercedDeclaration],
+    )
+
+    const updateRef = useCallback(
+        ref => {
+            return dispatch({
+                type: UPDATE_REF,
+                payload: {
+                    ref: makeRef(ref),
+                },
+                meta: {
+                    dataKey: coercedDeclaration.dataKey,
+                },
+            })
+        },
+        [coercedDeclaration.dataKey],
+    )
+
+    const updateEntity = useCallback(
+        ({ type, id }, attributes) => {
+            return dispatch(nionActions.updateEntity({ type, id }, attributes))
+        },
+        [coercedDeclaration.dataKey],
+    )
+
+    const ref = useMemo(
+        () => (nion.obj ? { id: nion.obj.id, type: nion.obj.type } : null),
+        [nion.obj],
+    )
+
+    const deleteResource = useCallback(
+        (props, options) => deleteDispatchFn(ref, props, options),
+        [ref, deleteDispatchFn],
     )
 
     useEffect(
         () => {
             if (coercedDeclaration.fetchOnMount) {
-                // fetch on init will go here
+                getResources()
             }
         },
-        [coercedDeclaration.fetchOnMount],
+        [coercedDeclaration.fetchOnMount, getResources],
     )
 
     const actions = useMemo(
@@ -161,8 +194,17 @@ function useNion(declaration, deps = []) {
             post: postResource,
             patch: patchResource,
             delete: deleteResource,
+            updateRef,
+            updateEntity,
         }),
-        [getResources, postResource, patchResource, deleteResource],
+        [
+            getResources,
+            postResource,
+            patchResource,
+            deleteResource,
+            updateRef,
+            updateEntity,
+        ],
     )
 
     return [nion.obj, actions, nion.request, nion.extra]
