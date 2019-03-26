@@ -33,7 +33,9 @@ rules:
     no-underscore-dangle: 0
     no-unused-vars: [1, {
         vars: 'all',
-        args: 'none'
+        args: 'none',
+        varsIgnorePattern: "^_",
+        argsIgnorePattern: "^_",
     }]
     no-use-before-define: [2, 'nofunc']
     no-var: 2
@@ -70,4 +72,4 @@ rules:
     react/self-closing-comp: 1
     react/jsx-wrap-multilines: ["error", {"declaration": false, "assignment": false}]
     react-hooks/rules-of-hooks: "error"
-    react-hooks/exhaustive-deps: "warn"
+    react-hooks/exhaustive-deps: "error"

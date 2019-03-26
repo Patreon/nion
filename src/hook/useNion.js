@@ -12,16 +12,6 @@ import { makeRef } from '../transforms'
 function useNion(declaration, deps = []) {
     const dispatch = useDispatch()
 
-    const initializeDataKey = useCallback(
-        (dataKey, ref) =>
-            dispatch({
-                type: INITIALIZE_DATAKEY,
-                payload: { ref },
-                meta: { dataKey },
-            }),
-        [dispatch],
-    )
-
     // convert `useNion('currentUser') => useNion({dataKey: 'currentUser'})`
     const coercedDeclaration = useMemo(
         () => {
@@ -30,23 +20,6 @@ function useNion(declaration, deps = []) {
                 : declaration
         },
         deps,
-    )
-
-    // pull existing data from store by ref if you need to
-    useEffect(
-        () => {
-            if (coercedDeclaration.initialRef) {
-                initializeDataKey(
-                    coercedDeclaration.dataKey,
-                    coercedDeclaration.initialRef,
-                )
-            }
-        },
-        [
-            coercedDeclaration.dataKey,
-            coercedDeclaration.initialRef,
-            initializeDataKey,
-        ],
     )
 
     const selectNionResourcesForDataKeys = useMemo(
@@ -204,6 +177,33 @@ function useNion(declaration, deps = []) {
             deleteResource,
             updateRef,
             updateEntity,
+        ],
+    )
+
+    const initializeDataKey = useCallback(
+        (dataKey, ref) =>
+            dispatch({
+                type: INITIALIZE_DATAKEY,
+                payload: { ref },
+                meta: { dataKey },
+            }),
+        [],
+    )
+    // pull existing data from store by ref if you need to
+    useEffect(
+        () => {
+            if (coercedDeclaration.initialRef && !nion.obj) {
+                initializeDataKey(
+                    coercedDeclaration.dataKey,
+                    coercedDeclaration.initialRef,
+                )
+            }
+        },
+        [
+            coercedDeclaration.dataKey,
+            coercedDeclaration.initialRef,
+            initializeDataKey,
+            ...deps
         ],
     )
 

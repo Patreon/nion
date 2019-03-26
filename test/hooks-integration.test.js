@@ -1,11 +1,13 @@
 /* eslint-disable react/no-multi-comp */
-import React, { Component } from 'react'
+/* eslint-disable react/prop-types */
+import React, { Component, useEffect } from 'react'
 import { act } from 'react-dom/test-utils'
+import { Provider } from 'react-redux'
 import { mount } from 'enzyme'
 import nock from 'nock'
 import P from 'bluebird'
 
-import { useNion, makeRef } from '../src/index'
+import nion, { useNion, makeRef, exists } from '../src/index'
 
 import { StoreContext } from 'redux-react-hook'
 import configureTestStore from './configure-test-store'
@@ -13,9 +15,11 @@ import configureTestStore from './configure-test-store'
 const Wrap = (Wrapped, props) => {
     const store = configureTestStore()
     return (
-        <StoreContext.Provider value={store}>
-            <Wrapped {...props} />
-        </StoreContext.Provider>
+        <Provider store={store}>
+            <StoreContext.Provider value={store}>
+                <Wrapped {...props} />
+            </StoreContext.Provider>
+        </Provider>
     )
 }
 
@@ -197,26 +201,22 @@ describe('nion hooks: integration tests', () => {
 
             let [test, actions, request] = getProp()
             let waitingFor = actions.get()
-
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
 
             await waitingFor
-
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(name)
 
             // Patch request
             waitingFor = actions.patch()
-
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
 
             await waitingFor
-
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(newName)
@@ -259,20 +259,17 @@ describe('nion hooks: integration tests', () => {
             let waitingFor = actions.get()
 
             await P.delay(0)
-
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
 
             await waitingFor
-
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(name)
 
             // Delete request
             await actions.delete()
-
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('success')
 
@@ -301,14 +298,13 @@ describe('nion hooks: integration tests', () => {
                     .find('div')
                     .prop('returned')
 
-            let [test, actions, request] = getProp()
+            let [_test, actions, request] = getProp()
             let waitingFor = actions.get()
 
             await waitingFor.catch(err => {
                 expect(err).toBeInstanceOf(Error)
             })
-
-            ;[test, actions, request] = getProp()
+            ;[_test, actions, request] = getProp()
             expect(request.status).toEqual('error')
             expect(request.isError).toEqual(true)
             expect(request.isLoading).toEqual(false)
@@ -345,29 +341,28 @@ describe('nion hooks: integration tests', () => {
 
             let [test, actions, request] = getProp()
             let waitingFor = actions.get()
-
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
 
             await waitingFor
-
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(name)
 
             // Optimistic Update
-
             ;[test, actions, request] = getProp()
-            actions.updateEntity(
-                {
-                    type: 'animal',
-                    id: 123,
-                },
-                {
-                    name: newName,
-                },
-            )
+            act(() => {
+                actions.updateEntity(
+                    {
+                        type: 'animal',
+                        id: 123,
+                    },
+                    {
+                        name: newName,
+                    },
+                )
+            })
 
             ;[test, actions, request] = getProp()
             expect(test.name).toEqual(newName)
@@ -389,58 +384,50 @@ describe('nion hooks: integration tests', () => {
                     },
                 })
 
-            function Container(props) {
+            function ChildContainer(props) {
                 const returned = useNion({
                     dataKey: 'child',
-                    endpoint: buildUrl(pathname),
+                    endpoint: endpoint,
                     initialRef: makeRef(props.inputData),
-                },)
+                }, [props.inputData])
                 return <div returned={returned} />
             }
 
 
-            @nion({ test: { endpoint: buildUrl(pathname) } })
-            class Container extends Component {
-                render() {
-                    const { test } = this.props.nion
-                    return exists(test) ? (
-                        <ChildContainer inputData={test.data} />
-                    ) : (
-                        <span />
-                    )
-                }
+            function Container(props) {
+                const [test, actions] = useNion({
+                    dataKey: 'test',
+                    endpoint: endpoint,
+                })
+                useEffect(() => {
+                    actions.get()
+                }, [])
+                return test ? (
+                    <ChildContainer inputData={test} />
+                ) : (
+                    <span />
+                )
             }
 
             const Wrapper = mount(Wrap(Container))
+            await P.delay(50)
 
-            let getProp = () =>
+            // // Child component
+            const ChildWrapped = Wrapper.update().find('div')
+
+            const getProp = () => ChildWrapped.prop('returned')
+            
+            await P.delay(20)
+
+            act(() => {
                 Wrapper.update()
-                    .find('Container')
-                    .props().nion.test
+            })
 
-            let test = getProp()
-            let request = test.actions.get()
-
-            test = getProp()
-            expect(test.request.status).toEqual('pending')
-            expect(test.request.isLoading).toEqual(true)
-
-            let ChildWrapped = Wrapper.update().find('ChildContainer')
-            expect(ChildWrapped.exists()).toEqual(false)
-
-            await request
-
-            test = getProp()
-            expect(test.request.status).toEqual('success')
-            expect(test.data.name).toEqual(name)
-
-            // Child component
-            ChildWrapped = Wrapper.update().find('ChildContainer')
-
-            getProp = () => ChildWrapped.props().nion.child
-
+            await P.delay(1)
+            
             let child = getProp()
-            expect(exists(child)).toEqual(true)
+
+            expect(exists(child[0])).toEqual(true)
         })
     })
 })
