@@ -1,11 +1,10 @@
 import { useEffect, useCallback, useMemo } from 'react'
 import { useDispatch, useMappedState } from 'redux-react-hook'
 import get from 'lodash.get'
-import omit from 'lodash.omit'
 
+import { getUrl } from '../utilities/get-url'
 import { selectResourcesForKeys } from '../selectors'
 import nionActions from '../actions'
-import ApiManager from '../api'
 import { INITIALIZE_DATAKEY, UPDATE_REF } from '../actions/types'
 import { makeRef } from '../transforms'
 
@@ -35,26 +34,6 @@ function useNion(declaration, deps = []) {
 
     // get entity, request, and extra data from the store
     const { nion } = useMappedState(mapStateToProps)
-
-    // copy pasta from decorator
-    function getUrl(passedDeclaration, params) {
-        let endpoint = get(passedDeclaration, 'endpoint')
-        const buildUrl = ApiManager.getBuildUrl(passedDeclaration.apiType)
-
-        // If supplied endpoint override at call time, then use the supplied endpoint
-        if (get(params, 'endpoint')) {
-            endpoint = params.endpoint
-            params = omit(params, ['endpoint'])
-        }
-
-        // Use if a fully-formed url, otherwise pass to buildUrl
-        return typeof buildUrl === 'undefined' ||
-            typeof endpoint === 'undefined' ||
-            endpoint.indexOf('https://') === 0 ||
-            endpoint.indexOf('http://') === 0
-            ? endpoint
-            : buildUrl(endpoint, params)
-    }
 
     const getResources = useCallback(
         (params, actionOptions = {}) => {

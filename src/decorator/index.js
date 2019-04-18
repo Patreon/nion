@@ -3,8 +3,9 @@ import PropTypes from 'prop-types'
 import difference from 'lodash.difference'
 import get from 'lodash.get'
 import map from 'lodash.map'
-import omit from 'lodash.omit'
 import set from 'lodash.set'
+
+import { getUrl } from '../utilities/get-url'
 import nionActions from '../actions'
 import { makeRef } from '../transforms'
 import ApiManager from '../api'
@@ -136,27 +137,6 @@ const processDeclarations = (inputDeclarations, ...rest) => {
     // Construct the dispatch methods to pass action creators to the component
     const mapDispatchToProps = (dispatch, ownProps) => {
         const dispatchProps = {}
-
-        // Helper method to construct a url endpoint from supplied declaration and params.
-        // This will be used to build the endpoints for the various method actions
-        function getUrl(declaration, params) {
-            let endpoint = get(declaration, 'endpoint')
-            const buildUrl = ApiManager.getBuildUrl(declaration.apiType)
-
-            // If supplied endpoint override at call time, then use the supplied endpoint
-            if (get(params, 'endpoint')) {
-                endpoint = params.endpoint
-                params = omit(params, ['endpoint'])
-            }
-
-            // Use if a fully-formed url, otherwise pass to buildUrl
-            return typeof buildUrl === 'undefined' ||
-                typeof endpoint === 'undefined' ||
-                endpoint.indexOf('https://') === 0 ||
-                endpoint.indexOf('http://') === 0
-                ? endpoint
-                : buildUrl(endpoint, params)
-        }
 
         // Map over the supplied declarations to build out the 4 main methods to add to the actions
         // subprop, as well as the special case next method for paginated resources
