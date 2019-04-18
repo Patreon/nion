@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useCallback, useMemo, useRef } from 'react'
 import { useDispatch, useMappedState } from 'redux-react-hook'
 import get from 'lodash.get'
 import omit from 'lodash.omit'
@@ -13,21 +13,16 @@ function useNion(declaration, deps = []) {
     const dispatch = useDispatch()
 
     // convert `useNion('currentUser') => useNion({dataKey: 'currentUser'})`
-    const coercedDeclaration = useMemo(
-        () => {
-            return typeof declaration === 'string'
-                ? { dataKey: declaration }
-                : declaration
-        },
-        deps,
-    )
+    const coercedDeclaration = useMemo(() => {
+        return typeof declaration === 'string'
+            ? { dataKey: declaration }
+            : declaration
+        // eslint-disable-next-line
+    }, deps)
 
-    const selectNionResourcesForDataKeys = useMemo(
-        () => {
-            return selectResourcesForKeys([coercedDeclaration.dataKey], true)
-        },
-        [coercedDeclaration],
-    )
+    const selectNionResourcesForDataKeys = useMemo(() => {
+        return selectResourcesForKeys([coercedDeclaration.dataKey], true)
+    }, [coercedDeclaration.dataKey])
 
     const mapStateToProps = useCallback(
         state => ({
@@ -35,7 +30,7 @@ function useNion(declaration, deps = []) {
                 coercedDeclaration.dataKey
             ],
         }),
-        [selectNionResourcesForDataKeys, coercedDeclaration.dataKey],
+        [coercedDeclaration.dataKey, selectNionResourcesForDataKeys],
     )
 
     // get entity, request, and extra data from the store
@@ -72,7 +67,7 @@ function useNion(declaration, deps = []) {
                 },
             })(dispatch)
         },
-        [coercedDeclaration],
+        [coercedDeclaration, dispatch],
     )
 
     const postResource = useCallback(
@@ -88,7 +83,7 @@ function useNion(declaration, deps = []) {
                 },
             })(dispatch)
         },
-        [coercedDeclaration],
+        [coercedDeclaration, dispatch],
     )
 
     const patchResource = useCallback(
@@ -100,7 +95,7 @@ function useNion(declaration, deps = []) {
                 body,
             })(dispatch)
         },
-        [coercedDeclaration],
+        [coercedDeclaration, dispatch],
     )
 
     const deleteDispatchFn = useCallback(
@@ -117,7 +112,7 @@ function useNion(declaration, deps = []) {
                 refToDelete,
             })(dispatch)
         },
-        [coercedDeclaration],
+        [coercedDeclaration, dispatch],
     )
 
     const updateRef = useCallback(
@@ -132,14 +127,14 @@ function useNion(declaration, deps = []) {
                 },
             })
         },
-        [coercedDeclaration.dataKey],
+        [coercedDeclaration.dataKey, dispatch],
     )
 
     const updateEntity = useCallback(
         ({ type, id }, attributes) => {
             return dispatch(nionActions.updateEntity({ type, id }, attributes))
         },
-        [coercedDeclaration.dataKey],
+        [dispatch],
     )
 
     const ref = useMemo(
@@ -152,14 +147,11 @@ function useNion(declaration, deps = []) {
         [ref, deleteDispatchFn],
     )
 
-    useEffect(
-        () => {
-            if (coercedDeclaration.fetchOnMount) {
-                getResources()
-            }
-        },
-        [coercedDeclaration.fetchOnMount, getResources],
-    )
+    useEffect(() => {
+        if (coercedDeclaration.fetchOnMount) {
+            getResources()
+        }
+    }, [coercedDeclaration.fetchOnMount, getResources])
 
     const actions = useMemo(
         () => ({
@@ -181,33 +173,30 @@ function useNion(declaration, deps = []) {
     )
 
     const initializeDataKey = useCallback(
-        (dataKey, ref) =>
+        (dataKey, daRef) =>
             dispatch({
                 type: INITIALIZE_DATAKEY,
-                payload: { ref },
+                payload: { ref: daRef },
                 meta: { dataKey },
             }),
-        [],
+        [dispatch],
     )
     // pull existing data from store by ref if you need to
-    useEffect(
-        () => {
-            if (coercedDeclaration.initialRef && !nion.obj) {
-                initializeDataKey(
-                    coercedDeclaration.dataKey,
-                    coercedDeclaration.initialRef,
-                )
-            }
-        },
-        [
-            coercedDeclaration.dataKey,
-            coercedDeclaration.initialRef,
-            initializeDataKey,
-            ...deps
-        ],
-    )
+    useEffect(() => {
+        if (!nion.obj) {
+            initializeDataKey(
+                coercedDeclaration.dataKey,
+                coercedDeclaration.initialRef,
+            )
+        }
+    }, [
+        coercedDeclaration.dataKey,
+        coercedDeclaration.initialRef,
+        initializeDataKey,
+        nion.obj,
+    ])
 
-    return [nion.obj, actions, nion.request, nion.extra]
+    return [nion.obj, actions, nion.request]
 }
 
 export default useNion
