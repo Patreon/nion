@@ -24,7 +24,9 @@ function updateRelationships(
         ? relationships.filter(
               relation => !relationDoesMatch(relation, id, type),
           )
-        : !relationDoesMatch(relationships, id, type) ? relationships : null
+        : !relationDoesMatch(relationships, id, type)
+        ? relationships
+        : null
 
     return state.setIn(
         [entityName, entityId, 'relationships', relationshipName, 'data'],

@@ -15,41 +15,58 @@ const isGeneric = ref => {
 }
 
 export const selectRef = dataKey =>
-    createSelector(selectReferences, refs => get(refs, dataKey))
+    createSelector(
+        selectReferences,
+        refs => get(refs, dataKey),
+    )
 
 export const selectEntity = (type, id) =>
-    createSelector(selectEntities, entities => get(entities, [type, id]))
+    createSelector(
+        selectEntities,
+        entities => get(entities, [type, id]),
+    )
 
 export const selectEntityFromKey = key =>
-    createSelector(selectRef(key), selectEntities, (ref, entityStore) => {
-        const { isCollection } = ref
-        const entities = ref.entities.map(entity => {
-            return get(entityStore, [entity.type, entity.id])
-        })
-        return isCollection ? entities : entities[0]
-    })
+    createSelector(
+        selectRef(key),
+        selectEntities,
+        (ref, entityStore) => {
+            const { isCollection } = ref
+            const entities = ref.entities.map(entity => {
+                return get(entityStore, [entity.type, entity.id])
+            })
+            return isCollection ? entities : entities[0]
+        },
+    )
 
 export const selectObject = dataKey =>
-    createSelector(selectRef(dataKey), selectEntities, (ref, entityStore) => {
-        // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
+    createSelector(
+        selectRef(dataKey),
+        selectEntities,
+        (ref, entityStore) => {
+            // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
 
-        // JB (in ref to the comment above)
-        // We know the API type, we should be storing this information with the payload
-        // this will simplify our assumptions
-        if (isGeneric(ref)) {
-            return getGenericRefData(ref)
-        }
+            // JB (in ref to the comment above)
+            // We know the API type, we should be storing this information with the payload
+            // this will simplify our assumptions
+            if (isGeneric(ref)) {
+                return getGenericRefData(ref)
+            }
 
-        const { isCollection } = ref
-        const denormalized = denormalizeWithCache(ref, entityStore)
+            const { isCollection } = ref
+            const denormalized = denormalizeWithCache(ref, entityStore)
 
-        return isCollection ? denormalized : denormalized[0]
-    })
+            return isCollection ? denormalized : denormalized[0]
+        },
+    )
 
 const selectExtraRefProps = dataKey =>
-    createSelector(selectRef(dataKey), ref => ({
-        ...omit(ref, ['entities', 'isCollection']),
-    }))
+    createSelector(
+        selectRef(dataKey),
+        ref => ({
+            ...omit(ref, ['entities', 'isCollection']),
+        }),
+    )
 
 // We need to make a simple singleton default immutable request so that areRequestsEqual comparisons
 // are super simple and straightforward in the areMergedPropsEqual comparison function
@@ -60,10 +77,13 @@ const defaultRequest = Immutable({
 })
 
 export const selectRequest = key =>
-    createSelector(selectRequests, apiRequests => {
-        const request = get(apiRequests, key, defaultRequest)
-        return request
-    })
+    createSelector(
+        selectRequests,
+        apiRequests => {
+            const request = get(apiRequests, key, defaultRequest)
+            return request
+        },
+    )
 
 // Selects the denormalized object plus all relevant request data from the store
 export const selectObjectWithRequest = dataKey =>
@@ -122,11 +142,18 @@ export const selectData = (key, defaultValue) => {
     const splitKeys =
         key instanceof Array ? key : key.replace(']', '').split(/[.|[]/g)
     const dataKey = splitKeys[0]
-    return createSelector(selectObject(dataKey), obj => {
-        if (splitKeys.length === 1) {
-            return obj === undefined ? defaultValue : obj
-        } else {
-            return get(obj, splitKeys.slice(1, splitKeys.length), defaultValue)
-        }
-    })
+    return createSelector(
+        selectObject(dataKey),
+        obj => {
+            if (splitKeys.length === 1) {
+                return obj === undefined ? defaultValue : obj
+            } else {
+                return get(
+                    obj,
+                    splitKeys.slice(1, splitKeys.length),
+                    defaultValue,
+                )
+            }
+        },
+    )
 }

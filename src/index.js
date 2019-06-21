@@ -10,6 +10,7 @@ export { default as actions } from './actions'
 export { default as configureNion } from './configure'
 export { default as bootstrapNion } from './bootstrap'
 export { default as initializeNionDevTool } from './devtool'
+export { default as useNion } from './hook/useNion'
 export { titleFormatter } from './logger'
 export { selectObjectWithRequest } from './selectors'
 
