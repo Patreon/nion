@@ -1,5 +1,5 @@
-import get from 'lodash.get'
-import omit from 'lodash.omit'
+import get from 'lodash/get'
+import omit from 'lodash/omit'
 
 import ApiManager from '../api'
 // Helper method to construct a url endpoint from supplied declaration and params.

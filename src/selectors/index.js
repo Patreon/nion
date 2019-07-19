@@ -1,7 +1,7 @@
 import Immutable from 'seamless-immutable'
 import { createSelector } from 'reselect'
-import get from 'lodash.get'
-import omit from 'lodash.omit'
+import get from 'lodash/get'
+import omit from 'lodash/omit'
 import denormalizeWithCache, { getGenericRefData } from '../denormalize'
 
 const selectNion = state => state.nion

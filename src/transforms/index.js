@@ -1,5 +1,5 @@
-import map from 'lodash.map'
-import every from 'lodash.every'
+import map from 'lodash/map'
+import every from 'lodash/every'
 import { hasEntityReference, getEntityReference } from '../denormalize'
 
 export const makeRef = (input = {}, options = {}) => {

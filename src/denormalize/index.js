@@ -1,6 +1,6 @@
 import Immutable from 'seamless-immutable'
-import get from 'lodash.get'
-import map from 'lodash.map'
+import get from 'lodash/get'
+import map from 'lodash/map'
 import { camelize, camelizeKeys } from 'humps'
 import cache from './cache'
 

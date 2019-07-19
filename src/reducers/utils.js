@@ -1,4 +1,4 @@
-import get from 'lodash.get'
+import get from 'lodash/get'
 import Immutable from 'seamless-immutable'
 function relationDoesMatch(relation, id, type) {
     return relation.id === id && relation.type === type

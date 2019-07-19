@@ -3,7 +3,7 @@ import ExtensionManager from '../extensions'
 import ApiManager from '../api'
 import Lifecycle from '../lifecycle'
 
-import map from 'lodash.map'
+import map from 'lodash/map'
 
 export default (options = {}) => {
     const { apiModules, defaultApi, extensions, lifecycleConfig } = options

@@ -625,7 +625,7 @@ One final detail - notice the `makeRef` function used to supply the ref to the *
 #### Comments.jsx
 ```javascript
 import React, { Component } from 'react'
-import map from 'lodash.map'
+import map from 'lodash/map'
 import nion, { makeRef } from 'libs/nion'
 import { buildUrl } from 'utilities/json-api'
 

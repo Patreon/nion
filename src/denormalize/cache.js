@@ -1,5 +1,5 @@
-import get from 'lodash.get'
-import map from 'lodash.map'
+import get from 'lodash/get'
+import map from 'lodash/map'
 
 export const makeKey = (type, id) => `${type}:${id}`
 

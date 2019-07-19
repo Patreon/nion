@@ -1,4 +1,4 @@
-import map from 'lodash.map'
+import map from 'lodash/map'
 import { camelizeKeys } from 'humps'
 
 // A default error class for handling nion api errors

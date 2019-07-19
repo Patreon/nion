@@ -1,5 +1,5 @@
-import map from 'lodash.map'
-import every from 'lodash.every'
+import map from 'lodash/map'
+import every from 'lodash/every'
 
 const addEntityToStoreFragment = (store, entity = {}) => {
     // It's important to have default attributes and relationships here, since we can accidentally
