@@ -3,6 +3,7 @@
     "version": "2.0.1",
     "license": "MIT",
     "main": "lib/index.js",
+    "module": "es/index.js",
     "eslintConfig": {
         "globals": {
             "window": true,
@@ -37,13 +38,15 @@
         "redux-react-hook": "^3.3.1"
     },
     "scripts": {
-        "build": "npm run build:lib",
-        "build:watch": "npm run build:lib -- --watch",
+        "build": "npm run build:lib & npm run build:es",
+        "build:watch": "npm run build:es -- --watch",
+        "build:lib:watch": "npm run build:lib -- --watch",
+        "build:es:watch": "npm run build:es -- --watch",
         "prebuild": "rimraf lib/*",
         "prepublishOnly": "npm run build",
         "build:lib": "babel --out-dir lib src",
-        "prebuild:dist": "rimraf dist/*",
-        "prebuild:watch": "rimraf lib/*",
+        "build:es": "NODE_ENV=es babel --out-dir es src",
+        "prebuild:watch": "rimraf lib/* & rimraf es/*",
         "lint:all": "eslint . --ext=js,jsx",
         "lint": "git diff --name-only master... | grep -E '\\.jsx?$' | xargs eslint",
         "test": "NODE_ENV=test jest"
@@ -75,7 +78,6 @@
         "babel-core": "^7.0.0-bridge.0",
         "babel-eslint": "^10.0.3",
         "babel-jest": "^24.9.0",
-        "babel-plugin-add-module-exports": "^0.2.1",
         "bluebird": "^3.5.0",
         "enzyme": "^3.9.0",
         "enzyme-adapter-react-16": "^1.11.2",
@@ -104,6 +106,10 @@
         "verbose": true,
         "setupFilesAfterEnv": [
             "./test/setup.js"
+        ],
+        "testMatch": [
+            "**/src/**/__tests__/**/*.[jt]s?(x)",
+            "**/src/**/?(*.)+(spec|test).[jt]s?(x)"
         ],
         "transform": {
             "\\.js$": "babel-jest"
