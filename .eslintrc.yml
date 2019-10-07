@@ -18,10 +18,10 @@ env:
     jest: true
     node: true
 
-plugins: [ 'react', 'prettier', 'react-hooks' ]
+plugins: ['react', 'prettier', 'react-hooks']
 
 rules:
-    camelcase: [2, {'properties': 'never'}]
+    camelcase: [2, { 'properties': 'never' }]
     curly: [2, 'multi-line']
     dot-notation: 0
     eqeqeq: [2, 'allow-null']
@@ -31,12 +31,16 @@ rules:
     no-shadow: 2
     no-undef: 2
     no-underscore-dangle: 0
-    no-unused-vars: [1, {
-        vars: 'all',
-        args: 'none',
-        varsIgnorePattern: "^_",
-        argsIgnorePattern: "^_",
-    }]
+    no-unused-vars:
+        [
+            1,
+            {
+                vars: 'all',
+                args: 'none',
+                varsIgnorePattern: '^_',
+                argsIgnorePattern: '^_',
+            },
+        ]
     no-use-before-define: [2, 'nofunc']
     no-var: 2
     strict: [2, 'never']
@@ -45,7 +49,17 @@ rules:
     #================================
     # eslint-plugin-prettier
     #================================
-    prettier/prettier: ['error', {'singleQuote': true, 'trailingComma': 'all', 'semi': false, 'tabWidth': 4}]
+    prettier/prettier:
+        [
+            'error',
+            {
+                'singleQuote': true,
+                'trailingComma': 'all',
+                'semi': false,
+                'tabWidth': 4,
+                'parser': 'babel',
+            },
+        ]
 
     #====================================
     # eslint-plugin-react
@@ -61,15 +75,14 @@ rules:
     react/no-multi-comp: 1
     react/no-string-refs: 2
     react/no-unknown-property: 1
-    react/no-unused-prop-types: [2, {
-    customValidators: [],
-    skipShapeProps: true,
-    }]
+    react/no-unused-prop-types:
+        [2, { customValidators: [], skipShapeProps: true }]
     # react/prefer-es6-class: 2 # implement ASAP, after code conversion
     react/prop-types: [2, { ignore: ['nion'], customValidators: [] }]
     react/react-in-jsx-scope: 1
     react/require-render-return: 2
     react/self-closing-comp: 1
-    react/jsx-wrap-multilines: ["error", {"declaration": false, "assignment": false}]
-    react-hooks/rules-of-hooks: "error"
-    react-hooks/exhaustive-deps: "error"
+    react/jsx-wrap-multilines:
+        ['error', { 'declaration': false, 'assignment': false }]
+    react-hooks/rules-of-hooks: 'error'
+    react-hooks/exhaustive-deps: 'error'
