@@ -1,0 +1,4 @@
+*.test.js
+__snapshots__
+__mocks__
+*.spec.js
