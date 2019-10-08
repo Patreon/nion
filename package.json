@@ -1,9 +1,9 @@
 {
     "name": "@nion/nion",
-    "version": "3.0.0-0",
+    "version": "3.0.0-2",
     "license": "MIT",
+    "browser": "es/index.js",
     "main": "lib/index.js",
-    "module": "es/index.js",
     "eslintConfig": {
         "globals": {
             "window": true,
