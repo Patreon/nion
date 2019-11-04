@@ -54,6 +54,7 @@ export function filterRelationshipsFromState(state, id, type) {
     const entityNames = Object.keys(nextState)
     entityNames.forEach(entityName => {
         const entityIndex = nextState[entityName]
+        // eslint-disable-next-line guard-for-in
         for (const entityId in entityIndex) {
             if (!entityIndex.hasOwnProperty(entityId)) {
                 return
