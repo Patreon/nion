@@ -6,34 +6,36 @@ nion is heavily inspired by [Apollo](http://www.apollodata.com/) and [GraphQL](h
 
 ## In a Nutshell 🌰
 
-nion is used as a **decorator function** which declares what data will be managed by the decorated component and passes in props for managing that data.
+nion is used as a **hook** which is given a declaration of what data is needed by the component that calls it.
 
 ```javascript
-@nion({
-    currentUser: {
+import { exists, useNion } from 'nion'
+
+export const UserContainer = () => {
+    const [currentUser, actions, request] = useNion({
+        dataKey: 'currentUser',
         endpoint: 'https://patreon.com/api/current_user',
-    }
-})
-class UserContainer extends Component {
-    render() {
-        const { currentUser } = this.props.nion
-        const { request, actions, data } = currentUser
+    })
 
-        const loadButton = <Button onClick={() => actions.get()}>Load</Button>
+    const loadButton = <Button onClick={() => actions.get()}>Load</Button>
 
-        return (
-            <Card>
-                { request.isLoading ? <LoadingSpinner /> : loadButton }
-                { exists(currentUser) ? <UserCard user={data} /> : null }
-            </Card>
-        )
-    }
+    return (
+        <Card>
+            {request.isLoading ? <LoadingSpinner /> : loadButton}
+            {exists(currentUser) ? <UserCard user={data} /> : null}
+        </Card>
+    )
 }
 ```
 
-We simply pass in an object with a special [`declaration`](docs/glossary.md#declaration) that tells nion **what** to fetch, and nion automatically handles fetching the data and passing both it and the corresponding request status in as props to the decorated component.
+We simply pass in a [`declaration`](docs/glossary.md#declaration) object that tells nion **what** to fetch, and nion automatically handles fetching the data and returning it along with the corresponding request status.
 
-[Read more about how nion works in the docs.](docs/howitworks.md)
+nion can also be used as a **decorator function** which declares what data will be managed by the decorated component and passes in props for managing that data. This is a deprecated usage; we don't recommend writing new code that uses the decorator form.
+
+See also:
+
+-   [Examples](docs/examples.md), a list of common scenarios when using nion
+-   [How nion works](docs/howitworks.md), a deep dive
 
 ## Up and Running 🏃🏾‍♀️
 
@@ -79,13 +81,13 @@ export default function configureStore() {
 
 ## Read More 📚
 
-* [Declarations](docs/declarations.md)
-* [Configuring Nion](docs/configuration.md)
-* [API Modules](docs/api-modules.md)
-* [Extensions](docs/extensions.md)
-* [Glossary](docs/glossary.md)
-* [How it Works](docs/howitworks.md)
-* Lifecycle (documentation coming soon 😳)
+-   [Declarations](docs/declarations.md)
+-   [Configuring Nion](docs/configuration.md)
+-   [API Modules](docs/api-modules.md)
+-   [Extensions](docs/extensions.md)
+-   [Glossary](docs/glossary.md)
+-   [How it Works](docs/howitworks.md)
+-   Lifecycle (documentation coming soon 😳)
 
 ## Licensing 🍴
 
