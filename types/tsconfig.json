@@ -4,6 +4,7 @@
         "lib": [
             "es6"
         ],
+        "jsx": "react",
         "noImplicitAny": true,
         "noImplicitThis": true,
         "strictNullChecks": false,
@@ -14,9 +15,12 @@
         ],
         "types": [],
         "noEmit": true,
-        "forceConsistentCasingInFileNames": true
+        "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
     },
     "files": [
-        "index.d.ts"
+        "./index.d.ts",
+        "./index.test-d.tsx"
     ]
 }

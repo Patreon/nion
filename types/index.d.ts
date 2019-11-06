@@ -112,20 +112,17 @@ type NionDeclaration<Props> =
     | string
     | ((props: Props) => NionDecoratorDeclaration)
 
-export interface InferableComponentEnhancerWithProps<
-    TInjectedProps,
-    TNeedsProps
-> {
-    <P extends TInjectedProps>(
+export interface InferableComponentEnhancerWithProps<TNeedsProps, TInferProps> {
+    <P extends TInferProps>(
         component: React.ComponentType<P>,
-    ): React.ComponentClass<Omit<P, keyof TInjectedProps> & TNeedsProps>
+    ): React.ComponentClass<Omit<P, keyof TInferProps> & TNeedsProps>
+}
+
+export type NionDecoratorProps = {
+    nion: { [dataKey: string]: NionValue<any> }
 }
 
 declare function nion<Props>(
     ...declarations: Array<NionDeclaration<Props>>
-): InferableComponentEnhancerWithProps<
-    { nion: { [dataKey: string]: NionValue<any> } },
-    Props
->
-
+): InferableComponentEnhancerWithProps<Props, NionDecoratorProps>
 export default nion
