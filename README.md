@@ -22,7 +22,7 @@ export const UserContainer = () => {
     return (
         <Card>
             {request.isLoading ? <LoadingSpinner /> : loadButton}
-            {currentUser ?? <UserCard user={currentUser} />}
+            {currentUser && <UserCard user={currentUser} />}
         </Card>
     )
 }
