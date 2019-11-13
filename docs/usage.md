@@ -33,7 +33,7 @@ Since a class component does not support hooks, when working with one, use the `
 ```js
 import { nion } from '@nion/nion'
 
-class _UserContainer extends Component {
+class UserContainer extends Component {
     render() {
         const { currentUser } = this.props.nion
         const { request, actions, data } = currentUser
@@ -49,11 +49,11 @@ class _UserContainer extends Component {
     }
 }
 
-export const UserContainer = nion({
+export default nion({
     currentUser: {
         endpoint: 'https://patreon.com/api/current_user',
     },
-})(_UserContainer)
+})(UserContainer)
 ```
 
 ## As a legacy decorator
@@ -91,7 +91,7 @@ Fortunately, it is easy to update this outdated syntax into standardized syntax:
 
 ```js
 @nion(x)
-export class A extends Component {
+export default class A extends Component {
     render() {}
 }
 ```
@@ -99,9 +99,9 @@ export class A extends Component {
 Can be mechanically rewritten to this:
 
 ```js
-class _A extends Component {
+class A extends Component {
     render() {}
 }
 
-export const A = nion(x)(_A)
+export default nion(x)(A)
 ```
