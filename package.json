@@ -1,6 +1,6 @@
 {
     "name": "@nion/nion",
-    "version": "3.0.0-2",
+    "version": "3.0.0-4",
     "license": "MIT",
     "browser": "es/index.js",
     "main": "lib/index.js",
@@ -105,7 +105,7 @@
         "redux-thunk": "^2.2.0",
         "rimraf": "^2.6.1",
         "tsd": "^0.10.0",
-        "typescript": "^3.6.3"
+        "typescript": "^3.7.2"
     },
     "jest": {
         "automock": false,

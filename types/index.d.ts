@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { OutputSelector } from 'reselect'
 
-export interface NionState {
+export interface NionReduxState {
     nion: {
         requests: { [dataKey: string]: any }
         entities: { [dataKey: string]: any }
@@ -27,9 +27,9 @@ export interface NionRef {
     type: string
 }
 
-export interface NionActions<T> {
-    get(params: any, actionOptions?: { append?: boolean }): Promise<T>
-    delete(params: any): Promise<T>
+export interface Actions<T> {
+    get(params?: any, actionOptions?: { append?: boolean }): Promise<T>
+    delete(params?: any): Promise<T>
     patch(body?: any, params?: any): Promise<T>
     post(body?: any, params?: any): Promise<T>
     updateEntity(ref: NionRef, attributes: any): Promise<T>
@@ -42,7 +42,7 @@ export interface NionRefHolder {
 export interface NionValue<T> extends NionRefHolder {
     data: T | null
     request: NionRequest
-    actions: NionActions<T>
+    actions: Actions<T>
 }
 
 export function exists<T>(value?: NionValue<T> | null): value is NionValue<T>
@@ -50,20 +50,20 @@ export function exists<T>(value?: NionValue<T> | null): value is NionValue<T>
 export function selectData<T>(
     key: string,
     defaultValue?: any,
-): OutputSelector<NionState, T, any>
+): OutputSelector<NionReduxState, T, any>
 
 export function selectRequest(
     key: string,
-): OutputSelector<NionState, NionRequest, any>
+): OutputSelector<NionReduxState, NionRequest, any>
 
 export function selectResourcesForKeys<T extends string>(
     keys: T[],
     returnAllObjects?: boolean,
-): OutputSelector<NionState, Record<T, NionValue<any>>, any>
+): OutputSelector<NionReduxState, Record<T, NionValue<any>>, any>
 
 export function selectObjectWithRequest<T>(
     dataKey: string,
-): OutputSelector<NionState, T, any>
+): OutputSelector<NionReduxState, T, any>
 
 export function makeRef(
     ref: NionRefHolder,
@@ -73,16 +73,16 @@ export function makeRef(
 export function configureNion(options: any): { reducer: any }
 
 export function bootstrapNion(
-    store: NionState,
+    store: NionReduxState,
     bootstrapObj: any,
     apiType?: string,
 ): void
 
-export function initializeNionDevTool(store: NionState): void
+export function initializeNionDevTool(store: NionReduxState): void
 
 export function titleFormatter(action: symbol, time: any, took: number): string
 
-export const actions: NionActions<any>
+export const actions: Actions<any>
 
 export interface CommonDeclarationValues {
     endpoint: string
@@ -92,25 +92,28 @@ export interface CommonDeclarationValues {
     requestParams?: any
 }
 
-export interface NionHookDeclaration extends CommonDeclarationValues {
+export interface HookDeclaration extends CommonDeclarationValues {
     dataKey: string
     fetchOnMount?: boolean
 }
 
 export function useNion<T>(
-    declaration: string | NionHookDeclaration,
-): [T | null, NionActions<T>, NionRequest]
+    declaration: string | HookDeclaration,
+    dependencyArray?: any[],
+): [T | null, Actions<T>, NionRequest]
 
-export interface NionDecoratorDeclaration extends CommonDeclarationValues {
+export interface ExpandedHOCDeclaration extends CommonDeclarationValues {
     dataKey?: string
     fetchOnInit?: boolean
     fetchOnce?: boolean
 }
 
-type NionDeclaration<Props> =
-    | NionDecoratorDeclaration
-    | string
-    | ((props: Props) => NionDecoratorDeclaration)
+export type DataKey = string
+
+export type HOCDeclaration<Props> =
+    | ExpandedHOCDeclaration
+    | DataKey
+    | ((props: Props) => ExpandedHOCDeclaration)
 
 export interface InferableComponentEnhancerWithProps<TNeedsProps, TInferProps> {
     <P extends TInferProps>(
@@ -118,11 +121,11 @@ export interface InferableComponentEnhancerWithProps<TNeedsProps, TInferProps> {
     ): React.ComponentClass<Omit<P, keyof TInferProps> & TNeedsProps>
 }
 
-export type NionDecoratorProps = {
+export type HOCProps = {
     nion: { [dataKey: string]: NionValue<any> }
 }
 
 declare function nion<Props>(
-    ...declarations: Array<NionDeclaration<Props>>
-): InferableComponentEnhancerWithProps<Props, NionDecoratorProps>
+    ...declarations: [HOCDeclaration<Props>, ...Array<HOCDeclaration<Props>>]
+): InferableComponentEnhancerWithProps<Props, HOCProps>
 export default nion

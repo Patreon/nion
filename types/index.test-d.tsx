@@ -1,14 +1,18 @@
 import { expectType, expectError } from 'tsd'
-import nion, { NionDecoratorProps, NionDecoratorDeclaration } from '.'
+import nion, {
+    HOCProps,
+    HOCDeclaration,
+    InferableComponentEnhancerWithProps,
+} from '.'
 import * as React from 'react'
 /* eslint-disable */
 {
     interface Props {
-        declaration: NionDecoratorDeclaration
+        declaration: HOCDeclaration<any>
         a: string
     }
 
-    class WrappedComponent extends React.Component<Props & NionDecoratorProps> {
+    class WrappedComponent extends React.Component<Props & HOCProps> {
         render() {
             return <div />
         }
@@ -16,15 +20,21 @@ import * as React from 'react'
 
     const MyComponent = nion<Props>(p => {
         expectType<string>(p.a)
-        return p.declaration
+        return p.declaration as any
     })(WrappedComponent)
 
     expectType<
         React.ComponentClass<
-            Pick<Props & NionDecoratorProps, 'declaration' | 'a'> & Props,
+            Pick<Props & HOCProps, 'declaration' | 'a'> & Props,
             any
         >
     >(MyComponent)
 }
 
 expectError(nion({ endPoint: '' }))
+
+expectError(nion(undefined))
+
+expectType<InferableComponentEnhancerWithProps<any, HOCProps>>(
+    nion('currentUser'),
+)
