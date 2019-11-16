@@ -41,8 +41,8 @@ import { nion } from '@nion/nion'
 
 class UserContainer extends Component {
     render() {
-        const { currentUser } = this.props.nion
-        const { request, actions, data } = currentUser
+        const currentUserNion = this.props.nion.currentUser
+        const { request, actions, data } = currentUserNion
 
         const loadButton = <Button onClick={() => actions.get()}>Load</Button>
 
@@ -84,8 +84,8 @@ import { nion } from '@nion/nion'
 })
 export class UserContainer extends Component {
     render() {
-        const { currentUser } = this.props.nion
-        const { request, actions, data } = currentUser
+        const currentUserNion = this.props.nion.currentUser
+        const { request, actions, data } = currentUserNion
 
         const loadButton = <Button onClick={() => actions.get()}>Load</Button>
 
