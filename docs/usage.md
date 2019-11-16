@@ -26,6 +26,12 @@ export const UserContainer = () => {
 }
 ```
 
+When a component is rendered as a child of another component that has already bound a declaration to a `dataKey`, it allows for abbreviating the declaration itself to just the `dataKey`:
+
+```js
+const [currentUser, actions, request] = useNion('currentUser')
+```
+
 ## As a modern HOC
 
 Since a class component does not support hooks, when working with one, use the `nion` [higher-order component (HOC)](https://reactjs.org/docs/higher-order-components.html) instead. Note that the `dataKey` can be omitted from the declaration, since it is inferred from the property name that contains the declaration.
@@ -54,6 +60,12 @@ export default nion({
         endpoint: 'https://patreon.com/api/current_user',
     },
 })(UserContainer)
+```
+
+A declaration can similarly be abbreviated in HOC form like this:
+
+```js
+export default nion('currentUser')(UserContainer)
 ```
 
 ## As a legacy decorator
@@ -85,6 +97,12 @@ export class UserContainer extends Component {
         )
     }
 }
+```
+
+Or with declaration abbreviation:
+
+```js
+@nion('currentUser')
 ```
 
 Fortunately, it is easy to update this outdated syntax into standardized syntax: switch to the modern HOC form in the previous section. To re-iterate, the following:
