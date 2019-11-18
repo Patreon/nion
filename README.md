@@ -9,7 +9,7 @@ nion is heavily inspired by [Apollo](http://www.apollodata.com/) and [GraphQL](h
 nion is used as a **hook** which is given a declaration of what data is needed by the component that calls it.
 
 ```javascript
-import { useNion } from 'nion'
+import { useNion } from '@nion/nion'
 
 export const UserContainer = () => {
     const [currentUser, actions, request] = useNion({
@@ -22,7 +22,7 @@ export const UserContainer = () => {
     return (
         <Card>
             {request.isLoading ? <LoadingSpinner /> : loadButton}
-            {currentUser ?? <UserCard user={currentUser} />}
+            {currentUser && <UserCard user={currentUser} />}
         </Card>
     )
 }
