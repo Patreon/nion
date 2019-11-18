@@ -37,6 +37,10 @@ jobs:
                   command: npm run lint:all
 
             - run:
+                  name: Typecheck
+                  command: npm run typecheck
+
+            - run:
                   name: Test
                   command: |
                       TESTFILES=$(circleci tests glob "src/**/{*.,}test.js" "test/**/{*.,}test.js" | circleci tests split --split-by=timings)
