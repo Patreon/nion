@@ -50,6 +50,10 @@ class DenormalizationCache {
     }
 
     hasDataChanged = (ref, entityStore) => {
+        if (ref.meta !== undefined) {
+            return true
+        }
+
         const manifest = this.getManifest(ref.type, ref.id) || {}
         const toCheck = [ref].concat(Object.values(manifest))
 
