@@ -175,7 +175,7 @@ function useNion(declaration, deps = []) {
         nion.obj,
     ])
 
-    return [nion.obj, actions, nion.request]
+    return [nion.obj, actions, nion.request, nion.extra]
 }
 
 export default useNion
