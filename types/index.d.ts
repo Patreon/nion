@@ -97,10 +97,12 @@ export interface HookDeclaration extends CommonDeclarationValues {
     fetchOnMount?: boolean
 }
 
+export type NionMeta = Record<'meta' | string, any>
+
 export function useNion<T>(
     declaration: string | HookDeclaration,
     dependencyArray?: any[],
-): [T | null, Actions<T>, NionRequest]
+): [T | null, Actions<T>, NionRequest, NionMeta]
 
 export interface ExpandedHOCDeclaration extends CommonDeclarationValues {
     dataKey?: string
