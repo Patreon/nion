@@ -1,6 +1,6 @@
 {
     "name": "@nion/nion",
-    "version": "3.0.0-4",
+    "version": "3.0.0",
     "license": "MIT",
     "browser": "es/index.js",
     "main": "lib/index.js",
