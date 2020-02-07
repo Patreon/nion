@@ -59,6 +59,17 @@ export const getEntityReference = obj => get(obj, '_ref')
 
 export const hasEntityReference = obj => Boolean(getEntityReference(obj))
 
+// existingObjects is of the shape {type: {id: Immutable({}), ...}, ...}
+// Here we deeply copy the non-Immutable layers (and copy by reference the Immutable objects)
+const copyExistingObjects = original =>
+    Object.keys(original).reduce((copy, type) => {
+        copy[type] = Object.keys(original[type]).reduce((innerCopy, id) => {
+            innerCopy[id] = original[type][id]
+            return innerCopy
+        }, {})
+        return copy
+    }, {})
+
 // In order to optimize nion render performance, we want to both a) create immutable denormalized
 // objects (for simple equality comparison in our shouldUpdate / shouldRender logic) and b) cache
 // those denormalized objects to help reduce calls to the (somewhat) expensive denormalization step.
@@ -121,6 +132,10 @@ function denormalize(ref, entityStore, existingObjects = {}) {
         prototype: Data.prototype,
     })
 
+    // Keep a secondary cache of the object as "in the process of being denormalized" before denormalizing relationships.
+    // This prevents infinite recursion in the case of cycles in the relationship graph
+    // (We don't add something to the primary cache until it's done being denormalized,
+    // but in the case of a cycle we'll reach the same entity again before it's in the cache).
     existingObjects[type] = existingObjects[type] || {}
     existingObjects[type][id] = obj
 
@@ -140,24 +155,30 @@ function denormalize(ref, entityStore, existingObjects = {}) {
         if (refOrRefs === null) {
             obj = obj.set(camelizedKey, null)
             return
-        } else if (!Array.isArray(refOrRefs)) {
-            const { denormalized, related } = denormalize(
-                refOrRefs,
-                entityStore,
-                existingObjects,
-            )
-            toSet = denormalized
-            manifest = { ...manifest, ...related }
         } else {
-            toSet = refOrRefs.map(_ref => {
+            // (See the above note about the purpose of existingObjects for preventing infinite recursion in the case of relationship cycles)
+            // We need to create a copy here, though, as cycles on one branch of the relationship graph
+            // should not pollute the cycle detection for other branches.
+            const existingObjectsCopy = copyExistingObjects(existingObjects)
+            if (!Array.isArray(refOrRefs)) {
                 const { denormalized, related } = denormalize(
-                    _ref,
+                    refOrRefs,
                     entityStore,
-                    existingObjects,
+                    existingObjectsCopy,
                 )
+                toSet = denormalized
                 manifest = { ...manifest, ...related }
-                return denormalized
-            })
+            } else {
+                toSet = refOrRefs.map(_ref => {
+                    const { denormalized, related } = denormalize(
+                        _ref,
+                        entityStore,
+                        existingObjectsCopy,
+                    )
+                    manifest = { ...manifest, ...related }
+                    return denormalized
+                })
+            }
         }
 
         // Establish a "_ref" property on the object, that acts as a pointer to the original
