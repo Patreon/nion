@@ -53,13 +53,10 @@ class DenormalizationCache {
         const manifest = this.getManifest(ref.type, ref.id) || {}
         const toCheck = [ref].concat(Object.values(manifest))
 
-        const changed = toCheck.reduce((memo, { type, id }) => {
-            const hasChanged =
-                this.getEntity(type, id) !== get(entityStore, [type, id])
-            return hasChanged || memo
-        }, false)
-
-        return changed
+        return toCheck.some(
+            ({ type, id }) =>
+                this.getEntity(type, id) !== get(entityStore, [type, id]),
+        )
     }
 }
 

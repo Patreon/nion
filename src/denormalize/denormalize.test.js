@@ -91,6 +91,157 @@ describe('nion/denormalize', () => {
         })
     })
 
+    describe('complex denormalization', () => {
+        it('An entity with a child that is also a grandchild and a parent (A->C->G->A, A->G->A)', () => {
+            const entityStoreManager = new EntityStoreManager()
+            entityStoreManager.addEntity({
+                type: 'rootNode',
+                id: 'rootNode1',
+                relationships: {
+                    child: {
+                        data: { type: 'child', id: 'child1' },
+                    },
+                    grandchild: {
+                        data: { type: 'grandchild', id: 'grandchild1' },
+                    },
+                },
+            })
+            entityStoreManager.addEntity({
+                type: 'child',
+                id: 'child1',
+                relationships: {
+                    grandchild: {
+                        data: { type: 'grandchild', id: 'grandchild1' },
+                    },
+                },
+            })
+            entityStoreManager.addEntity({
+                type: 'grandchild',
+                id: 'grandchild1',
+                relationships: {
+                    rootNode: {
+                        data: { type: 'rootNode', id: 'rootNode1' },
+                    },
+                    other: {
+                        data: { type: 'other', id: 'other1' },
+                    },
+                },
+            })
+            entityStoreManager.addEntity({
+                type: 'other',
+                id: 'other1',
+            })
+            const [rootNode] = denormalize(
+                { entities: [{ type: 'rootNode', id: 'rootNode1' }] },
+                entityStoreManager.store,
+            )
+            expect(rootNode.grandchild.rootNode).toEqual({
+                type: 'rootNode',
+                id: 'rootNode1',
+                _ref: { data: { type: 'rootNode', id: 'rootNode1' } },
+            })
+            expect(rootNode.grandchild.other).toEqual({
+                type: 'other',
+                id: 'other1',
+                _ref: { data: { type: 'other', id: 'other1' } },
+            })
+        })
+
+        it('An entity with a child and an array of grandchildren, and the grandchildren are also a parents (A->C->G[0]->A, A->G[*]->A)', () => {
+            const entityStoreManager = new EntityStoreManager()
+            entityStoreManager.addEntity({
+                type: 'rootNode',
+                id: 'rootNode1',
+                relationships: {
+                    child: {
+                        data: { type: 'child', id: 'child1' },
+                    },
+                    grandchildren: {
+                        data: [
+                            { type: 'grandchild', id: 'grandchild1' },
+                            { type: 'grandchild', id: 'grandchild2' },
+                        ],
+                    },
+                },
+            })
+            entityStoreManager.addEntity({
+                type: 'child',
+                id: 'child1',
+                relationships: {
+                    grandchild: {
+                        data: { type: 'grandchild', id: 'grandchild1' },
+                    },
+                },
+            })
+            entityStoreManager.addEntity({
+                type: 'grandchild',
+                id: 'grandchild1',
+                relationships: {
+                    rootNode: {
+                        data: { type: 'rootNode', id: 'rootNode1' },
+                    },
+                    other: {
+                        data: { type: 'other', id: 'other1' },
+                    },
+                },
+            })
+            entityStoreManager.addEntity({
+                type: 'grandchild',
+                id: 'grandchild2',
+                relationships: {
+                    rootNode: {
+                        data: { type: 'rootNode', id: 'rootNode1' },
+                    },
+                    other: {
+                        data: { type: 'other', id: 'other2' },
+                    },
+                },
+            })
+            entityStoreManager.addEntity({
+                type: 'other',
+                id: 'other1',
+            })
+            entityStoreManager.addEntity({
+                type: 'other',
+                id: 'other2',
+            })
+            const [rootNode] = denormalize(
+                { entities: [{ type: 'rootNode', id: 'rootNode1' }] },
+                entityStoreManager.store,
+            )
+            expect(rootNode.child.grandchild.rootNode).toEqual({
+                type: 'rootNode',
+                id: 'rootNode1',
+                _ref: { data: { type: 'rootNode', id: 'rootNode1' } },
+            })
+            expect(rootNode.child.grandchild.other).toEqual({
+                type: 'other',
+                id: 'other1',
+                _ref: { data: { type: 'other', id: 'other1' } },
+            })
+            expect(rootNode.grandchildren[0].rootNode).toEqual({
+                type: 'rootNode',
+                id: 'rootNode1',
+                _ref: { data: { type: 'rootNode', id: 'rootNode1' } },
+            })
+            expect(rootNode.grandchildren[0].other).toEqual({
+                type: 'other',
+                id: 'other1',
+                _ref: { data: { type: 'other', id: 'other1' } },
+            })
+            expect(rootNode.grandchildren[1].rootNode).toEqual({
+                type: 'rootNode',
+                id: 'rootNode1',
+                _ref: { data: { type: 'rootNode', id: 'rootNode1' } },
+            })
+            expect(rootNode.grandchildren[1].other).toEqual({
+                type: 'other',
+                id: 'other2',
+                _ref: { data: { type: 'other', id: 'other2' } },
+            })
+        })
+    })
+
     describe('denormalization caching', () => {
         it('Denormalizing adds the immutable entity to the cache', () => {
             const entityStoreManager = new EntityStoreManager()
