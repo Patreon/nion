@@ -38,7 +38,7 @@
         "redux-react-hook": "^3.3.1"
     },
     "scripts": {
-        "build": "npm run build:lib & npm run build:es",
+        "build": "npm run build:lib && npm run build:es",
         "build:watch": "npm run build:es -- --watch",
         "build:lib:watch": "npm run build:lib -- --watch",
         "build:es:watch": "npm run build:es -- --watch",
