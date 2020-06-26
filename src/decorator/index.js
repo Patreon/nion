@@ -180,7 +180,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
             dispatchProps[key]['PUT'] = (params, actionOptions = {}) => {
                 const endpoint = getUrl(declaration, params)
-                return nionActions.get(dataKey, {
+                return nionActions.put(dataKey, {
                     declaration,
                     endpoint,
                     meta: {

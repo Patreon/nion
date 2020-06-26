@@ -126,6 +126,10 @@ const postAction = (dataKey, options) => {
     return apiAction('POST', dataKey, options)
 }
 
+const putAction = (dataKey, options) => {
+    return apiAction('PUT', dataKey, options)
+}
+
 const patchAction = (dataKey, options) => {
     return apiAction('PATCH', dataKey, options)
 }

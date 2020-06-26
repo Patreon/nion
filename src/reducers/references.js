@@ -40,7 +40,7 @@ const refsReducer = (state = initialState, action) => {
         case NION_API_SUCCESS:
             if (
                 action.meta.appendKey &&
-                !action.payload.requestType !== 'jsonApi'
+                action.payload.requestType !== 'jsonApi'
             ) {
                 const appendKey = action.meta.appendKey
                 const previousEntities = get(
