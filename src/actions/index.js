@@ -179,6 +179,7 @@ export const updateEntity = updateEntityAction
 
 export default {
     get,
+    putAction,
     post,
     patch,
     delete: deleteAction,
