@@ -43,6 +43,7 @@ function useNion(declaration, deps = []) {
                 endpoint,
                 meta: {
                     append: get(actionOptions, 'append'),
+                    appendKey: get(actionOptions, 'appendKey'),
                 },
             })(dispatch)
         },
@@ -59,6 +60,7 @@ function useNion(declaration, deps = []) {
                 body,
                 meta: {
                     append: get(actionOptions, 'append'),
+                    appendKey: get(actionOptions, 'appendKey'),
                 },
             })(dispatch)
         },

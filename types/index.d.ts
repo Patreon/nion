@@ -28,7 +28,7 @@ export interface NionRef {
 }
 
 export interface Actions<T> {
-    get(params?: any, actionOptions?: { append?: boolean }): Promise<T>
+    get(params?: any, actionOptions?: { append?: boolean, appendKey?: string }): Promise<T>
     delete(params?: any): Promise<T>
     patch(body?: any, params?: any): Promise<T>
     post(body?: any, params?: any): Promise<T>
