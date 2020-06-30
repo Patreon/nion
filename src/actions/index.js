@@ -170,8 +170,8 @@ const updateEntityAction = ({ type, id }, attributes) => {
 }
 
 export const get = getAction
-
 export const post = postAction
+export const put = putAction
 export const patch = patchAction
 export { deleteAction as delete }
 export const bootstrap = bootstrapAction
@@ -179,7 +179,7 @@ export const updateEntity = updateEntityAction
 
 export default {
     get,
-    putAction,
+    put,
     post,
     patch,
     delete: deleteAction,
