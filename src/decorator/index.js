@@ -152,6 +152,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                     body,
                     meta: {
                         append: get(actionOptions, 'append'),
+                        appendKey: get(actionOptions, 'appendKey'),
                     },
                 })(dispatch)
             }
@@ -172,6 +173,19 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                     endpoint,
                     meta: {
                         append: get(actionOptions, 'append'),
+                        appendKey: get(actionOptions, 'appendKey'),
+                    },
+                })(dispatch)
+            }
+
+            dispatchProps[key]['PUT'] = (params, actionOptions = {}) => {
+                const endpoint = getUrl(declaration, params)
+                return nionActions.put(dataKey, {
+                    declaration,
+                    endpoint,
+                    meta: {
+                        append: get(actionOptions, 'append'),
+                        appendKey: get(actionOptions, 'appendKey'),
                     },
                 })(dispatch)
             }

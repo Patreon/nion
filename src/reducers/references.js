@@ -38,9 +38,28 @@ const refsReducer = (state = initialState, action) => {
             return state
         case NION_API_BOOTSTRAP:
         case NION_API_SUCCESS:
-            // If the result of a paginated nextPage request, we're going to want to append the
-            // retrieved entities to the end of the current entities list
-            if (action.meta.isNextPage || action.meta.append) {
+            if (
+                action.meta.appendKey &&
+                action.payload.requestType !== 'jsonApi'
+            ) {
+                const appendKey = action.meta.appendKey
+                const previousEntities = get(
+                    state[action.meta.dataKey],
+                    appendKey,
+                )
+                return state.merge(
+                    {
+                        [action.meta.dataKey]: {
+                            [appendKey]: previousEntities.concat(
+                                action.payload.responseData.entryRef,
+                            ),
+                        },
+                    },
+                    { deep: true },
+                )
+            } else if (action.meta.isNextPage || action.meta.append) {
+                // If the result of a paginated nextPage request, we're going to want to append the
+                // retrieved entities to the end of the current entities list
                 const nextPageRef = action.payload.responseData.entryRef
                 const oldEntities = get(
                     state[action.meta.dataKey],

@@ -43,6 +43,7 @@ function useNion(declaration, deps = []) {
                 endpoint,
                 meta: {
                     append: get(actionOptions, 'append'),
+                    appendKey: get(actionOptions, 'appendKey'),
                 },
             })(dispatch)
         },
@@ -59,6 +60,24 @@ function useNion(declaration, deps = []) {
                 body,
                 meta: {
                     append: get(actionOptions, 'append'),
+                    appendKey: get(actionOptions, 'appendKey'),
+                },
+            })(dispatch)
+        },
+        [coercedDeclaration, dispatch],
+    )
+
+    const putResource = useCallback(
+        (body = {}, params, actionOptions) => {
+            const endpoint = getUrl(coercedDeclaration, params)
+
+            return nionActions.put(coercedDeclaration.dataKey, {
+                endpoint,
+                declaration: coercedDeclaration,
+                body,
+                meta: {
+                    append: get(actionOptions, 'append'),
+                    appendKey: get(actionOptions, 'appendKey'),
                 },
             })(dispatch)
         },
@@ -135,6 +154,7 @@ function useNion(declaration, deps = []) {
     const actions = useMemo(
         () => ({
             get: getResources,
+            put: putResource,
             post: postResource,
             patch: patchResource,
             delete: deleteResource,
@@ -143,6 +163,7 @@ function useNion(declaration, deps = []) {
         }),
         [
             getResources,
+            putResource,
             postResource,
             patchResource,
             deleteResource,

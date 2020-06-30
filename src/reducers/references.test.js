@@ -102,6 +102,29 @@ describe('nion: reducers', () => {
             expect(isCollection).toEqual(true)
         })
 
+        it('handles a NION_API_SUCCESS with meta.appendKey', () => {
+            const reducer = new Reducer()
+            const dataKey = 'messageKey'
+            const appendKey = 'messages'
+
+            const action = makeAction(types.NION_API_SUCCESS, dataKey, {
+                entryRef: {
+                    messages: [{ type: 'message', id: 123 }],
+                },
+            })
+            reducer.applyAction(action)
+
+            const nextAction = makeAction(types.NION_API_SUCCESS, dataKey, {
+                entryRef: [{ type: 'message', id: 456 }],
+                appendKey: appendKey,
+            })
+            reducer.applyAction(nextAction)
+
+            const newMessage = get(reducer.state[dataKey][appendKey], 1)
+            expect(newMessage.type).toEqual('message')
+            expect(newMessage.id).toEqual(456)
+        })
+
         it('adds links', () => {
             const reducer = new Reducer()
             const dataKey = 'users'
@@ -260,7 +283,7 @@ describe('nion: reducers', () => {
 function makeAction(
     actionType,
     dataKey,
-    { entryRef, ref, isNextPage, append, refToDelete },
+    { entryRef, ref, isNextPage, append, appendKey, refToDelete },
 ) {
     return {
         type: actionType,
@@ -275,6 +298,7 @@ function makeAction(
             dataKey,
             isNextPage,
             append,
+            appendKey,
             refToDelete,
         },
     }

@@ -126,6 +126,10 @@ const postAction = (dataKey, options) => {
     return apiAction('POST', dataKey, options)
 }
 
+const putAction = (dataKey, options) => {
+    return apiAction('PUT', dataKey, options)
+}
+
 const patchAction = (dataKey, options) => {
     return apiAction('PATCH', dataKey, options)
 }
@@ -166,8 +170,8 @@ const updateEntityAction = ({ type, id }, attributes) => {
 }
 
 export const get = getAction
-
 export const post = postAction
+export const put = putAction
 export const patch = patchAction
 export { deleteAction as delete }
 export const bootstrap = bootstrapAction
@@ -175,6 +179,7 @@ export const updateEntity = updateEntityAction
 
 export default {
     get,
+    put,
     post,
     patch,
     delete: deleteAction,
