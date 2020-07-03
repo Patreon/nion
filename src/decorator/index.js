@@ -256,7 +256,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
             // Add each method's corresponding request handler to the nextProps[key].request
             // object
-            const methods = ['GET', 'PATCH', 'POST']
+            const methods = ['GET', 'PATCH', 'PUT', 'POST']
             methods.forEach(method => {
                 const dispatchFn = dispatchProps[key][method]
                 set(
