@@ -1,7 +1,7 @@
 import Immutable from 'seamless-immutable'
 import { createSelector } from 'reselect'
-import get from 'lodash.get'
-import omit from 'lodash.omit'
+import get from 'lodash/get'
+import omit from 'lodash/omit'
 import denormalizeWithCache, { getGenericRefData } from '../denormalize'
 
 const selectNion = state => state.nion
@@ -14,11 +14,14 @@ const isGeneric = ref => {
     return get(ref, 'entities') === undefined
 }
 
-export const selectRef = dataKey =>
-    createSelector(
+export const selectRef = dataKey => {
+    return createSelector(
         selectReferences,
-        refs => get(refs, dataKey),
+        refs => {
+            return get(refs, [dataKey])
+        },
     )
+}
 
 export const selectEntity = (type, id) =>
     createSelector(
@@ -39,8 +42,8 @@ export const selectEntityFromKey = key =>
         },
     )
 
-export const selectObject = dataKey =>
-    createSelector(
+export const selectObject = dataKey => {
+    return createSelector(
         selectRef(dataKey),
         selectEntities,
         (ref, entityStore) => {
@@ -59,6 +62,7 @@ export const selectObject = dataKey =>
             return isCollection ? denormalized : denormalized[0]
         },
     )
+}
 
 const selectExtraRefProps = dataKey =>
     createSelector(

@@ -1,5 +1,5 @@
-import map from 'lodash.map'
-import every from 'lodash.every'
+import map from 'lodash/map'
+import every from 'lodash/every'
 
 const addEntityToStoreFragment = (store, entity = {}) => {
     // It's important to have default attributes and relationships here, since we can accidentally
@@ -45,7 +45,10 @@ export const isJsonApiResponse = ({ data }) => {
     const dataList = Array.isArray(data) ? data : [data]
     return (
         data &&
-        every(dataList, ref => ref.id !== undefined && ref.type !== undefined)
+        every(dataList, ref => {
+            console.log('[hf] _.every is working post update')
+            return ref.id !== undefined && ref.type !== undefined
+        })
     )
 }
 

@@ -1,4 +1,4 @@
-import map from 'lodash.map'
+import map from 'lodash/map'
 import * as includedApiModules from '../api-modules'
 
 const DEFAULT_API_TYPE = 'jsonApi'
