@@ -45,9 +45,7 @@ export const isJsonApiResponse = ({ data }) => {
     const dataList = Array.isArray(data) ? data : [data]
     return (
         data &&
-        every(dataList, ref => {
-            return ref.id !== undefined && ref.type !== undefined
-        })
+        every(dataList, ref => ref.id !== undefined && ref.type !== undefined)
     )
 }
 

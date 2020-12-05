@@ -17,9 +17,7 @@ const isGeneric = ref => {
 export const selectRef = dataKey =>
     createSelector(
         selectReferences,
-        refs => {
-            return get(refs, [dataKey])
-        },
+        refs => get(refs, [dataKey]),
     )
 
 export const selectEntity = (type, id) =>
