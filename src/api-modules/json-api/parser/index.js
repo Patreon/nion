@@ -46,7 +46,6 @@ export const isJsonApiResponse = ({ data }) => {
     return (
         data &&
         every(dataList, ref => {
-            console.log('[hf] _.every is working post update')
             return ref.id !== undefined && ref.type !== undefined
         })
     )

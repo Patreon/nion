@@ -123,7 +123,6 @@ const getAction = (dataKey, options) => {
 }
 
 const postAction = (dataKey, options) => {
-    console.log('[hf]', 'post action called', { dataKey })
     return apiAction('POST', dataKey, options)
 }
 

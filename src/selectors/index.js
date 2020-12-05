@@ -14,14 +14,13 @@ const isGeneric = ref => {
     return get(ref, 'entities') === undefined
 }
 
-export const selectRef = dataKey => {
-    return createSelector(
+export const selectRef = dataKey =>
+    createSelector(
         selectReferences,
         refs => {
             return get(refs, [dataKey])
         },
     )
-}
 
 export const selectEntity = (type, id) =>
     createSelector(
@@ -42,8 +41,8 @@ export const selectEntityFromKey = key =>
         },
     )
 
-export const selectObject = dataKey => {
-    return createSelector(
+export const selectObject = dataKey =>
+    createSelector(
         selectRef(dataKey),
         selectEntities,
         (ref, entityStore) => {
@@ -62,7 +61,6 @@ export const selectObject = dataKey => {
             return isCollection ? denormalized : denormalized[0]
         },
     )
-}
 
 const selectExtraRefProps = dataKey =>
     createSelector(
