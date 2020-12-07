@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import difference from 'lodash.difference'
-import get from 'lodash.get'
-import map from 'lodash.map'
-import set from 'lodash.set'
+import difference from 'lodash/difference'
+import get from 'lodash/get'
+import map from 'lodash/map'
+import set from 'lodash/set'
 
 import { getUrl } from '../utilities/get-url'
 import nionActions from '../actions'

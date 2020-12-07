@@ -1,7 +1,7 @@
 import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 import nock from 'nock'
-import union from 'lodash.union'
+import union from 'lodash/union'
 import ApiManager from '../api'
 
 import * as actionTypes from './types'

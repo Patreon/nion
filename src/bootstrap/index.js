@@ -1,4 +1,4 @@
-import map from 'lodash.map'
+import map from 'lodash/map'
 import ApiManager from '../api'
 import actions from '../actions'
 

@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useMemo } from 'react'
 import { useDispatch, useMappedState } from 'redux-react-hook'
-import get from 'lodash.get'
+import get from 'lodash/get'
 
 import { getUrl } from '../utilities/get-url'
 import { selectResourcesForKeys } from '../selectors'

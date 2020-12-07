@@ -1,6 +1,6 @@
 import _reducer from './entities'
 import * as types from '../actions/types'
-import get from 'lodash.get'
+import get from 'lodash/get'
 
 class StoreFragment {
     fragment = {}
