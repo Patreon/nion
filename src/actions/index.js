@@ -128,7 +128,7 @@ export const getDataFromResponseText = ({ text }) => {
     try {
         return text ? JSON.parse(text) : defaultObject
     } catch (error) {
-        if (error instanceof TypeError || error instanceof SyntaxError) {
+        if (error instanceof SyntaxError) {
             return defaultObject
         }
         throw error
