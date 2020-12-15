@@ -79,22 +79,6 @@ export default function configureStore() {
 
 [Read more about configuring nion in the docs.](docs/configuration.md)
 
-## Developing in PRF
-
-1.  Make sure `nion` is a sibling to `patreon_react_features` in a `devx` synced folder
-1.  In `patreon_react_features` execute `npm run link:nion`
-1.  In `nion` execute `npm run build`
-1.  Restart react: `devx service react restart`
-1.  Restart web: `devx service web restart`
-1.  HMR + file watching works!
-
-### Remove the link
-
-1.  In `patreon_react_features` execute `rm app/libs/niondev`
-1.  Restart react: `devx service react restart`
-1.  Restart web: `devx service web restart`
-1.  That's it!
-
 ## Read More 📚
 
 -   [Declarations](docs/declarations.md)
