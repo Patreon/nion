@@ -69,19 +69,14 @@ const apiAction = (method, dataKey, options) => _dispatch => {
 
             // Handle the case that calling response.json() on null responses throws a syntax error
             const text = await response.text()
-            // const text = null
-            const objectFromJson = getObjectFromResponseText({ text })
-            // const objectFromJson = text ? JSON.parse(text) : {}
-            // const objectFromJson = JSON.parse(text)
-            console.log('[eb] test nion dev 722')
+            const data = getDataFromResponseText({ text })
 
             // Handle any request errors since fetch doesn't throw
             if (!response.ok) {
-                console.log('[eb] response not ok')
                 const { status, statusText } = response
                 throw new ErrorClass(status, statusText, {
                     ...response,
-                    ...objectFromJson,
+                    ...data,
                 })
             }
 
@@ -95,7 +90,7 @@ const apiAction = (method, dataKey, options) => _dispatch => {
                 },
                 payload: {
                     requestType: apiType,
-                    responseData: parse(objectFromJson),
+                    responseData: parse(data),
                 },
             })
 
@@ -127,8 +122,8 @@ const getAction = (dataKey, options) => {
     return apiAction('GET', dataKey, options)
 }
 
-export const getObjectFromResponseText = ({ text }) => {
-    // get object from response text json string. return {} if text is falsey or is not valid json string format.
+export const getDataFromResponseText = ({ text }) => {
+    // get data object from response text json string. return {} if text is falsey or is not valid json string format.
     const defaultObject = {}
     try {
         return text ? JSON.parse(text) : defaultObject

@@ -5,7 +5,7 @@ import union from 'lodash/union'
 import ApiManager from '../api'
 
 import * as actionTypes from './types'
-import apiActions, { getObjectFromResponseText } from './index'
+import apiActions, { getDataFromResponseText } from './index'
 
 const middlewares = [thunk]
 const mockStore = configureMockStore(middlewares)
@@ -184,7 +184,7 @@ describe('nion: actions', () => {
         })
     })
 
-    describe('getObjectFromResponseText', () => {
+    describe('getDataFromResponseText', () => {
 
         it('return valid object for non-empty json text', async () => {
             const text = '{ "noam":"chomsky", "manufacturing":"consent"}'
@@ -193,7 +193,7 @@ describe('nion: actions', () => {
                 manufacturing: "consent",
             }
 
-            const result = getObjectFromResponseText({text})
+            const result = getDataFromResponseText({text})
 
             expect(result).toEqual(expected)
         })
@@ -202,7 +202,7 @@ describe('nion: actions', () => {
             const text = null
             const expected = {}
 
-            const result = getObjectFromResponseText({text})
+            const result = getDataFromResponseText({text})
 
             expect(result).toEqual(expected)
         })
@@ -211,7 +211,7 @@ describe('nion: actions', () => {
             const text = undefined
             const expected = {}
 
-            const result = getObjectFromResponseText({text})
+            const result = getDataFromResponseText({text})
 
             expect(result).toEqual(expected)
         })
@@ -220,7 +220,7 @@ describe('nion: actions', () => {
             const text = ''
             const expected = {}
 
-            const result = getObjectFromResponseText({text})
+            const result = getDataFromResponseText({text})
 
             expect(result).toEqual(expected)
         })
@@ -229,7 +229,7 @@ describe('nion: actions', () => {
             const text = '<html>noam-chomsky</html>'
             const expected = {}
 
-            const result = getObjectFromResponseText({text})
+            const result = getDataFromResponseText({text})
 
             expect(result).toEqual(expected)
         })
@@ -238,7 +238,7 @@ describe('nion: actions', () => {
             const text = 'manufacturing consent'
             const expected = {}
 
-            const result = getObjectFromResponseText({text})
+            const result = getDataFromResponseText({text})
 
             expect(result).toEqual(expected)
         })
