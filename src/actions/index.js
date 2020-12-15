@@ -10,6 +10,19 @@ import {
 import { selectData } from '../selectors'
 import Lifecycle from '../lifecycle'
 
+export const getDataFromResponseText = ({ text }) => {
+    // get data object from response text json string. return {} if text is falsey or is not valid json string format.
+    const defaultObject = {}
+    try {
+        return text ? JSON.parse(text) : defaultObject
+    } catch (error) {
+        if (error instanceof SyntaxError) {
+            return defaultObject
+        }
+        throw error
+    }
+}
+
 const apiAction = (method, dataKey, options) => _dispatch => {
     const { body, declaration = {}, endpoint } = options
 
@@ -120,19 +133,6 @@ const apiAction = (method, dataKey, options) => _dispatch => {
 
 const getAction = (dataKey, options) => {
     return apiAction('GET', dataKey, options)
-}
-
-export const getDataFromResponseText = ({ text }) => {
-    // get data object from response text json string. return {} if text is falsey or is not valid json string format.
-    const defaultObject = {}
-    try {
-        return text ? JSON.parse(text) : defaultObject
-    } catch (error) {
-        if (error instanceof SyntaxError) {
-            return defaultObject
-        }
-        throw error
-    }
 }
 
 const postAction = (dataKey, options) => {

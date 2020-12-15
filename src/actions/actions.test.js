@@ -185,15 +185,14 @@ describe('nion: actions', () => {
     })
 
     describe('getDataFromResponseText', () => {
-
         it('return valid object for non-empty json text', async () => {
             const text = '{ "noam":"chomsky", "manufacturing":"consent"}'
             const expected = {
-                noam: "chomsky",
-                manufacturing: "consent",
+                noam: 'chomsky',
+                manufacturing: 'consent',
             }
 
-            const result = getDataFromResponseText({text})
+            const result = getDataFromResponseText({ text })
 
             expect(result).toEqual(expected)
         })
@@ -202,7 +201,7 @@ describe('nion: actions', () => {
             const text = null
             const expected = {}
 
-            const result = getDataFromResponseText({text})
+            const result = getDataFromResponseText({ text })
 
             expect(result).toEqual(expected)
         })
@@ -211,7 +210,7 @@ describe('nion: actions', () => {
             const text = undefined
             const expected = {}
 
-            const result = getDataFromResponseText({text})
+            const result = getDataFromResponseText({ text })
 
             expect(result).toEqual(expected)
         })
@@ -220,7 +219,7 @@ describe('nion: actions', () => {
             const text = ''
             const expected = {}
 
-            const result = getDataFromResponseText({text})
+            const result = getDataFromResponseText({ text })
 
             expect(result).toEqual(expected)
         })
@@ -229,7 +228,7 @@ describe('nion: actions', () => {
             const text = '<html>noam-chomsky</html>'
             const expected = {}
 
-            const result = getDataFromResponseText({text})
+            const result = getDataFromResponseText({ text })
 
             expect(result).toEqual(expected)
         })
@@ -238,13 +237,12 @@ describe('nion: actions', () => {
             const text = 'manufacturing consent'
             const expected = {}
 
-            const result = getDataFromResponseText({text})
+            const result = getDataFromResponseText({ text })
 
             expect(result).toEqual(expected)
         })
     })
 })
-
 
 function assertEqualAction(expected, observed) {
     expect(expected.type).toEqual(observed.type)
