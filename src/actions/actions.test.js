@@ -5,7 +5,7 @@ import union from 'lodash/union'
 import ApiManager from '../api'
 
 import * as actionTypes from './types'
-import apiActions from './index'
+import apiActions, { getObjectFromResponseText } from './index'
 
 const middlewares = [thunk]
 const mockStore = configureMockStore(middlewares)
@@ -183,7 +183,68 @@ describe('nion: actions', () => {
             })
         })
     })
+
+    describe('getObjectFromResponseText', () => {
+
+        it('return valid object for non-empty json text', async () => {
+            const text = '{ "noam":"chomsky", "manufacturing":"consent"}'
+            const expected = {
+                noam: "chomsky",
+                manufacturing: "consent",
+            }
+
+            const result = getObjectFromResponseText({text})
+
+            expect(result).toEqual(expected)
+        })
+
+        it('return empty object for null text', async () => {
+            const text = null
+            const expected = {}
+
+            const result = getObjectFromResponseText({text})
+
+            expect(result).toEqual(expected)
+        })
+
+        it('return empty object for undefined text', async () => {
+            const text = undefined
+            const expected = {}
+
+            const result = getObjectFromResponseText({text})
+
+            expect(result).toEqual(expected)
+        })
+
+        it('return empty object for empty text', async () => {
+            const text = ''
+            const expected = {}
+
+            const result = getObjectFromResponseText({text})
+
+            expect(result).toEqual(expected)
+        })
+
+        it('return empty object for html text', async () => {
+            const text = '<html>noam-chomsky</html>'
+            const expected = {}
+
+            const result = getObjectFromResponseText({text})
+
+            expect(result).toEqual(expected)
+        })
+
+        it('return empty object for regular text', async () => {
+            const text = 'manufacturing consent'
+            const expected = {}
+
+            const result = getObjectFromResponseText({text})
+
+            expect(result).toEqual(expected)
+        })
+    })
 })
+
 
 function assertEqualAction(expected, observed) {
     expect(expected.type).toEqual(observed.type)
