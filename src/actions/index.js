@@ -14,8 +14,10 @@ export const getDataFromResponseText = ({ text }) => {
     // get data object from response text json string. return {} if text is falsey or is not valid json string format.
     const defaultObject = {}
     try {
+        // if text is null/empty/falsey, return default empty object
         return text ? JSON.parse(text) : defaultObject
     } catch (error) {
+        // if text is invalid json syntax, return default empty object, and let nion log error from api response instead
         if (error instanceof SyntaxError) {
             return defaultObject
         }
