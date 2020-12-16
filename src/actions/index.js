@@ -10,6 +10,21 @@ import {
 import { selectData } from '../selectors'
 import Lifecycle from '../lifecycle'
 
+export const getDataFromResponseText = ({ text }) => {
+    // get data object from response text json string. return {} if text is falsey or is not valid json string format.
+    const defaultObject = {}
+    try {
+        // if text is null/empty/falsey, return default empty object
+        return text ? JSON.parse(text) : defaultObject
+    } catch (error) {
+        // if text is invalid json syntax, return default empty object, and let nion log error from api response instead
+        if (error instanceof SyntaxError) {
+            return defaultObject
+        }
+        throw error
+    }
+}
+
 const apiAction = (method, dataKey, options) => _dispatch => {
     const { body, declaration = {}, endpoint } = options
 
@@ -69,14 +84,14 @@ const apiAction = (method, dataKey, options) => _dispatch => {
 
             // Handle the case that calling response.json() on null responses throws a syntax error
             const text = await response.text()
-            const json = text ? JSON.parse(text) : {}
+            const data = getDataFromResponseText({ text })
 
             // Handle any request errors since fetch doesn't throw
             if (!response.ok) {
                 const { status, statusText } = response
                 throw new ErrorClass(status, statusText, {
                     ...response,
-                    ...json,
+                    ...data,
                 })
             }
 
@@ -90,7 +105,7 @@ const apiAction = (method, dataKey, options) => _dispatch => {
                 },
                 payload: {
                     requestType: apiType,
-                    responseData: parse(json),
+                    responseData: parse(data),
                 },
             })
 
