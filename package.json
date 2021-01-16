@@ -107,7 +107,8 @@
         ],
         "testMatch": [
             "**/src/**/__tests__/**/*.[jt]s?(x)",
-            "**/src/**/?(*.)+(spec|test).[jt]s?(x)"
+            "**/src/**/?(*.)+(spec|test).[jt]s?(x)",
+            "**/test/**/?(*.)+(spec|test).[jt]s?(x)"
         ],
         "transform": {
             "\\.js$": "babel-jest"
