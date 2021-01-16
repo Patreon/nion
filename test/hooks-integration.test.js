@@ -45,6 +45,17 @@ const baseUrl = 'http://api.test.com'
 const buildUrl = path =>
     path.startsWith('/') ? baseUrl + path : baseUrl + '/' + path
 
+const getNionProps = NionComponent => {
+    let returned
+
+    act(() => {
+        NionComponent.update()
+        returned = NionComponent.find('div').prop('returned')
+    })
+
+    return returned
+}
+
 describe('nion hooks: integration tests', () => {
     afterEach(() => {
         nock.cleanAll()
@@ -60,16 +71,14 @@ describe('nion hooks: integration tests', () => {
                 return <div returned={returned} />
             }
 
-            const Wrapper = mount(Wrap(Container))
-            const Wrapped = Wrapper.find('div')
+            let Wrapper
 
-            const returned = Wrapped.prop('returned')
-
-            expect(returned).toBeDefined()
-            expect(returned[0]).toBeDefined()
+            act(() => {
+                Wrapper = mount(Wrap(Container))
+            })
 
             // Test the expected nion dataProp API interface
-            const [test, actions, request] = returned
+            const [test, actions, request] = getNionProps(Wrapper)
 
             // Actions
             expect(actions.get).toBeDefined()
@@ -110,16 +119,13 @@ describe('nion hooks: integration tests', () => {
                 return <div returned={returned} />
             }
 
-            const Wrapper = mount(Wrap(Container))
+            let Wrapper
 
-            const getProp = () => {
-                act(() => {
-                    Wrapper.update()
-                })
-                return Wrapper.find('div').prop('returned')
-            }
+            act(() => {
+                Wrapper = mount(Wrap(Container))
+            })
 
-            let [test, actions, request] = getProp()
+            let [test, actions, request] = getNionProps(Wrapper)
 
             let waitingFor
 
@@ -127,13 +133,12 @@ describe('nion hooks: integration tests', () => {
                 waitingFor = actions.get()
             })
 
-            await P.delay(0) // wait for useEffect to go
-            ;[test, actions, request] = getProp()
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
 
             await waitingFor
-            ;[test, actions, request] = getProp()
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(name)
         })
@@ -163,16 +168,15 @@ describe('nion hooks: integration tests', () => {
                 return <div returned={returned} />
             }
 
-            const Wrapper = mount(Wrap(Container))
+            let Wrapper
 
-            const getProp = () =>
-                Wrapper.update()
-                    .find('div')
-                    .prop('returned')
+            act(() => {
+                Wrapper = mount(Wrap(Container))
+            })
 
             await P.delay(15) // Wait 15ms for the request reducer to update
 
-            const [test, _, request] = getProp()
+            const [test, _, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(name)
         })
@@ -210,32 +214,37 @@ describe('nion hooks: integration tests', () => {
                 return <div returned={returned} />
             }
 
-            const Wrapper = mount(Wrap(Container))
+            let Wrapper
 
-            const getProp = () =>
-                Wrapper.update()
-                    .find('div')
-                    .prop('returned')
+            act(() => {
+                Wrapper = mount(Wrap(Container))
+            })
 
-            let [test, actions, request] = getProp()
-            let waitingFor = actions.get()
-            ;[test, actions, request] = getProp()
+            let [test, actions, request] = getNionProps(Wrapper)
+            let waitingFor
+
+            act(() => {
+                waitingFor = actions.get()
+            })
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
 
             await waitingFor
-            ;[test, actions, request] = getProp()
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(name)
 
             // Patch request
-            waitingFor = actions.patch()
-            ;[test, actions, request] = getProp()
+            act(() => {
+                waitingFor = actions.patch()
+            })
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
 
             await waitingFor
-            ;[test, actions, request] = getProp()
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(newName)
         })
@@ -266,28 +275,34 @@ describe('nion hooks: integration tests', () => {
                 return <div returned={returned} />
             }
 
-            const Wrapper = mount(Wrap(Container))
+            let Wrapper
 
-            const getProp = () =>
-                Wrapper.update()
-                    .find('div')
-                    .prop('returned')
+            act(() => {
+                Wrapper = mount(Wrap(Container))
+            })
 
-            let [test, actions, request] = getProp()
-            let waitingFor = actions.get()
+            let [test, actions, request] = getNionProps(Wrapper)
+            let waitingFor
 
-            ;[test, actions, request] = getProp()
+            act(() => {
+                waitingFor = actions.get()
+            })
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
 
             await waitingFor
-            ;[test, actions, request] = getProp()
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(name)
 
             // Delete request
-            await actions.delete()
-            ;[test, actions, request] = getProp()
+            act(() => {
+                waitingFor = actions.delete()
+            })
+
+            await waitingFor
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('success')
 
             expect(!!test).toEqual(false)
@@ -307,20 +322,23 @@ describe('nion hooks: integration tests', () => {
                 return <div returned={returned} />
             }
 
-            const Wrapper = mount(Wrap(Container))
+            let Wrapper
 
-            const getProp = () =>
-                Wrapper.update()
-                    .find('div')
-                    .prop('returned')
+            act(() => {
+                Wrapper = mount(Wrap(Container))
+            })
 
-            let [_test, actions, request] = getProp()
-            let waitingFor = actions.get()
+            let [_test, actions, request] = getNionProps(Wrapper)
+            let waitingFor
+
+            act(() => {
+                waitingFor = actions.get()
+            })
 
             await waitingFor.catch(err => {
                 expect(err).toBeInstanceOf(Error)
             })
-            ;[_test, actions, request] = getProp()
+            ;[_test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('error')
             expect(request.isError).toEqual(true)
             expect(request.isLoading).toEqual(false)
@@ -348,26 +366,29 @@ describe('nion hooks: integration tests', () => {
                 return <div returned={returned} />
             }
 
-            const Wrapper = mount(Wrap(Container))
+            let Wrapper
 
-            const getProp = () =>
-                Wrapper.update()
-                    .find('div')
-                    .prop('returned')
+            act(() => {
+                Wrapper = mount(Wrap(Container))
+            })
 
-            let [test, actions, request] = getProp()
-            let waitingFor = actions.get()
-            ;[test, actions, request] = getProp()
+            let [test, actions, request] = getNionProps(Wrapper)
+            let waitingFor
+
+            act(() => {
+                waitingFor = actions.get()
+            })
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
 
             await waitingFor
-            ;[test, actions, request] = getProp()
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(request.status).toEqual('success')
             expect(test.name).toEqual(name)
 
             // Optimistic Update
-            ;[test, actions, request] = getProp()
+            ;[test, actions, request] = getNionProps(Wrapper)
             act(() => {
                 actions.updateEntity(
                     {
@@ -379,7 +400,7 @@ describe('nion hooks: integration tests', () => {
                     },
                 )
             })
-            ;[test, actions, request] = getProp()
+            ;[test, actions, request] = getNionProps(Wrapper)
             expect(test.name).toEqual(newName)
         })
 
@@ -425,23 +446,15 @@ describe('nion hooks: integration tests', () => {
                 return test ? <ChildContainer inputData={test} /> : <span />
             }
 
-            const Wrapper = mount(Wrap(Container))
-            await P.delay(50)
-
-            // // Child component
-            const ChildWrapped = Wrapper.update().find('div')
-
-            const getProp = () => ChildWrapped.prop('returned')
-
-            await P.delay(20)
+            let Wrapper
 
             act(() => {
-                Wrapper.update()
+                Wrapper = mount(Wrap(Container))
             })
 
-            await P.delay(1)
+            await P.delay(15)
 
-            let child = getProp()
+            let child = getNionProps(Wrapper)
 
             expect(exists(child[0])).toEqual(true)
         })
@@ -450,6 +463,7 @@ describe('nion hooks: integration tests', () => {
 
 describe('hooks re-render performance', () => {
     let numRenders
+
     beforeEach(() => {
         numRenders = 0
     })
@@ -466,17 +480,20 @@ describe('hooks re-render performance', () => {
             })
 
             numRenders++
+
             return <div returned={returned} />
         }
-        let wrapped
+
+        let Wrapper
+
         act(() => {
-            wrapped = mount(Wrap(Container))
+            Wrapper = mount(Wrap(Container))
         })
 
         // 1 for change to state and 1 for the initial render
         expect(numRenders).toBe(2)
 
-        const [data1, actions] = wrapped.find('div').prop('returned')
+        const [data1, actions] = getNionProps(Wrapper)
 
         const endpoint = buildUrl('/test')
         nock(endpoint)
@@ -496,7 +513,8 @@ describe('hooks re-render performance', () => {
             a = actions.get()
         })
 
-        const [data2, actions2] = wrapped.find('div').prop('returned')
+        // TODO: Using `getNionProps(Wrapper)` fails `action` equality tests (calls `Wrapper.update()`)
+        const [data2, actions2] = Wrapper.find('div').prop('returned')
 
         expect(data2).toBe(data1)
         expect(actions).toBe(actions2)
@@ -504,11 +522,11 @@ describe('hooks re-render performance', () => {
         expect(numRenders).toBe(3)
 
         await a
-        await P.delay(1)
+        await P.delay(15)
 
         expect(numRenders).toBe(4)
 
-        const [, actions3] = wrapped.find('div').prop('returned')
+        const [, actions3] = Wrapper.find('div').prop('returned')
 
         expect(actions3).toBe(actions2)
     })
