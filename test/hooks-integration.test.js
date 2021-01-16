@@ -276,7 +276,6 @@ describe('nion hooks: integration tests', () => {
             let [test, actions, request] = getProp()
             let waitingFor = actions.get()
 
-            await P.delay(0)
             ;[test, actions, request] = getProp()
             expect(request.status).toEqual('pending')
             expect(request.isLoading).toEqual(true)
@@ -300,7 +299,6 @@ describe('nion hooks: integration tests', () => {
             const endpoint = buildUrl(pathname)
             nock(endpoint)
                 .get('')
-                .delay(2000)
                 .query(true)
                 .reply(404)
 
@@ -454,6 +452,10 @@ describe('hooks re-render performance', () => {
     let numRenders
     beforeEach(() => {
         numRenders = 0
+    })
+
+    afterEach(() => {
+        nock.cleanAll()
     })
 
     it('should only render once per action with minimal config', async () => {
