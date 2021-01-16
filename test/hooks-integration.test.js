@@ -462,11 +462,9 @@ describe('hooks re-render performance', () => {
                 dataKey: 'test',
                 endpoint: buildUrl('/test'),
             })
-            return React.useMemo(() => {
-                numRenders += 1
-                return <div returned={returned} />
-                // eslint-disable-next-line react-hooks/exhaustive-deps
-            }, returned)
+
+            numRenders++
+            return <div returned={returned} />
         }
         let wrapped
         act(() => {
@@ -474,7 +472,7 @@ describe('hooks re-render performance', () => {
         })
 
         // 1 for change to state and 1 for the initial render
-        expect(numRenders).toBe(1)
+        expect(numRenders).toBe(2)
 
         const [data1, actions] = wrapped.find('div').prop('returned')
 
@@ -501,12 +499,12 @@ describe('hooks re-render performance', () => {
         expect(data2).toBe(data1)
         expect(actions).toBe(actions2)
 
-        expect(numRenders).toBe(2)
+        expect(numRenders).toBe(3)
 
         await a
         await P.delay(1)
 
-        expect(numRenders).toBe(3)
+        expect(numRenders).toBe(4)
 
         const [, actions3] = wrapped.find('div').prop('returned')
 
