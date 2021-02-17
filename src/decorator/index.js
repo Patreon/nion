@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import difference from 'lodash/difference'
+import forEach from 'lodash/forEach'
 import get from 'lodash/get'
 import map from 'lodash/map'
 import set from 'lodash/set'
@@ -37,8 +38,8 @@ const getDefaultDeclarationOptions = () => ({
 })
 
 const processDefaultOptions = declarations => {
-    map(declarations, (declaration, key) => {
-        map(getDefaultDeclarationOptions(), (defaultState, defaultKey) => {
+    forEach(declarations, (declaration, key) => {
+        forEach(getDefaultDeclarationOptions(), (defaultState, defaultKey) => {
             const option = get(declaration, defaultKey, defaultState)
             declaration[defaultKey] = option
         })
@@ -58,80 +59,75 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         )
 
     // Construct the JSON API selector to map to props
-    const makeMapStateToProps = () => {
-        const mapStateToProps = (state, ownProps) => {
-            // Process the input declarations, ensuring we make a copy of the original argument to
-            // prevent object reference bugs between instances of the decorated class
-            declarations =
-                inputDeclarations instanceof Function
-                    ? inputDeclarations(ownProps)
-                    : clone(inputDeclarations)
+    const mapStateToProps = (state, ownProps) => {
+        // Process the input declarations, ensuring we make a copy of the original argument to
+        // prevent object reference bugs between instances of the decorated class
+        declarations =
+            inputDeclarations instanceof Function
+                ? inputDeclarations(ownProps)
+                : clone(inputDeclarations)
 
-            // Otherwise, if the passed in declarartions are a string (shorthand dataKey selection),
-            // create a declaration object
-            if (typeof inputDeclarations === 'string') {
-                declarations = {}
-                map([inputDeclarations, ...rest], dataKey => {
-                    declarations[dataKey] = {}
-                })
+        // Otherwise, if the passed in declarartions are a string (shorthand dataKey selection),
+        // create a declaration object
+        if (typeof inputDeclarations === 'string') {
+            declarations = {}
+            forEach([inputDeclarations, ...rest], dataKey => {
+                declarations[dataKey] = {}
+            })
+        }
+
+        // Apply default options to the declarations
+        processDefaultOptions(declarations)
+
+        Lifecycle.onDeclare({ declarations, ownProps })
+
+        // We want to pass in the selected data to the wrapped component by the key (ie pledge),
+        // even though we may be storing the data on the store by an id-specific dataKey (ie
+        // pledge:1234). We'll need to make a map from dataKey to key to handle passing the props
+        // more semantically to the wrapped component. We'll need these dataKeys for creating our
+        // selector as well.
+        const keysByDataKey = {}
+        const dataKeys = mapDeclarations((declaration, key, dataKey) => {
+            // If the dataKey already exists in this group of declarations, throw an error!
+            if (keysByDataKey[dataKey]) {
+                throw new Error(
+                    'Duplicate dataKeys detected in this nion decorator',
+                )
             }
 
-            // Apply default options to the declarations
-            processDefaultOptions(declarations)
+            keysByDataKey[dataKey] = key
 
-            Lifecycle.onDeclare({ declarations, ownProps })
+            // Ensure the dataKey is set properly on the declaration
+            declaration.dataKey = declaration.dataKey || key
 
-            // We want to pass in the selected data to the wrapped component by the key (ie pledge),
-            // even though we may be storing the data on the store by an id-specific dataKey (ie
-            // pledge:1234). We'll need to make a map from dataKey to key to handle passing the props
-            // more semantically to the wrapped component. We'll need these dataKeys for creating our
-            // selector as well.
-            const keysByDataKey = {}
-            const dataKeys = mapDeclarations((declaration, key, dataKey) => {
-                // If the dataKey already exists in this group of declarations, throw an error!
-                if (keysByDataKey[dataKey]) {
-                    throw new Error(
-                        'Duplicate dataKeys detected in this nion decorator',
-                    )
-                }
+            return dataKey
+        })
 
-                keysByDataKey[dataKey] = key
+        const selectedResources = selectResourcesForKeys(dataKeys, true)(state)
 
-                // Ensure the dataKey is set properly on the declaration
-                declaration.dataKey = declaration.dataKey || key
+        const nion = {}
 
-                return dataKey
-            })
+        // Now map back over the dataKeys to their original keys
+        forEach(selectedResources, (selected, selectedDataKey) => {
+            const key = keysByDataKey[selectedDataKey]
+            nion[key] = {}
 
-            const selectedResources = selectResourcesForKeys(dataKeys, true)(
-                state,
-            )
+            // If the ref doesn't yet exist, we need to ensure we can pass an object with
+            // 'request' and 'actions' props to the child component so it can manage loading the
+            // data. Therefore, we'll create a "NonExistentObject" (an empty object with a
+            // hidden property) to pass down to the child component. This can interface with the
+            // "exists" function to tell if the data exists yet
+            const refDoesNotExist = selected.obj === undefined || null
+            nion[key].data = refDoesNotExist ? null : selected.obj
 
-            const nion = {}
+            // Define the nion-specific properties as properties on the dataKey prop.
+            nion[key].actions = {}
+            nion[key].request = selected.request
+            nion[key].extra = selected.extra
+            nion[key].extensions = {}
+        })
 
-            // Now map back over the dataKeys to their original keys
-            map(selectedResources, (selected, selectedDataKey) => {
-                const key = keysByDataKey[selectedDataKey]
-                nion[key] = {}
-
-                // If the ref doesn't yet exist, we need to ensure we can pass an object with
-                // 'request' and 'actions' props to the child component so it can manage loading the
-                // data. Therefore, we'll create a "NonExistentObject" (an empty object with a
-                // hidden property) to pass down to the child component. This can interface with the
-                // "exists" function to tell if the data exists yet
-                const refDoesNotExist = selected.obj === undefined || null
-                nion[key].data = refDoesNotExist ? null : selected.obj
-
-                // Define the nion-specific properties as properties on the dataKey prop.
-                nion[key].actions = {}
-                nion[key].request = selected.request
-                nion[key].extra = selected.extra
-                nion[key].extensions = {}
-            })
-
-            return { nion }
-        }
-        return mapStateToProps
+        return { nion }
     }
 
     // Construct the dispatch methods to pass action creators to the component
@@ -273,8 +269,8 @@ const processDeclarations = (inputDeclarations, ...rest) => {
             set(nextProps.nion, [key, 'actions', 'delete'], deleteFn)
 
             // Process extensions
-            map(declaration.extensions, (options, extension) => {
-                map(
+            forEach(declaration.extensions, (options, extension) => {
+                forEach(
                     ExtensionManager.composeActionsForExtension(
                         extension,
                         options,
@@ -289,7 +285,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
                     },
                 )
 
-                map(
+                forEach(
                     ExtensionManager.composeMetaForExtension(
                         extension,
                         options,
@@ -331,7 +327,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
     }
 
     return {
-        makeMapStateToProps,
+        mapStateToProps,
         mapDispatchToProps,
         mergeProps,
     }
@@ -340,7 +336,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 // JSON API decorator function for wrapping connected components to the new JSON API redux system
 const nion = (declarations = {}, ...rest) => WrappedComponent => {
     const {
-        makeMapStateToProps,
+        mapStateToProps,
         mapDispatchToProps,
         mergeProps,
     } = processDeclarations(declarations, ...rest)
@@ -370,7 +366,7 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
 
             // We want to trigger a fetch when the props change and lead to the creation of a new
             // dataKey, regardless of whether or not that happens as a result of a mount.
-            map(nion._declarations, (declaration, key) => {
+            forEach(nion._declarations, (declaration, key) => {
                 // eslint-disable-line no-shadow
                 // If not fetching on init, don't do anything
                 if (!declaration.fetchOnInit) {
@@ -410,7 +406,7 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
 
             // Iterate over the declarations provided to the component, deciding how to manage the
             // load state of each one
-            map(nion._declarations, (declaration, key) => {
+            forEach(nion._declarations, (declaration, key) => {
                 // eslint-disable-line no-shadow
                 // If we're supplying a ref to be managed by nion, we'll want to attach it to the
                 // state tree ahead of time (maybe not? maybe we want to have a "virtual" ref...
@@ -445,7 +441,7 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
     }
 
     const connectedComponent = connect(
-        makeMapStateToProps,
+        mapStateToProps,
         mapDispatchToProps,
         mergeProps,
         {
