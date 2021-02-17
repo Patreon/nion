@@ -11,6 +11,8 @@ import { makeRef } from '../transforms'
 
 import { areMergedPropsEqual } from '../decorator/should-rerender'
 
+import { withDebug } from './useNion.util'
+
 export const ERROR_INVALID_NION_ACTION = 'Invalid Nion action'
 
 function coerceDeclaration(declaration) {
@@ -180,7 +182,8 @@ function useNion(decl) {
         extra,
     ])
 
-    return props
+    return withDebug(props, dataKey, decl, dispatch)
+    // return props
 }
 
 export default useNion
