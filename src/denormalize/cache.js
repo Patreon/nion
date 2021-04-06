@@ -8,55 +8,47 @@ class DenormalizationCache {
     manifests = {}
     entities = {}
 
-    initializeManifest = ref => {
-        const { type, id } = ref
-        const key = makeKey(type, id)
-        return { [key]: ref }
-    }
+    initializeManifest = ref => ({ [makeKey(ref.type, ref.id)]: ref })
 
     addDenormalized = (type, id, data) => {
-        const key = makeKey(type, id)
-        this.denormalized[key] = data
+        this.denormalized[makeKey(type, id)] = data
     }
 
     addEntity = entity => {
-        const entityKey = makeKey(entity.type, entity.id)
-        this.entities[entityKey] = entity
+        this.entities[makeKey(entity.type, entity.id)] = entity
     }
 
     addManifest = (entity, manifest) => {
         const entityKey = makeKey(entity.type, entity.id)
+
         this.manifests[entityKey] = this.manifests[entityKey] || {}
 
         map(manifest, relatedRef => {
-            const relationshipKey = makeKey(relatedRef.type, relatedRef.id)
-            this.manifests[entityKey][relationshipKey] = relatedRef
+            this.manifests[entityKey][
+                makeKey(relatedRef.type, relatedRef.id)
+            ] = relatedRef
         })
     }
 
-    getEntity = (type, id) => {
-        const key = makeKey(type, id)
-        return this.entities[key]
-    }
+    getEntity = (type, id) => this.entities[makeKey(type, id)]
 
-    getManifest = (type, id) => {
-        const key = makeKey(type, id)
-        return this.manifests[key]
-    }
+    getManifest = (type, id) => this.manifests[makeKey(type, id)]
 
-    getDenormalized = (type, id) => {
-        const key = makeKey(type, id)
-        return this.denormalized[key]
-    }
+    getDenormalized = (type, id) => this.denormalized[makeKey(type, id)]
 
     hasDataChanged = (ref, entityStore) => {
         const manifest = this.getManifest(ref.type, ref.id) || {}
         const toCheck = [ref].concat(Object.values(manifest))
 
-        return toCheck.some(
-            ({ type, id }) =>
-                this.getEntity(type, id) !== get(entityStore, [type, id]),
-        )
+        for (let i = 0; i < toCheck.length; i++) {
+            const { id, type } = toCheck[i]
+
+            if (this.getEntity(type, id) !== get(entityStore, [type, id])) {
+                return true
+            }
+        }
+
+        return false
     }
 }
 
