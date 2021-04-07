@@ -1,14 +1,14 @@
 import Immutable from 'seamless-immutable'
-import get from 'lodash/get'
-import map from 'lodash/map'
 import { camelize, camelizeKeys } from 'humps'
-import cache from './cache'
+import cache, { mergeManifests } from './cache'
 
 class GenericData {
     constructor(data) {
-        map(data, (value, key) => {
-            this[key] = value
-        })
+        for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+                this[key] = data[key]
+            }
+        }
     }
 }
 
@@ -18,57 +18,33 @@ class Data {
     constructor(type, id, attributes) {
         this.type = type
         this.id = id
-        map(attributes, (value, key) => {
-            this[key] = value
-        })
+
+        for (const key in attributes) {
+            if (attributes.hasOwnProperty(key)) {
+                this[key] = attributes[key]
+            }
+        }
     }
 }
 
 Data.prototype._exists = true
 
-export default function denormalizeWithCache(reference, entityStore, dataKey) {
-    const refs = reference.entities
-    return refs.map(ref => {
-        const { denormalized } = denormalize(ref, entityStore)
-        return denormalized
-    })
-}
-
-const makeGenericData = obj => {
-    const genericData = Immutable(new GenericData(obj), {
-        prototype: GenericData.prototype,
-    })
-    return genericData
-}
+const makeGenericData = obj =>
+    Immutable(new GenericData(obj), { prototype: GenericData.prototype })
 
 export function getGenericRefData(ref) {
-    if (ref === null || ref === undefined) {
-        return null
-    }
+    if (ref === null || ref === undefined) return null
 
-    const genericData =
-        ref instanceof Array ? ref.map(makeGenericData) : makeGenericData(ref)
-    return genericData
+    return ref instanceof Array
+        ? ref.map(makeGenericData)
+        : makeGenericData(ref)
 }
 
-export const addEntityReference = (obj, value) => {
-    return obj && obj.set('_ref', value)
-}
+export const addEntityReference = (obj, value) => obj && obj.set('_ref', value)
 
-export const getEntityReference = obj => get(obj, '_ref')
+export const getEntityReference = obj => obj._ref
 
 export const hasEntityReference = obj => Boolean(getEntityReference(obj))
-
-// existingObjects is of the shape {type: {id: Immutable({}), ...}, ...}
-// Here we deeply copy the non-Immutable layers (and copy by reference the Immutable objects)
-const copyExistingObjects = original =>
-    Object.keys(original).reduce((copy, type) => {
-        copy[type] = Object.keys(original[type]).reduce((innerCopy, id) => {
-            innerCopy[id] = original[type][id]
-            return innerCopy
-        }, {})
-        return copy
-    }, {})
 
 // In order to optimize nion render performance, we want to both a) create immutable denormalized
 // objects (for simple equality comparison in our shouldUpdate / shouldRender logic) and b) cache
@@ -96,22 +72,26 @@ function denormalize(ref, entityStore, existingObjects = {}) {
         return { denormalized: undefined }
     }
 
-    let { type, id } = ref
+    const { type, id } = ref
+
     let manifest = cache.initializeManifest(ref)
 
     // Check to see if the underlying data has changed for the ref, if not - we'll return the
     // cached immutable denormalized version, otherwise we'll construct a new denormalized portion
     // and update the related refs that are part of this ref's dependency tree
-    const hasDataChanged = cache.hasDataChanged(ref, entityStore)
-
-    if (!hasDataChanged) {
-        const denormalized = cache.getDenormalized(type, id)
-        return { denormalized, related: manifest }
+    if (!cache.hasDataChanged(ref, entityStore)) {
+        return {
+            denormalized: cache.getDenormalized(type, id),
+            related: manifest,
+        }
     }
 
     // Check the existing object to see if a reference to the denormalized object already exists,
     // if so, use the existing denormalized object
-    const existingObject = get(existingObjects, [type, id])
+    // const existingObject = get(existingObjects, [type, id])
+    const existingObject =
+        existingObjects && existingObjects[type] && existingObjects[type][id]
+
     if (existingObject) {
         return {
             denormalized: existingObject,
@@ -120,15 +100,15 @@ function denormalize(ref, entityStore, existingObjects = {}) {
     }
 
     // Otherwise, fetch the entity from the entity store
-    const entity = get(entityStore, [type, id])
+    // const entity = get(entityStore, [type, id])
+    const entity = entityStore && entityStore[type] && entityStore[type][id]
+
     if (entity === undefined) {
         return { denormalized: undefined }
     }
 
     // Construct the new base denormalized object and add it to the existing denormalized cache
-    const attributes = camelizeKeys(entity.attributes)
-    const data = new Data(type, id, attributes)
-    let obj = Immutable(data, {
+    let obj = Immutable(new Data(type, id, camelizeKeys(entity.attributes)), {
         prototype: Data.prototype,
     })
 
@@ -141,11 +121,9 @@ function denormalize(ref, entityStore, existingObjects = {}) {
 
     // Now map over the relationships, accruing a list of related refs that we check for changes
     // against
-    const relationships = get(entity, 'relationships', {})
-
-    map(relationships, (relationship, key) => {
+    function mapRelationships(relationship, relKey) {
         const refOrRefs = relationship.data // The { id, type } pointers stored on 'data' key
-        const camelizedKey = camelize(key)
+        const camelizedKey = camelize(relKey)
 
         // Define the next denormalized object or array of denormalized objects that we will set
         // on the specific key. We'll also need to add a _ref property to this object so we can
@@ -154,31 +132,39 @@ function denormalize(ref, entityStore, existingObjects = {}) {
 
         if (refOrRefs === null) {
             obj = obj.set(camelizedKey, null)
+
             return
+        }
+
+        // (See the above note about the purpose of existingObjects for preventing infinite recursion in the case of relationship cycles)
+        // We need to create a copy here, though, as cycles on one branch of the relationship graph
+        // should not pollute the cycle detection for other branches.
+        const existingObjectsCopy = Object.assign({}, existingObjects)
+
+        if (!Array.isArray(refOrRefs)) {
+            const { denormalized, related } = denormalize(
+                refOrRefs,
+                entityStore,
+                existingObjectsCopy,
+            )
+
+            toSet = denormalized
+
+            mergeManifests(manifest, related)
         } else {
-            // (See the above note about the purpose of existingObjects for preventing infinite recursion in the case of relationship cycles)
-            // We need to create a copy here, though, as cycles on one branch of the relationship graph
-            // should not pollute the cycle detection for other branches.
-            const existingObjectsCopy = copyExistingObjects(existingObjects)
-            if (!Array.isArray(refOrRefs)) {
+            function mapCollection(_ref) {
                 const { denormalized, related } = denormalize(
-                    refOrRefs,
+                    _ref,
                     entityStore,
                     existingObjectsCopy,
                 )
-                toSet = denormalized
-                manifest = { ...manifest, ...related }
-            } else {
-                toSet = refOrRefs.map(_ref => {
-                    const { denormalized, related } = denormalize(
-                        _ref,
-                        entityStore,
-                        existingObjectsCopy,
-                    )
-                    manifest = { ...manifest, ...related }
-                    return denormalized
-                })
+
+                mergeManifests(manifest, related)
+
+                return denormalized
             }
+
+            toSet = refOrRefs.map(mapCollection)
         }
 
         // Establish a "_ref" property on the object, that acts as a pointer to the original
@@ -186,8 +172,17 @@ function denormalize(ref, entityStore, existingObjects = {}) {
         if (!hasEntityReference(toSet)) {
             toSet = addEntityReference(toSet, relationship)
         }
+
         obj = obj.set(camelizedKey, toSet)
-    })
+    }
+
+    if (entity.relationships) {
+        for (const key in entity.relationships) {
+            if (entity.relationships.hasOwnProperty(key)) {
+                mapRelationships(entity.relationships[key], key)
+            }
+        }
+    }
 
     // Establish a "_ref" property on the object, that acts as a pointer to the original entity
     if (!hasEntityReference(obj)) {
@@ -200,3 +195,8 @@ function denormalize(ref, entityStore, existingObjects = {}) {
 
     return { denormalized: obj, related: manifest }
 }
+
+const denormalizeWithCache = (reference, entityStore) =>
+    reference.entities.map(ref => denormalize(ref, entityStore).denormalized)
+
+export default denormalizeWithCache

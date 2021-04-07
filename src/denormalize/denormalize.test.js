@@ -5,7 +5,7 @@ import {
     makeFriendsEntity,
 } from './test.helpers'
 import denormalize from './index'
-import cache, { makeKey } from './cache'
+import cache from './cache'
 
 describe('nion/denormalize', () => {
     describe('simple denormalization', () => {
@@ -282,11 +282,12 @@ describe('nion/denormalize', () => {
             denormalize(ref, entityStoreManager.store)
 
             const manifest = cache.getManifest(type, id)
-            expect(Object.keys(manifest)).toHaveLength(2)
-            const userKey = makeKey(userEntity.type, userEntity.id)
-            const friendKey = makeKey(friendEntity.type, friendEntity.id)
-            expect(manifest).toHaveProperty(userKey)
-            expect(manifest).toHaveProperty(friendKey)
+
+            expect(manifest).toHaveProperty(userEntity.type)
+            expect(manifest[userEntity.type]).toHaveProperty(userEntity.id)
+
+            expect(manifest).toHaveProperty(friendEntity.type)
+            expect(manifest[friendEntity.type]).toHaveProperty(friendEntity.id)
         })
 
         it('If entities in the manifest have not changed, it returns the cached object', () => {
