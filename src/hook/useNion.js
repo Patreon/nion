@@ -4,7 +4,7 @@ import { useDispatch, useMappedState } from 'redux-react-hook'
 import get from 'lodash/get'
 
 import { getUrl } from '../utilities/get-url'
-import { selectResourcesForKeys } from '../selectors'
+import { selectObjectWithRequest } from '../selectors'
 import nionActions from '../actions'
 import { INITIALIZE_DATAKEY, UPDATE_REF } from '../actions/types'
 import { makeRef } from '../transforms'
@@ -78,7 +78,7 @@ function useNion(decl) {
 
     const mapStateToProps = useCallback(
         state => ({
-            nion: selectResourcesForKeys([dataKey])(state)[dataKey],
+            nion: selectObjectWithRequest(dataKey)(state),
         }),
         [dataKey],
     )
