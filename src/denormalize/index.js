@@ -88,7 +88,6 @@ function denormalize(ref, entityStore, existingObjects = {}) {
 
     // Check the existing object to see if a reference to the denormalized object already exists,
     // if so, use the existing denormalized object
-    // const existingObject = get(existingObjects, [type, id])
     const existingObject =
         existingObjects && existingObjects[type] && existingObjects[type][id]
 
@@ -100,7 +99,6 @@ function denormalize(ref, entityStore, existingObjects = {}) {
     }
 
     // Otherwise, fetch the entity from the entity store
-    // const entity = get(entityStore, [type, id])
     const entity = entityStore && entityStore[type] && entityStore[type][id]
 
     if (entity === undefined) {
@@ -121,9 +119,9 @@ function denormalize(ref, entityStore, existingObjects = {}) {
 
     // Now map over the relationships, accruing a list of related refs that we check for changes
     // against
-    function mapRelationships(relationship, relKey) {
+    function mapRelationships(relationship, key) {
         const refOrRefs = relationship.data // The { id, type } pointers stored on 'data' key
-        const camelizedKey = camelize(relKey)
+        const camelizedKey = camelize(key)
 
         // Define the next denormalized object or array of denormalized objects that we will set
         // on the specific key. We'll also need to add a _ref property to this object so we can
@@ -196,7 +194,7 @@ function denormalize(ref, entityStore, existingObjects = {}) {
     return { denormalized: obj, related: manifest }
 }
 
-const denormalizeWithCache = (reference, entityStore) =>
-    reference.entities.map(ref => denormalize(ref, entityStore).denormalized)
+export const denormalizeEntities = (ref, entityStore) =>
+    ref.entities.map(entity => denormalize(entity, entityStore).denormalized)
 
-export default denormalizeWithCache
+export default denormalizeEntities
