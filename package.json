@@ -17,7 +17,7 @@
         "core-js": "^3.2.1",
         "deep-equal": "^1.0.1",
         "humps": "^2.0.1",
-        "isomorphic-fetch": "github:patreon/isomorphic-fetch#32ca40ad8a03c192f2f41217a674f8e5a2a35280",
+        "isomorphic-fetch": "^3.0.0",
         "lodash": "^4.17.20",
         "reselect": "^3.0.1",
         "seamless-immutable": "^7.1.2"
