@@ -24,7 +24,7 @@ const selectRequests = createSelector(
     nion => nion && nion.requests,
 )
 
-const denormalizeRef = (entities, ref) => {
+const denormalizeRef = (ref, entityStore) => {
     // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
 
     // JB (in ref to the comment above)
@@ -32,7 +32,7 @@ const denormalizeRef = (entities, ref) => {
     // this will simplify our assumptions
     if (!ref || ref.entities === undefined) return getGenericRefData(ref)
 
-    const denormalized = denormalizeEntities(ref, entities)
+    const denormalized = denormalizeEntities(ref, entityStore)
 
     return ref.isCollection ? denormalized : denormalized[0]
 }
@@ -46,37 +46,55 @@ const defaultRequest = Immutable({
 })
 
 // Store dataKey-specific selectors created on demand
-const selectByKey = { data: {}, dataObj: {}, object: {}, request: {} }
+const selectByKey = { data2: {}, data1: {}, obj: {}, owr: {}, ref: {}, req: {} }
+
+const selectRef = key => {
+    if (!selectByKey.ref[key]) {
+        selectByKey.ref[key] = createSelector(
+            selectReferences,
+            references => get(references, key),
+        )
+    }
+
+    return selectByKey.ref[key]
+}
 
 export const selectRequest = key => {
-    if (!selectByKey.request[key]) {
-        selectByKey.request[key] = createSelector(
+    if (!selectByKey.req[key]) {
+        selectByKey.req[key] = createSelector(
             selectRequests,
             requests => get(requests, key, defaultRequest),
         )
     }
 
-    return selectByKey.request[key]
+    return selectByKey.req[key]
+}
+
+const selectObj = key => {
+    if (!selectByKey.obj[key]) {
+        selectByKey.obj[key] = createSelector(
+            [selectRef(key), selectEntities],
+            (ref, entityStore) => denormalizeRef(ref, entityStore),
+        )
+    }
+
+    return selectByKey.obj[key]
 }
 
 // Selects the denormalized object plus all relevant request data from the store
 export const selectObjectWithRequest = key => {
-    if (!selectByKey.object[key]) {
-        selectByKey.object[key] = createSelector(
-            [selectReferences, selectEntities, selectRequests],
-            (references, entities, requests) => {
-                const ref = get(references, key)
-
-                return {
-                    obj: denormalizeRef(entities, ref),
-                    request: get(requests, key, defaultRequest),
-                    extra: omit(ref, ['entities', 'isCollection']),
-                }
-            },
+    if (!selectByKey.owr[key]) {
+        selectByKey.owr[key] = createSelector(
+            [selectObj(key), selectRef(key), selectRequest(key)],
+            (obj, ref, request) => ({
+                extra: omit(ref, ['entities', 'isCollection']),
+                obj,
+                request,
+            }),
         )
     }
 
-    return selectByKey.object[key]
+    return selectByKey.owr[key]
 }
 
 // Selects a keyed map of { obj, request } resources from the store taking an array of dataKeys
@@ -94,37 +112,33 @@ export const selectData = (key, defaultValue) => {
     if (typeof key !== 'string' && !Array.isArray(key)) {
         const selectorKey = `${key.type}[${key.id}]`
 
-        if (!selectByKey.dataObj[selectorKey]) {
-            selectByKey.dataObj[selectorKey] = createSelector(
+        if (!selectByKey.data1[selectorKey]) {
+            selectByKey.data1[selectorKey] = createSelector(
                 [selectEntities],
                 entityStore =>
-                    denormalizeEntities(
+                    denormalizeRef(
                         {
                             entities: [{ type: key.type, id: key.id }],
                         },
                         entityStore,
-                    )[0] || defaultValue,
+                    ) || defaultValue,
             )
         }
 
-        return selectByKey.dataObj[selectorKey]
+        return selectByKey.data1[selectorKey]
     }
 
     // Otherwise, use the _.get syntax to select the data
     const selectorKey = Array.isArray(key) ? key.join('.') : key
 
-    if (!selectByKey.data[selectorKey]) {
-        selectByKey.data[selectorKey] = createSelector(
-            [selectEntities, selectReferences],
-            (entities, references) => {
-                const path = Array.isArray(key)
-                    ? key
-                    : key.replace(']', '').split(/[.|[]/g)
+    if (!selectByKey.data2[selectorKey]) {
+        const path = Array.isArray(key)
+            ? key
+            : key.replace(']', '').split(/[.|[]/g)
 
-                const ref = references && references[path[0]]
-
-                const obj = denormalizeRef(entities, ref)
-
+        selectByKey.data2[selectorKey] = createSelector(
+            [selectObj(path[0])],
+            obj => {
                 if (obj === undefined) return defaultValue
 
                 return path.length === 1
@@ -134,5 +148,5 @@ export const selectData = (key, defaultValue) => {
         )
     }
 
-    return selectByKey.data[selectorKey]
+    return selectByKey.data2[selectorKey]
 }
