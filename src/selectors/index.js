@@ -46,7 +46,7 @@ const defaultRequest = Immutable({
 })
 
 // Store dataKey-specific selectors created on demand
-const selectByKey = { data2: {}, data1: {}, obj: {}, owr: {}, ref: {}, req: {} }
+const selectByKey = { data: {}, obj: {}, owr: {}, ref: {}, req: {} }
 
 const selectRef = key => {
     if (!selectByKey.ref[key]) {
@@ -110,10 +110,10 @@ export const selectResourcesForKeys = keys => state =>
 export const selectData = (key, defaultValue) => {
     // If we pass in an object of { type, id } signature, denormalize the corresponding entity
     if (typeof key !== 'string' && !Array.isArray(key)) {
-        const selectorKey = `${key.type}[${key.id}]`
+        const selectorKey = `${key.type}(${key.id})`
 
-        if (!selectByKey.data1[selectorKey]) {
-            selectByKey.data1[selectorKey] = createSelector(
+        if (!selectByKey.data[selectorKey]) {
+            selectByKey.data[selectorKey] = createSelector(
                 [selectEntities],
                 entityStore =>
                     denormalizeRef(
@@ -125,18 +125,18 @@ export const selectData = (key, defaultValue) => {
             )
         }
 
-        return selectByKey.data1[selectorKey]
+        return selectByKey.data[selectorKey]
     }
 
     // Otherwise, use the _.get syntax to select the data
     const selectorKey = Array.isArray(key) ? key.join('.') : key
 
-    if (!selectByKey.data2[selectorKey]) {
+    if (!selectByKey.data[selectorKey]) {
         const path = Array.isArray(key)
             ? key
             : key.replace(']', '').split(/[.|[]/g)
 
-        selectByKey.data2[selectorKey] = createSelector(
+        selectByKey.data[selectorKey] = createSelector(
             [selectObj(path[0])],
             obj => {
                 if (obj === undefined) return defaultValue
@@ -148,5 +148,5 @@ export const selectData = (key, defaultValue) => {
         )
     }
 
-    return selectByKey.data2[selectorKey]
+    return selectByKey.data[selectorKey]
 }

@@ -1,7 +1,6 @@
 import { useEffect, useCallback, useMemo } from 'react'
 import { useDispatch, useMappedState } from 'redux-react-hook'
 // import { useDispatch, useSelector } from 'react-redux' // TODO: Use hooks from React Redux 7.x instead
-import get from 'lodash/get'
 
 import { getUrl } from '../utilities/get-url'
 import { selectObjectWithRequest } from '../selectors'
@@ -11,7 +10,8 @@ import { makeRef } from '../transforms'
 
 import { areMergedPropsEqual } from '../decorator/should-rerender'
 
-import { withDebug } from './useNion.util'
+import { isDevtoolEnabled } from '../devtool'
+import { prepareStackTrace, withStats } from '../devtool/hooks'
 
 export const ERROR_INVALID_NION_ACTION = 'Invalid Nion action'
 
@@ -21,26 +21,24 @@ function coerceDeclaration(declaration) {
         : declaration
 }
 
-function getOptions(decl, params, actionOptions, body) {
-    const declaration = coerceDeclaration(decl)
-
-    const o = {
+function getOptions(declaration, params, actionOptions, body) {
+    const options = {
         declaration,
         endpoint: getUrl(declaration, params),
     }
 
     if (actionOptions) {
-        o.meta = {
-            append: get(actionOptions, 'append'),
-            appendKey: get(actionOptions, 'appendKey'),
+        options.meta = {
+            append: actionOptions?.append,
+            appendKey: actionOptions?.appendKey,
         }
     }
 
     if (body) {
-        o.body = body
+        options.body = body
     }
 
-    return o
+    return options
 }
 
 function makeResCallback(method, decl, dispatch) {
@@ -50,31 +48,32 @@ function makeResCallback(method, decl, dispatch) {
 
     if (method === 'get') {
         return (params, actionOptions) => {
-            const o = getOptions(decl, params, actionOptions)
+            const opt = getOptions(decl, params, actionOptions)
 
-            return nionActions[method](o.declaration.dataKey, o)(dispatch)
+            return nionActions[method](opt.declaration.dataKey, opt)(dispatch)
         }
     }
 
     return (body, params, actionOptions) => {
-        const o = getOptions(decl, params, actionOptions, body)
+        const opt = getOptions(decl, params, actionOptions, body)
 
-        return nionActions[method](o.declaration.dataKey, o)(dispatch)
+        return nionActions[method](opt.declaration.dataKey, opt)(dispatch)
     }
 }
 
-function useNion(decl) {
+function useNion(declaration) {
     const dispatch = useDispatch()
 
-    const { dataKey, fetchOnMount, initialRef } = useMemo(() => {
-        if (typeof decl === 'string') return { dataKey: decl }
+    const [decl, dataKey, fetchOnMount, initialRef] = useMemo(() => {
+        const coerced = coerceDeclaration(declaration)
 
-        return {
-            dataKey: get(decl, 'dataKey'),
-            fetchOnMount: get(decl, 'fetchOnMount'),
-            initialRef: get(decl, 'initialRef'),
-        }
-    }, [decl])
+        return [
+            coerced,
+            coerced?.dataKey,
+            coerced?.fetchOnMount,
+            coerced?.initialRef,
+        ]
+    }, [declaration])
 
     const mapStateToProps = useCallback(
         state => ({
@@ -86,44 +85,40 @@ function useNion(decl) {
     const state = useMappedState(mapStateToProps, areMergedPropsEqual)
     // const state = useSelector(mapStateToProps, areMergedPropsEqual)
 
-    const { extra, obj, objExists, objId, objType, request } = useMemo(() => {
-        const nionObj = get(state, 'nion.obj')
+    const { extra, obj, objExists, request } = useMemo(() => {
+        const nionObj = state?.nion?.obj
 
         return {
-            extra: get(state, 'nion.extra'),
+            extra: state?.nion?.extra,
             obj: nionObj,
             objExists: Boolean(nionObj),
-            objId: get(nionObj, 'id'),
-            objType: get(nionObj, 'type'),
-            request: get(state, 'nion.request'),
+            request: state?.nion?.request,
         }
     }, [state])
 
-    const { getRes, patchRes, postRes, putRes } = useMemo(
+    const { deleteRes, getRes, patchRes, postRes, putRes } = useMemo(
         () => ({
+            deleteRes: (params, actionOptions) => {
+                if (!decl.objType || !decl.objId) return
+
+                const opt = getOptions(decl, params, actionOptions)
+
+                // TODO: Refactor ref to delete to not be mutative.
+                // https://github.com/Patreon/nion/pull/67
+                opt.refToDelete = actionOptions.refToDelete
+                    ? actionOptions.refToDelete
+                    : { id: decl.objId, type: decl.objType }
+
+                return nionActions.delete(opt.declaration.dataKey, opt)(
+                    dispatch,
+                )
+            },
             getRes: makeResCallback('get', decl, dispatch),
             patchRes: makeResCallback('patch', decl, dispatch),
             postRes: makeResCallback('post', decl, dispatch),
             putRes: makeResCallback('put', decl, dispatch),
         }),
         [decl, dispatch],
-    )
-
-    const deleteRes = useCallback(
-        (params, actionOptions) => {
-            if (!objId || !objType) return
-
-            const o = getOptions(decl, params, actionOptions)
-
-            // TODO: Refactor ref to delete to not be mutative.
-            // https://github.com/Patreon/nion/pull/67
-            o.refToDelete = actionOptions.refToDelete
-                ? actionOptions.refToDelete
-                : { id: objId, type: objType }
-
-            return nionActions.delete(o.declaration.dataKey, o)(dispatch)
-        },
-        [decl, dispatch, objId, objType],
     )
 
     const updateEntity = useCallback(
@@ -175,15 +170,28 @@ function useNion(decl) {
         if (fetchOnMount) getRes()
     }, [fetchOnMount, getRes])
 
-    const props = useMemo(() => [obj, actions, request, extra], [
-        obj,
-        actions,
-        request,
-        extra,
-    ])
+    const props = [obj, actions, request, extra]
 
-    return withDebug(props, dataKey, decl, dispatch)
-    // return props
+    if (isDevtoolEnabled()) {
+        let trace = new Error()
+
+        let calledBy, pst
+
+        if (typeof Error.prepareStackTrace === 'function') {
+            pst = Error.prepareStackTrace
+        }
+
+        Error.prepareStackTrace = prepareStackTrace
+        Error.captureStackTrace(trace)
+
+        calledBy = trace.stack?.component
+
+        Error.prepareStackTrace = pst
+
+        return withStats(calledBy, decl, declaration, props)
+    }
+
+    return props
 }
 
 export default useNion
