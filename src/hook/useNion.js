@@ -1,202 +1,197 @@
 import { useEffect, useCallback, useMemo } from 'react'
 import { useDispatch, useMappedState } from 'redux-react-hook'
-import get from 'lodash/get'
+// import { useDispatch, useSelector } from 'react-redux' // TODO: Use hooks from React Redux 7.x instead
 
 import { getUrl } from '../utilities/get-url'
-import { selectResourcesForKeys } from '../selectors'
+import { selectObjectWithRequest } from '../selectors'
 import nionActions from '../actions'
 import { INITIALIZE_DATAKEY, UPDATE_REF } from '../actions/types'
 import { makeRef } from '../transforms'
 
-function useNion(declaration, deps = []) {
+import { areMergedPropsEqual } from '../decorator/should-rerender'
+
+import { isDevtoolEnabled } from '../devtool'
+import { prepareStackTrace, withStats } from '../devtool/hooks'
+
+export const ERROR_INVALID_NION_ACTION = 'Invalid Nion action'
+
+function coerceDeclaration(declaration) {
+    return typeof declaration === 'string'
+        ? { dataKey: declaration }
+        : declaration
+}
+
+function getOptions(declaration, params, actionOptions, body) {
+    const options = {
+        declaration,
+        endpoint: getUrl(declaration, params),
+    }
+
+    if (actionOptions) {
+        options.meta = {
+            append: actionOptions?.append,
+            appendKey: actionOptions?.appendKey,
+        }
+    }
+
+    if (body) {
+        options.body = body
+    }
+
+    return options
+}
+
+function makeResCallback(method, decl, dispatch) {
+    if (typeof nionActions[method] !== 'function') {
+        throw new Error(ERROR_INVALID_NION_ACTION)
+    }
+
+    if (method === 'get') {
+        return (params, actionOptions) => {
+            const opt = getOptions(decl, params, actionOptions)
+
+            return nionActions[method](opt.declaration.dataKey, opt)(dispatch)
+        }
+    }
+
+    return (body, params, actionOptions) => {
+        const opt = getOptions(decl, params, actionOptions, body)
+
+        return nionActions[method](opt.declaration.dataKey, opt)(dispatch)
+    }
+}
+
+function useNion(declaration) {
     const dispatch = useDispatch()
 
-    // convert `useNion('currentUser') => useNion({dataKey: 'currentUser'})`
-    const coercedDeclaration = useMemo(() => {
-        return typeof declaration === 'string'
-            ? { dataKey: declaration }
-            : declaration
-        // eslint-disable-next-line
-    }, deps)
+    const [decl, dataKey, fetchOnMount, initialRef] = useMemo(() => {
+        const coerced = coerceDeclaration(declaration)
 
-    const selectNionResourcesForDataKeys = useMemo(() => {
-        return selectResourcesForKeys([coercedDeclaration.dataKey], true)
-    }, [coercedDeclaration.dataKey])
+        return [
+            coerced,
+            coerced?.dataKey,
+            coerced?.fetchOnMount,
+            coerced?.initialRef,
+        ]
+    }, [declaration])
 
     const mapStateToProps = useCallback(
         state => ({
-            nion: selectNionResourcesForDataKeys(state)[
-                coercedDeclaration.dataKey
-            ],
+            nion: selectObjectWithRequest(dataKey)(state),
         }),
-        [coercedDeclaration.dataKey, selectNionResourcesForDataKeys],
+        [dataKey],
     )
 
-    // get entity, request, and extra data from the store
-    const { nion } = useMappedState(mapStateToProps)
+    const state = useMappedState(mapStateToProps, areMergedPropsEqual)
+    // const state = useSelector(mapStateToProps, areMergedPropsEqual)
 
-    const getResources = useCallback(
-        (params, actionOptions = {}) => {
-            const endpoint = getUrl(coercedDeclaration, params)
-            return nionActions.get(coercedDeclaration.dataKey, {
-                declaration: coercedDeclaration,
-                endpoint,
-                meta: {
-                    append: get(actionOptions, 'append'),
-                    appendKey: get(actionOptions, 'appendKey'),
-                },
-            })(dispatch)
-        },
-        [coercedDeclaration, dispatch],
-    )
+    const { extra, obj, objExists, request } = useMemo(() => {
+        const nionObj = state?.nion?.obj
 
-    const postResource = useCallback(
-        (body = {}, params, actionOptions) => {
-            const endpoint = getUrl(coercedDeclaration, params)
+        return {
+            extra: state?.nion?.extra,
+            obj: nionObj,
+            objExists: Boolean(nionObj),
+            request: state?.nion?.request,
+        }
+    }, [state])
 
-            return nionActions.post(coercedDeclaration.dataKey, {
-                endpoint,
-                declaration: coercedDeclaration,
-                body,
-                meta: {
-                    append: get(actionOptions, 'append'),
-                    appendKey: get(actionOptions, 'appendKey'),
-                },
-            })(dispatch)
-        },
-        [coercedDeclaration, dispatch],
-    )
+    const { deleteRes, getRes, patchRes, postRes, putRes } = useMemo(
+        () => ({
+            deleteRes: (params, actionOptions) => {
+                if (!decl.objType || !decl.objId) return
 
-    const putResource = useCallback(
-        (body = {}, params, actionOptions) => {
-            const endpoint = getUrl(coercedDeclaration, params)
+                const opt = getOptions(decl, params, actionOptions)
 
-            return nionActions.put(coercedDeclaration.dataKey, {
-                endpoint,
-                declaration: coercedDeclaration,
-                body,
-                meta: {
-                    append: get(actionOptions, 'append'),
-                    appendKey: get(actionOptions, 'appendKey'),
-                },
-            })(dispatch)
-        },
-        [coercedDeclaration, dispatch],
-    )
+                // TODO: Refactor ref to delete to not be mutative.
+                // https://github.com/Patreon/nion/pull/67
+                opt.refToDelete = actionOptions.refToDelete
+                    ? actionOptions.refToDelete
+                    : { id: decl.objId, type: decl.objType }
 
-    const patchResource = useCallback(
-        (body = {}, params) => {
-            const endpoint = getUrl(coercedDeclaration, params)
-            return nionActions.patch(coercedDeclaration.dataKey, {
-                endpoint,
-                declaration: coercedDeclaration,
-                body,
-            })(dispatch)
-        },
-        [coercedDeclaration, dispatch],
-    )
-
-    const deleteDispatchFn = useCallback(
-        (refToDelete = {}, params, options = {}) => {
-            // TODO: Refactor ref to delete to not be mutative.
-            if (options.refToDelete) {
-                refToDelete = options.refToDelete
-            }
-            const endpoint = getUrl(coercedDeclaration, params)
-            return nionActions.delete(coercedDeclaration.dataKey, {
-                ...options,
-                declaration: coercedDeclaration,
-                endpoint,
-                refToDelete,
-            })(dispatch)
-        },
-        [coercedDeclaration, dispatch],
-    )
-
-    const updateRef = useCallback(
-        ref => {
-            return dispatch({
-                type: UPDATE_REF,
-                payload: {
-                    ref: makeRef(ref),
-                },
-                meta: {
-                    dataKey: coercedDeclaration.dataKey,
-                },
-            })
-        },
-        [coercedDeclaration.dataKey, dispatch],
+                return nionActions.delete(opt.declaration.dataKey, opt)(
+                    dispatch,
+                )
+            },
+            getRes: makeResCallback('get', decl, dispatch),
+            patchRes: makeResCallback('patch', decl, dispatch),
+            postRes: makeResCallback('post', decl, dispatch),
+            putRes: makeResCallback('put', decl, dispatch),
+        }),
+        [decl, dispatch],
     )
 
     const updateEntity = useCallback(
         ({ type, id }, attributes) => {
-            return dispatch(nionActions.updateEntity({ type, id }, attributes))
+            dispatch(nionActions.updateEntity({ type, id }, attributes))
         },
         [dispatch],
     )
 
-    const ref = useMemo(
-        () => (nion.obj ? { id: nion.obj.id, type: nion.obj.type } : null),
-        [nion.obj],
+    const updateRef = useCallback(
+        value => {
+            dispatch({
+                type: UPDATE_REF,
+                payload: {
+                    ref: makeRef(value),
+                },
+                meta: {
+                    dataKey,
+                },
+            })
+        },
+        [dataKey, dispatch],
     )
-
-    const deleteResource = useCallback(
-        (props, options) => deleteDispatchFn(ref, props, options),
-        [ref, deleteDispatchFn],
-    )
-
-    useEffect(() => {
-        if (coercedDeclaration.fetchOnMount) {
-            getResources()
-        }
-    }, [coercedDeclaration.fetchOnMount, getResources])
 
     const actions = useMemo(
         () => ({
-            get: getResources,
-            put: putResource,
-            post: postResource,
-            patch: patchResource,
-            delete: deleteResource,
-            updateRef,
+            delete: deleteRes,
+            get: getRes,
+            patch: patchRes,
+            post: postRes,
+            put: putRes,
             updateEntity,
+            updateRef,
         }),
-        [
-            getResources,
-            putResource,
-            postResource,
-            patchResource,
-            deleteResource,
-            updateRef,
-            updateEntity,
-        ],
+        [deleteRes, getRes, patchRes, postRes, putRes, updateEntity, updateRef],
     )
 
-    const initializeDataKey = useCallback(
-        (dataKey, daRef) =>
-            dispatch({
-                type: INITIALIZE_DATAKEY,
-                payload: { ref: daRef },
-                meta: { dataKey },
-            }),
-        [dispatch],
-    )
-    // pull existing data from store by ref if you need to
     useEffect(() => {
-        if (!nion.obj) {
-            initializeDataKey(
-                coercedDeclaration.dataKey,
-                coercedDeclaration.initialRef,
-            )
-        }
-    }, [
-        coercedDeclaration.dataKey,
-        coercedDeclaration.initialRef,
-        initializeDataKey,
-        nion.obj,
-    ])
+        if (objExists) return
 
-    return [nion.obj, actions, nion.request, nion.extra]
+        dispatch({
+            type: INITIALIZE_DATAKEY,
+            payload: { ref: initialRef },
+            meta: { dataKey },
+        })
+    }, [dataKey, dispatch, initialRef, objExists])
+
+    useEffect(() => {
+        if (fetchOnMount) getRes()
+    }, [fetchOnMount, getRes])
+
+    const props = [obj, actions, request, extra]
+
+    if (isDevtoolEnabled()) {
+        let trace = new Error()
+
+        let calledBy, pst
+
+        if (typeof Error.prepareStackTrace === 'function') {
+            pst = Error.prepareStackTrace
+        }
+
+        Error.prepareStackTrace = prepareStackTrace
+        Error.captureStackTrace(trace)
+
+        calledBy = trace.stack?.component
+
+        Error.prepareStackTrace = pst
+
+        return withStats(calledBy, decl, declaration, props)
+    }
+
+    return props
 }
 
 export default useNion

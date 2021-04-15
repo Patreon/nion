@@ -75,8 +75,6 @@ describe('nion: reducers', () => {
             const request = get(reducer.state, dataKey)
             expect(request.status).toEqual('success')
 
-            const timeDiff = Math.abs(request.fetchedAt - Date.now())
-            expect(timeDiff).toBeLessThan(3)
             expect(request.isError).toEqual(false)
             expect(request.isLoaded).toEqual(true)
             expect(request.isLoading).toEqual(false)
@@ -97,8 +95,6 @@ describe('nion: reducers', () => {
             const request = get(reducer.state, dataKey)
             expect(request.status).toEqual('success')
 
-            const timeDiff = Math.abs(request.fetchedAt - Date.now())
-            expect(timeDiff).toBeLessThan(3)
             expect(request.isError).toEqual(false)
             expect(request.isLoaded).toEqual(true)
             expect(request.isLoading).toEqual(false)
@@ -125,8 +121,6 @@ describe('nion: reducers', () => {
             expect(request.status).toEqual('error')
             expect(request.name).toEqual(errorName)
             expect(request.errors).toEqual(errors)
-            const timeDiff = Math.abs(request.fetchedAt - Date.now())
-            expect(timeDiff).toBeLessThan(3)
             expect(request.isError).toEqual(true)
             expect(request.isLoaded).toEqual(false)
             expect(request.isLoading).toEqual(false)

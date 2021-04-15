@@ -1,64 +1,82 @@
-import get from 'lodash/get'
-import map from 'lodash/map'
+export function mergeManifests(a, b) {
+    for (const type in b) {
+        if (b.hasOwnProperty(type)) {
+            for (const id in b[type]) {
+                if (b[type].hasOwnProperty(id)) {
+                    a[type] = a[type] || {}
+                    a[type][id] = b[type][id]
+                }
+            }
+        }
+    }
 
-export const makeKey = (type, id) => `${type}:${id}`
-
+    return a
+}
 class DenormalizationCache {
-    denormalized = {}
+    denorm = {}
     manifests = {}
     entities = {}
 
-    initializeManifest = ref => {
-        const { type, id } = ref
-        const key = makeKey(type, id)
-        return { [key]: ref }
-    }
+    initializeManifest = ref => ({ [ref.type]: { [ref.id]: ref } })
 
     addDenormalized = (type, id, data) => {
-        const key = makeKey(type, id)
-        this.denormalized[key] = data
+        this.denorm[type] = this.denorm[type] || {}
+        this.denorm[type][id] = data
     }
+
+    getDenormalized = (type, id) => this.denorm[type] && this.denorm[type][id]
 
     addEntity = entity => {
-        const entityKey = makeKey(entity.type, entity.id)
-        this.entities[entityKey] = entity
+        this.entities[entity.type] = this.entities[entity.type] || {}
+        this.entities[entity.type][entity.id] = entity
     }
+
+    getEntity = (type, id) => this.entities[type] && this.entities[type][id]
 
     addManifest = (entity, manifest) => {
-        const entityKey = makeKey(entity.type, entity.id)
-        this.manifests[entityKey] = this.manifests[entityKey] || {}
+        const { type, id } = entity
 
-        map(manifest, relatedRef => {
-            const relationshipKey = makeKey(relatedRef.type, relatedRef.id)
-            this.manifests[entityKey][relationshipKey] = relatedRef
-        })
+        this.manifests[type] = this.manifests[type] || {}
+        this.manifests[type][id] = this.manifests[type][id] || {}
+
+        mergeManifests(this.manifests[type][id], manifest)
     }
 
-    getEntity = (type, id) => {
-        const key = makeKey(type, id)
-        return this.entities[key]
-    }
-
-    getManifest = (type, id) => {
-        const key = makeKey(type, id)
-        return this.manifests[key]
-    }
-
-    getDenormalized = (type, id) => {
-        const key = makeKey(type, id)
-        return this.denormalized[key]
-    }
+    getManifest = (type, id) => this.manifests[type] && this.manifests[type][id]
 
     hasDataChanged = (ref, entityStore) => {
-        const manifest = this.getManifest(ref.type, ref.id) || {}
-        const toCheck = [ref].concat(Object.values(manifest))
+        if (!entityStore) return true
 
-        return toCheck.some(
-            ({ type, id }) =>
-                this.getEntity(type, id) !== get(entityStore, [type, id]),
-        )
+        if (
+            this.getEntity(ref.type, ref.id) !==
+            (entityStore[ref.type] && entityStore[ref.type][ref.id])
+        ) {
+            return true
+        }
+
+        const manifest = this.getManifest(ref.type, ref.id) || {}
+
+        for (const entityType in manifest) {
+            if (manifest.hasOwnProperty(entityType)) {
+                for (const entityId in manifest[entityType]) {
+                    if (manifest[entityType].hasOwnProperty(entityId)) {
+                        const { type, id } = manifest[entityType][entityId]
+
+                        if (
+                            this.getEntity(type, id) !==
+                            (entityStore[type] && entityStore[type][id])
+                        ) {
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+
+        return false
     }
 }
 
 const denormalizationCache = new DenormalizationCache()
+
 export default denormalizationCache

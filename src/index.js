@@ -1,17 +1,17 @@
-import decorator, * as decoratorHelpers from './decorator'
-import * as selectors from './selectors'
-import * as transforms from './transforms'
-
-export const { exists } = decoratorHelpers
-export const { selectData, selectRequest, selectResourcesForKeys } = selectors
-export const { makeRef } = transforms
+import decorator from './decorator'
+export default decorator
 
 export { default as actions } from './actions'
-export { default as configureNion } from './configure'
 export { default as bootstrapNion } from './bootstrap'
+export { default as configureNion } from './configure'
+export { exists } from './decorator'
 export { default as initializeNionDevTool } from './devtool'
 export { default as useNion } from './hook/useNion'
 export { titleFormatter } from './logger'
-export { selectObjectWithRequest } from './selectors'
-
-export default decorator
+export {
+    selectData,
+    selectObjectWithRequest,
+    selectRequest,
+    selectResourcesForKeys,
+} from './selectors'
+export { makeRef } from './transforms'
