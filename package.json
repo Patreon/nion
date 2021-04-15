@@ -1,11 +1,18 @@
 {
     "name": "@nion/nion",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "license": "MIT",
-    "browser": "es/index.js",
-    "main": "lib/index.js",
+    "browser": "./es/index.js",
+    "main": "./lib/index.js",
     "types": "./types/index.d.ts",
     "sideEffects": false,
+    "files": [
+        "/es",
+        "!/es/**/*.test.js",
+        "/lib",
+        "!/lib/**/*.test.js",
+        "types/index.d.ts"
+    ],
     "eslintConfig": {
         "globals": {
             "window": true,
@@ -18,7 +25,7 @@
         "deep-equal": "^1.0.1",
         "humps": "^2.0.1",
         "is-equal-shallow": "^0.1.3",
-        "isomorphic-fetch": "^3.0.0",
+        "isomorphic-fetch": "^2.2.1",
         "lodash": "^4.17.20",
         "reselect": "^3.0.1",
         "seamless-immutable": "^7.1.2",
