@@ -15,6 +15,8 @@ import { prepareStackTrace, withStats } from '../devtool/hooks'
 
 export const ERROR_INVALID_NION_ACTION = 'Invalid Nion action'
 
+const EMPTY_DEPS = []
+
 function coerceDeclaration(declaration) {
     return typeof declaration === 'string'
         ? { dataKey: declaration }
@@ -61,7 +63,7 @@ function makeResCallback(method, decl, dispatch) {
     }
 }
 
-function useNion(declaration) {
+function useNion(declaration, deps = EMPTY_DEPS) {
     const dispatch = useDispatch()
 
     const [decl, dataKey, fetchOnMount, initialRef] = useMemo(() => {
@@ -73,7 +75,7 @@ function useNion(declaration) {
             coerced?.fetchOnMount,
             coerced?.initialRef,
         ]
-    }, [declaration])
+    }, deps) // eslint-disable-line react-hooks/exhaustive-deps
 
     const mapStateToProps = useCallback(
         state => ({
