@@ -42,7 +42,7 @@ export function getGenericRefData(ref) {
 
 export const addEntityReference = (obj, value) => obj && obj.set('_ref', value)
 
-export const getEntityReference = obj => obj._ref
+export const getEntityReference = obj => obj?._ref
 
 export const hasEntityReference = obj => Boolean(getEntityReference(obj))
 
@@ -68,7 +68,7 @@ export const hasEntityReference = obj => Boolean(getEntityReference(obj))
 // in downstream selectors, redux connect functions, or componentShouldUpdate methods to optimize
 // re-render performance
 function denormalize(ref, entityStore, existingObjects = {}) {
-    if (!(ref && ref.type && ref.id)) {
+    if (!(ref?.type && ref?.id)) {
         return { denormalized: undefined }
     }
 
@@ -88,8 +88,7 @@ function denormalize(ref, entityStore, existingObjects = {}) {
 
     // Check the existing object to see if a reference to the denormalized object already exists,
     // if so, use the existing denormalized object
-    const existingObject =
-        existingObjects && existingObjects[type] && existingObjects[type][id]
+    const existingObject = existingObjects?.[type]?.[id]
 
     if (existingObject) {
         return {
@@ -99,7 +98,7 @@ function denormalize(ref, entityStore, existingObjects = {}) {
     }
 
     // Otherwise, fetch the entity from the entity store
-    const entity = entityStore && entityStore[type] && entityStore[type][id]
+    const entity = entityStore?.[type]?.[id]
 
     if (entity === undefined) {
         return { denormalized: undefined }

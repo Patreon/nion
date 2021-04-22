@@ -24,14 +24,14 @@ class DenormalizationCache {
         this.denorm[type][id] = data
     }
 
-    getDenormalized = (type, id) => this.denorm[type] && this.denorm[type][id]
+    getDenormalized = (type, id) => this.denorm[type]?.[id]
 
     addEntity = entity => {
         this.entities[entity.type] = this.entities[entity.type] || {}
         this.entities[entity.type][entity.id] = entity
     }
 
-    getEntity = (type, id) => this.entities[type] && this.entities[type][id]
+    getEntity = (type, id) => this.entities[type]?.[id]
 
     addManifest = (entity, manifest) => {
         const { type, id } = entity
@@ -42,14 +42,13 @@ class DenormalizationCache {
         mergeManifests(this.manifests[type][id], manifest)
     }
 
-    getManifest = (type, id) => this.manifests[type] && this.manifests[type][id]
+    getManifest = (type, id) => this.manifests[type]?.[id]
 
     hasDataChanged = (ref, entityStore) => {
         if (!entityStore) return true
 
         if (
-            this.getEntity(ref.type, ref.id) !==
-            (entityStore[ref.type] && entityStore[ref.type][ref.id])
+            this.getEntity(ref.type, ref.id) !== entityStore[ref.type]?.[ref.id]
         ) {
             return true
         }
@@ -63,8 +62,7 @@ class DenormalizationCache {
                         const { type, id } = manifest[entityType][entityId]
 
                         if (
-                            this.getEntity(type, id) !==
-                            (entityStore[type] && entityStore[type][id])
+                            this.getEntity(type, id) !== entityStore[type]?.[id]
                         ) {
                             return true
                         }
