@@ -87,40 +87,42 @@ function useNion(declaration, deps = EMPTY_DEPS) {
     const state = useMappedState(mapStateToProps, areMergedPropsEqual)
     // const state = useSelector(mapStateToProps, areMergedPropsEqual)
 
-    const { extra, obj, objExists, request } = useMemo(() => {
+    const { extra, obj, objExists, objId, objType, request } = useMemo(() => {
         const nionObj = state?.nion?.obj
 
         return {
             extra: state?.nion?.extra,
             obj: nionObj,
+            objId: nionObj?.id,
             objExists: Boolean(nionObj),
+            objType: nionObj?.type,
             request: state?.nion?.request,
         }
     }, [state])
 
-    const { deleteRes, getRes, patchRes, postRes, putRes } = useMemo(
+    const { getRes, patchRes, postRes, putRes } = useMemo(
         () => ({
-            deleteRes: (params, actionOptions) => {
-                if (!decl.objType || !decl.objId) return
-
-                const opt = getOptions(decl, params, actionOptions)
-
-                // TODO: Refactor ref to delete to not be mutative.
-                // https://github.com/Patreon/nion/pull/67
-                opt.refToDelete = actionOptions.refToDelete
-                    ? actionOptions.refToDelete
-                    : { id: decl.objId, type: decl.objType }
-
-                return nionActions.delete(opt.declaration.dataKey, opt)(
-                    dispatch,
-                )
-            },
             getRes: makeResCallback('get', decl, dispatch),
             patchRes: makeResCallback('patch', decl, dispatch),
             postRes: makeResCallback('post', decl, dispatch),
             putRes: makeResCallback('put', decl, dispatch),
         }),
         [decl, dispatch],
+    )
+
+    const deleteRes = useCallback(
+        (params, actionOptions) => {
+            const opt = getOptions(decl, params, actionOptions)
+
+            // TODO: Refactor ref to delete to not be mutative.
+            // https://github.com/Patreon/nion/pull/67
+            opt.refToDelete = actionOptions?.refToDelete
+                ? actionOptions?.refToDelete
+                : { id: objId, type: objType }
+
+            return nionActions.delete(opt.declaration.dataKey, opt)(dispatch)
+        },
+        [decl, dispatch, objId, objType],
     )
 
     const updateEntity = useCallback(
