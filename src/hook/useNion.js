@@ -18,7 +18,8 @@ export const ERROR_INVALID_NION_ACTION = 'Invalid Nion action'
 const EMPTY_DEPS = []
 
 // As of 2021-04-28 Firefox does not supports Error.captureStackTrace
-const SUPPORTS_CAPTURE_STACK_TRACE = 'captureStackTrace' in Error
+const SUPPORTS_CAPTURE_STACK_TRACE =
+    typeof Error.captureStackTrace === 'function'
 
 function coerceDeclaration(declaration) {
     return typeof declaration === 'string'
@@ -179,21 +180,25 @@ function useNion(declaration, deps = EMPTY_DEPS) {
 
     const props = [obj, actions, request, extra]
 
-    if (isDevtoolEnabled() && SUPPORTS_CAPTURE_STACK_TRACE) {
-        let trace = new Error()
-
+    if (isDevtoolEnabled()) {
         let calledBy, pst
 
-        if (typeof Error.prepareStackTrace === 'function') {
-            pst = Error.prepareStackTrace
+        if (SUPPORTS_CAPTURE_STACK_TRACE) {
+            const trace = new Error()
+
+            if (typeof Error.prepareStackTrace === 'function') {
+                pst = Error.prepareStackTrace
+            }
+
+            Error.prepareStackTrace = prepareStackTrace
+            Error.captureStackTrace(trace)
+
+            calledBy = trace.stack?.component
+
+            Error.prepareStackTrace = pst
+        } else {
+            calledBy = '[Component]'
         }
-
-        Error.prepareStackTrace = prepareStackTrace
-        Error.captureStackTrace(trace)
-
-        calledBy = trace.stack?.component
-
-        Error.prepareStackTrace = pst
 
         return withStats(calledBy, decl, declaration, props)
     }
