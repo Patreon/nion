@@ -6,7 +6,7 @@ import {
     extrasAreEqual,
     extensionsAreEqual,
     dataAreEqual,
-} from './should-rerender.js'
+} from '../should-rerender.js'
 
 const makeDataObject = (data = {}) => {
     return Immutable({ type: 'test', id: '123', ...data })

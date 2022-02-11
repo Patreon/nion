@@ -457,6 +457,13 @@ const nion = (declarations = {}, ...rest) => WrappedComponent => {
     ).map(key => {
         connectedComponent[key] = WrappedComponent[key]
     })
+    // Remove nion from the propTypes of the connected component, if it exists,
+    // since it will be injected by withNion
+    if (connectedComponent.propTypes) {
+        const { nion: _, ...restProps } = connectedComponent.propTypes
+        connectedComponent.propTypes = restProps
+    }
+
     return connectedComponent
 }
 
