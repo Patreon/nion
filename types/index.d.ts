@@ -18,7 +18,7 @@ export interface NionRequest {
     isProcessing: boolean
     name?: string
     pending: boolean
-    status?: 'error' | 'pending' | 'success'
+    status?: 'not called' | 'error' | 'pending' | 'success'
     statusCode?: number
 }
 
