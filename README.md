@@ -47,7 +47,7 @@ nion requires `redux-thunk` in order to handle its async actions, so you should 
 npm install nion redux-thunk --save
 ```
 
-Also, nion is best used as a decorator function, so you might also want to make sure you've got babel configured to handle decorator transpilation:
+Since nion can be used as a decorator function, you might want to make sure you've got babel configured to handle decorator transpilation:
 
 ```
 npm install babel-plugin-transform-decorators-legacy --save-dev
