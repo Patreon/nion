@@ -32,9 +32,13 @@ export interface GetActionOptions {
     appendKey?: string
 }
 
+export interface DeleteActionOptions {
+    refToDelete?: NionRef
+}
+
 export interface Actions<T> {
     get(params?: any, actionOptions?: GetActionOptions): Promise<T>
-    delete(params?: any): Promise<T>
+    delete(params?: any, actionOptions?: DeleteActionOptions): Promise<T>
     put(params?: any): Promise<T>
     patch(body?: any, params?: any): Promise<T>
     post(body?: any, params?: any): Promise<T>
