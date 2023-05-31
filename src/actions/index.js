@@ -54,8 +54,6 @@ const apiAction = (method, dataKey, options) => _dispatch => {
     const ErrorClass = ApiManager.getErrorClass(apiType)
     const apiOptions = ApiManager.getApiOptions()
 
-    console.log('this thing on????')
-
     // Return our async / thunk API call manager
     return _dispatch(async (dispatch, getState) => {
         await dispatch({
@@ -65,7 +63,6 @@ const apiAction = (method, dataKey, options) => _dispatch => {
 
         try {
             if (isNetworkAction(method) && !apiOptions.isClient) {
-                console.log('returning early with empty dispatch')
                 return await _dispatch()
             }
 
@@ -184,7 +181,6 @@ const deleteAction = (dataKey, options) => {
  * @deprecated
  */
 const bootstrapAction = ({ apiType, dataKey, data }) => {
-    console.log('hello!')
     const parse = ApiManager.getParser(apiType)
     return {
         type: NION_API_BOOTSTRAP,
