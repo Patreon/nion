@@ -141,3 +141,7 @@ declare function nion<Props>(
     ...declarations: [HOCDeclaration<Props>, ...Array<HOCDeclaration<Props>>]
 ): InferableComponentEnhancerWithProps<Props, HOCProps>
 export default nion
+
+export type ApiOptions = {
+    isClient: boolean
+}
