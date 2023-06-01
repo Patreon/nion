@@ -6,7 +6,13 @@ import Lifecycle from '../lifecycle'
 import map from 'lodash/map'
 
 export default (options = {}) => {
-    const { apiModules, defaultApi, extensions, lifecycleConfig } = options
+    const {
+        apiModules,
+        defaultApi,
+        extensions,
+        lifecycleConfig,
+        apiOptions,
+    } = options
 
     if (apiModules) {
         map(apiModules, (apiModule, name) => {
@@ -24,6 +30,10 @@ export default (options = {}) => {
 
     if (lifecycleConfig) {
         Lifecycle.registerLifecycleConfig(lifecycleConfig)
+    }
+
+    if (apiOptions) {
+        ApiManager.setApiOptions(apiOptions)
     }
 
     return {

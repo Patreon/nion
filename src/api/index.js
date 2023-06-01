@@ -9,6 +9,9 @@ const DEFAULT_API_TYPE = 'jsonApi'
 export class ApiManager {
     apiMap = {}
     defaultApiType = null
+    apiOptions = {
+        isClient: true,
+    }
 
     constructor() {
         map(includedApiModules, (module, key) => {
@@ -74,6 +77,14 @@ export class ApiManager {
         } else {
             this.defaultApiType = Object.keys(this.apiMap)[0]
         }
+    }
+
+    getApiOptions = () => {
+        return this.apiOptions
+    }
+
+    setApiOptions = options => {
+        this.apiOptions = options
     }
 }
 

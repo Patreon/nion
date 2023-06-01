@@ -10,6 +10,19 @@ import {
 import { selectData } from '../selectors'
 import Lifecycle from '../lifecycle'
 
+const isNetworkAction = method => {
+    switch (method) {
+        case 'GET':
+        case 'POST':
+        case 'PUT':
+        case 'PATCH':
+        case 'DELETE':
+            return true
+        default:
+            return false
+    }
+}
+
 export const getDataFromResponseText = ({ text }) => {
     // get data object from response text json string. return {} if text is falsey or is not valid json string format.
     const defaultObject = {}
@@ -39,6 +52,7 @@ const apiAction = (method, dataKey, options) => _dispatch => {
     const { apiType = ApiManager.getDefaultApi() } = declaration
     const parse = ApiManager.getParser(apiType)
     const ErrorClass = ApiManager.getErrorClass(apiType)
+    const apiOptions = ApiManager.getApiOptions()
 
     // Return our async / thunk API call manager
     return _dispatch(async (dispatch, getState) => {
@@ -48,6 +62,10 @@ const apiAction = (method, dataKey, options) => _dispatch => {
         })
 
         try {
+            if (isNetworkAction(method) && !apiOptions.isClient) {
+                return await _dispatch()
+            }
+
             const requestParams = await ApiManager.getRequestParameters(
                 apiType,
                 method,
