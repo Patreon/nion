@@ -5,6 +5,7 @@ import {
     NION_API_SUCCESS,
     NION_API_FAILURE,
     NION_API_BOOTSTRAP,
+    NION_API_NO_OPERATION,
     UPDATE_ENTITY,
 } from './types'
 import { selectData } from '../selectors'
@@ -63,7 +64,10 @@ const apiAction = (method, dataKey, options) => _dispatch => {
 
         try {
             if (isNetworkAction(method) && !apiOptions.isClient) {
-                return await _dispatch()
+                return await _dispatch({
+                    type: NION_API_NO_OPERATION,
+                    payload: {},
+                })
             }
 
             const requestParams = await ApiManager.getRequestParameters(
