@@ -17,6 +17,12 @@ class DenormalizationCache {
     manifests = {}
     entities = {}
 
+    purge = () => {
+        this.denorm = {}
+        this.manifests = {}
+        this.entities = {}
+    }
+
     initializeManifest = ref => ({ [ref.type]: { [ref.id]: ref } })
 
     addDenormalized = (type, id, data) => {
@@ -78,3 +84,7 @@ class DenormalizationCache {
 const denormalizationCache = new DenormalizationCache()
 
 export default denormalizationCache
+
+export function purgeDenormalizationCache() {
+    denormalizationCache.purge()
+}
