@@ -46,11 +46,10 @@ const defaultRequest = Immutable({
 })
 
 // Store dataKey-specific selectors created on demand
-const initialSelectorState = { data: {}, obj: {}, owr: {}, ref: {}, req: {} }
-let selectByKey = JSON.parse(JSON.stringify(initialSelectorState))
+let selectByKey = { data: {}, obj: {}, owr: {}, ref: {}, req: {} }
 
 export const purgeSelectorCache = () => {
-    selectByKey = JSON.parse(JSON.stringify(initialSelectorState))
+    selectByKey = { data: {}, obj: {}, owr: {}, ref: {}, req: {} }
 }
 
 const selectRef = key => {
