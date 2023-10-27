@@ -10,6 +10,7 @@ export { default as initializeNionDevTool } from './devtool'
 export { default as useNion } from './hook/useNion'
 export { titleFormatter } from './logger'
 export {
+    purgeSelectorCache,
     selectData,
     selectObjectWithRequest,
     selectRequest,
