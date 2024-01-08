@@ -32,6 +32,10 @@ export interface GetActionOptions {
     appendKey?: string
 }
 
+export interface PostActionOptions {
+    append?: boolean
+}
+
 export interface DeleteActionOptions {
     refToDelete?: NionRef
 }
@@ -41,7 +45,7 @@ export interface Actions<T> {
     delete(params?: any, actionOptions?: DeleteActionOptions): Promise<T>
     put(params?: any): Promise<T>
     patch(body?: any, params?: any): Promise<T>
-    post(body?: any, params?: any): Promise<T>
+    post(body?: any, params?: any, actionOptions?: PostActionOptions): Promise<T>
     updateEntity(ref: NionRef, attributes: any): Promise<T>
 }
 
