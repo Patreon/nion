@@ -112,6 +112,9 @@ const apiAction = (method, dataKey, options) => _dispatch => {
             if (!response.ok) {
                 const { status, statusText } = response
                 throw new ErrorClass(status, statusText, {
+                    // The spread operator doesn't spread in built-in properties from Response objects, but we want
+                    // to be able to access the URL in the error class for logging purposes, so we pass it in explicitly
+                    url: response.url,
                     ...response,
                     ...data,
                 })
