@@ -132,7 +132,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
     mapDeclarations((declaration, key, dataKey) => {
       dispatchProps[key] = {};
 
-      dispatchProps[key]['POST'] = (body = {}, params, actionOptions) => {
+      dispatchProps[key].POST = (body = {}, params, actionOptions) => {
         const endpoint = getUrl(declaration, params);
 
         return nionActions.post(dataKey, {
@@ -146,7 +146,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         })(dispatch);
       };
 
-      dispatchProps[key]['PATCH'] = (body = {}, params) => {
+      dispatchProps[key].PATCH = (body = {}, params) => {
         const endpoint = getUrl(declaration, params);
         return nionActions.patch(dataKey, {
           endpoint,
@@ -155,7 +155,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         })(dispatch);
       };
 
-      dispatchProps[key]['GET'] = (params, actionOptions = {}) => {
+      dispatchProps[key].GET = (params, actionOptions = {}) => {
         const endpoint = getUrl(declaration, params);
         return nionActions.get(dataKey, {
           declaration,
@@ -167,7 +167,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         })(dispatch);
       };
 
-      dispatchProps[key]['PUT'] = (params, actionOptions = {}) => {
+      dispatchProps[key].PUT = (params, actionOptions = {}) => {
         const endpoint = getUrl(declaration, params);
         return nionActions.put(dataKey, {
           declaration,
@@ -179,7 +179,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         })(dispatch);
       };
 
-      dispatchProps[key]['DELETE'] = (refToDelete = {}, params, options = {}) => {
+      dispatchProps[key].DELETE = (refToDelete = {}, params, options = {}) => {
         // TODO: Refactor ref to delete to not be mutative.
         if (options.refToDelete) {
           refToDelete = options.refToDelete;
@@ -248,7 +248,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
       });
 
       // Handle deletion, where we're passing in the ref attached to the dataKey to be deleted
-      const deleteDispatchFn = dispatchProps[key]['DELETE'];
+      const deleteDispatchFn = dispatchProps[key].DELETE;
       const deleteFn = (props, options) => deleteDispatchFn(ref, props, options);
       set(nextProps.nion, [key, 'actions', 'delete'], deleteFn);
 
@@ -315,7 +315,6 @@ const nion =
         // We want to trigger a fetch when the props change and lead to the creation of a new
         // dataKey, regardless of whether or not that happens as a result of a mount.
         forEach(nion._declarations, (declaration, key) => {
-          // eslint-disable-line no-shadow
           // If not fetching on init, don't do anything
           if (!declaration.fetchOnInit) {
             return;
@@ -355,7 +354,6 @@ const nion =
         // Iterate over the declarations provided to the component, deciding how to manage the
         // load state of each one
         forEach(nion._declarations, (declaration, key) => {
-          // eslint-disable-line no-shadow
           // If we're supplying a ref to be managed by nion, we'll want to attach it to the
           // state tree ahead of time (maybe not? maybe we want to have a "virtual" ref...
           // this is interesting)

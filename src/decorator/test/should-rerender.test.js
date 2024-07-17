@@ -27,7 +27,9 @@ const nionize = (obj) => ({ nion: obj });
 describe('nion: should-rerender', () => {
   describe('when there are extra or different top-level keys on nion', () => {
     describe('that are significant', () => {
-      let data, prevProps, nextProps;
+      let data;
+      let prevProps;
+      let nextProps;
 
       beforeEach(() => {
         data = makeDataObject();
@@ -146,7 +148,8 @@ describe('nion: should-rerender', () => {
 
   describe('entity data', () => {
     describe('when the denormalized data object is empty', () => {
-      let prevProps, nextProps;
+      let prevProps;
+      let nextProps;
 
       beforeEach(() => {
         prevProps = { user: { data: {} } };
@@ -161,7 +164,9 @@ describe('nion: should-rerender', () => {
     });
 
     describe('when the denormalized data objects are equal', () => {
-      let data, prevProps, nextProps;
+      let data;
+      let prevProps;
+      let nextProps;
 
       beforeEach(() => {
         data = makeDataObject({ name: 'test' });
@@ -177,7 +182,8 @@ describe('nion: should-rerender', () => {
     });
 
     describe('when the denormalized data objects are not equal', () => {
-      let prevProps, nextProps;
+      let prevProps;
+      let nextProps;
 
       beforeEach(() => {
         prevProps = {
@@ -198,7 +204,11 @@ describe('nion: should-rerender', () => {
 
   describe('extra data', () => {
     describe('when the extra data is all the same', () => {
-      let data, extraLinks, extraMeta, prevProps, nextProps;
+      let data;
+      let extraLinks;
+      let extraMeta;
+      let prevProps;
+      let nextProps;
 
       beforeEach(() => {
         data = makeDataObject({ name: 'test' });
@@ -226,7 +236,11 @@ describe('nion: should-rerender', () => {
     });
 
     describe('when the extra data has changed', () => {
-      let data, extraLinks, extraMeta, prevProps, nextProps;
+      let data;
+      let extraLinks;
+      let extraMeta;
+      let prevProps;
+      let nextProps;
 
       beforeEach(() => {
         data = makeDataObject({ name: 'test' });
@@ -255,7 +269,11 @@ describe('nion: should-rerender', () => {
     });
 
     describe('when the extra data has new keys', () => {
-      let data, extraLinks, extraMeta, prevProps, nextProps;
+      let data;
+      let extraLinks;
+      let extraMeta;
+      let prevProps;
+      let nextProps;
 
       beforeEach(() => {
         data = makeDataObject({ name: 'test' });
@@ -289,7 +307,9 @@ describe('nion: should-rerender', () => {
 
   describe('extensions metadata', () => {
     describe('when extensions not significantly changed', () => {
-      let data, prevProps, nextProps;
+      let data;
+      let prevProps;
+      let nextProps;
 
       beforeEach(() => {
         data = makeDataObject();
@@ -320,7 +340,9 @@ describe('nion: should-rerender', () => {
     });
 
     describe('when extension meta has changed', () => {
-      let data, prevProps, nextProps;
+      let data;
+      let prevProps;
+      let nextProps;
 
       beforeEach(() => {
         data = makeDataObject();

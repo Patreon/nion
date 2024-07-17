@@ -51,7 +51,9 @@ class DenormalizationCache {
   getManifest = (type, id) => this.manifests[type]?.[id];
 
   hasDataChanged = (ref, entityStore) => {
-    if (!entityStore) return true;
+    if (!entityStore) {
+      return true;
+    }
 
     if (this.getEntity(ref.type, ref.id) !== entityStore[ref.type]?.[ref.id]) {
       return true;

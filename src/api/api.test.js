@@ -49,21 +49,24 @@ describe('ApiManager', () => {
           afterRequest: jest.fn(),
           beforeRequest: jest.fn(),
         };
-        manager.getApiModule = jest.fn().mockReturnValue({ request: { ...mockValue } });
+        jest
+          .spyOn(manager, 'getApiModule')
+          .mockImplementation()
+          .mockReturnValue({ request: { ...mockValue } });
         expect(manager.getRequestHooks('jsonApi')).toEqual(mockValue);
       });
 
       it('should return a default value if no hook is provided', async () => {
-        manager.getApiModule = jest.fn().mockReturnValue({ request: {} });
+        jest.spyOn(manager, 'getApiModule').mockImplementation().mockReturnValue({ request: {} });
 
         const requestHooks = manager.getRequestHooks('jsonApi');
 
         expect(manager.getApiModule).toHaveBeenCalled();
 
         expect(typeof requestHooks.afterRequest).toBe('function');
-        expect(await requestHooks.afterRequest()).toBeUndefined();
+        await expect(requestHooks.afterRequest()).resolves.toBeUndefined();
         expect(typeof requestHooks.beforeRequest).toBe('function');
-        expect(await requestHooks.beforeRequest()).toBeUndefined();
+        await expect(requestHooks.beforeRequest()).resolves.toBeUndefined();
       });
     });
 

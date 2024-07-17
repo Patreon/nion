@@ -32,7 +32,9 @@ Data.prototype._exists = true;
 const makeGenericData = (obj) => Immutable(new GenericData(obj), { prototype: GenericData.prototype });
 
 export function getGenericRefData(ref) {
-  if (ref === null || ref === undefined) return null;
+  if (ref === null || ref === undefined) {
+    return null;
+  }
 
   return ref instanceof Array ? ref.map(makeGenericData) : makeGenericData(ref);
 }

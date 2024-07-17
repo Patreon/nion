@@ -13,7 +13,9 @@ function is(x, y) {
 }
 
 export default function shallowEqual(objA, objB) {
-  if (is(objA, objB)) return true;
+  if (is(objA, objB)) {
+    return true;
+  }
 
   if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
     return false;
@@ -22,7 +24,9 @@ export default function shallowEqual(objA, objB) {
   const keysA = Object.keys(objA);
   const keysB = Object.keys(objB);
 
-  if (keysA.length !== keysB.length) return false;
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
 
   for (let i = 0; i < keysA.length; i++) {
     const key = keysA[i];

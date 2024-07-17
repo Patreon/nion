@@ -26,7 +26,7 @@ describe('nion: actions', () => {
       nock.cleanAll();
     });
 
-    it('GET api action should create the correct actions ', async () => {
+    it('GET api action should create the correct actions', async () => {
       const apiEndpoint = new ApiEndpoint();
       const jsonPayload = { body: {} };
       const statusCode = 200;
@@ -51,7 +51,7 @@ describe('nion: actions', () => {
             fetchedAt: Date.now(),
             endpoint: apiEndpoint.url,
             method: 'GET',
-            statusCode: statusCode,
+            statusCode,
             isProcessing: false,
           },
           payload: {
@@ -100,7 +100,7 @@ describe('nion: actions', () => {
             fetchedAt: Date.now(),
             endpoint: apiEndpoint.url,
             method: 'GET',
-            statusCode: statusCode,
+            statusCode,
             isProcessing: true,
           },
           payload: {
@@ -124,7 +124,7 @@ describe('nion: actions', () => {
       });
     });
 
-    it('GET api action should handle errors with the correct actions ', async () => {
+    it('GET api action should handle errors with the correct actions', async () => {
       const apiEndpoint = new ApiEndpoint();
       const jsonPayload = { body: {} };
       const statusCode = 500;
@@ -149,7 +149,7 @@ describe('nion: actions', () => {
             fetchedAt: Date.now(),
             endpoint: apiEndpoint.url,
             method: 'GET',
-            statusCode: statusCode,
+            statusCode,
             isProcessing: false,
           },
         },

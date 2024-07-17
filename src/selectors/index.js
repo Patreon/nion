@@ -21,7 +21,9 @@ const denormalizeRef = (ref, entityStore) => {
   // JB (in ref to the comment above)
   // We know the API type, we should be storing this information with the payload
   // this will simplify our assumptions
-  if (!ref || ref.entities === undefined) return getGenericRefData(ref);
+  if (!ref || ref.entities === undefined) {
+    return getGenericRefData(ref);
+  }
 
   const denormalized = denormalizeEntities(ref, entityStore);
 
@@ -123,7 +125,9 @@ export const selectData = (key, defaultValue) => {
     const path = Array.isArray(key) ? key : key.replace(']', '').split(/[.|[]/g);
 
     selectByKey.data[selectorKey] = createSelector([selectObj(path[0])], (obj) => {
-      if (obj === undefined) return defaultValue;
+      if (obj === undefined) {
+        return defaultValue;
+      }
 
       return path.length === 1 ? obj : get(obj, path.slice(1, path.length), defaultValue);
     });

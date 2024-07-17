@@ -1,4 +1,3 @@
-/* eslint-disable react/no-multi-comp */
 /* eslint-disable react/prop-types */
 import React, { useEffect, useRef } from 'react';
 import { act } from 'react-dom/test-utils';
@@ -378,7 +377,7 @@ describe('nion hooks: integration tests', () => {
         const returned = useNion(
           {
             dataKey: 'child',
-            endpoint: endpoint,
+            endpoint,
             initialRef: makeRef(props.inputData),
           },
           [props.inputData],
@@ -389,7 +388,7 @@ describe('nion hooks: integration tests', () => {
       function Container(props) {
         const [test, actions] = useNion({
           dataKey: 'test',
-          endpoint: endpoint,
+          endpoint,
         });
 
         // useDebug([actions])
