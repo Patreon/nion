@@ -33,6 +33,9 @@ export function filterRelationshipsFromState(state, id, type) {
     const entityIndex = nextState[entityName];
     // eslint-disable-next-line guard-for-in
     for (const entityId in entityIndex) {
+      // TODO (legacied no-prototype-builtins)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-prototype-builtins
       if (!entityIndex.hasOwnProperty(entityId)) {
         return;
       }

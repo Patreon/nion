@@ -165,6 +165,9 @@ describe('nion: actions', () => {
         );
       } catch (err) {
         // TODO: Get this working with the ApiManager.getErrorClass class constructor
+        // TODO (legacied jest/no-conditional-expect)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line jest/no-conditional-expect
         expect(err).toBeInstanceOf(Error);
         // Replace the error in the expectedAction payload with the Error caught here
         // to simulate the logic of the payload construction

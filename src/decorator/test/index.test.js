@@ -25,8 +25,14 @@ describe('nion', () => {
     });
 
     beforeEach(() => {
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class WrappedComponent extends React.Component {
         static propTypes = {
+          // TODO (legacied react/no-unused-prop-types)
+          // This failure is legacied in and should be updated. DO NOT COPY.
+          // eslint-disable-next-line react/no-unused-prop-types
           nion: PropTypes.object.isRequired,
         };
 

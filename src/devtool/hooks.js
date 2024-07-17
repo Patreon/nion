@@ -64,6 +64,9 @@ function stats(filter, columns) {
     });
   }
 
+  // TODO (legacied no-console)
+  // This failure is legacied in and should be updated. DO NOT COPY.
+  // eslint-disable-next-line no-console
   console.table(data, columns);
 }
 
@@ -72,14 +75,23 @@ export const nionHookStats = {
   dataKeys: () => {
     hooks.dataKeys.sort(sortDataKeysAsc);
 
+    // TODO (legacied no-console)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-console
     console.log(hooks.dataKeys);
   },
   declarations: () => {
     hooks.declarations.sort(sortDataKeysAsc);
 
+    // TODO (legacied no-console)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-console
     console.log(hooks.declarations);
   },
   info: () => {
+    // TODO (legacied no-console)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-console
     console.table({
       Calls: hooks.totalCalls,
       Declarations: hooks.declarations.length,

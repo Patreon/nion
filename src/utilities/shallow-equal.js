@@ -12,6 +12,9 @@ function is(x, y) {
   }
 }
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default function shallowEqual(objA, objB) {
   if (is(objA, objB)) {
     return true;

@@ -11,17 +11,26 @@ import { useNion, makeRef, exists } from '../src/index';
 import { StoreContext } from 'redux-react-hook';
 import configureTestStore from './configure-test-store';
 
+// TODO (legacied jest/no-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line jest/no-export
 export function useDebug(deps) {
   const prev = useRef([]);
 
   useEffect(() => {
     const returned = deps;
 
+    // TODO (legacied no-unused-expressions)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-unused-expressions
     prev.current.length
+    // TODO (legacied no-console)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-console
       ? returned.forEach((r, i) => r !== prev.current[i] && console.log('r !== p[i]', r, prev.current[i], i))
       : 'initial render';
     prev.current = returned;
-    // eslint-disable-next-line
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
 
@@ -51,6 +60,9 @@ describe('nion hooks: integration tests', () => {
           dataKey: 'test',
           endpoint: buildUrl('/test'),
         });
+        // TODO (legacied react/no-unknown-property)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/no-unknown-property
         return <div returned={returned} />;
       }
 
@@ -101,6 +113,9 @@ describe('nion hooks: integration tests', () => {
 
       function Container() {
         const returned = useNion({ dataKey: 'test', endpoint });
+        // TODO (legacied react/no-unknown-property)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/no-unknown-property
         return <div returned={returned} />;
       }
 
@@ -154,6 +169,9 @@ describe('nion hooks: integration tests', () => {
           endpoint,
           fetchOnMount: true,
         });
+        // TODO (legacied react/no-unknown-property)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/no-unknown-property
         return <div returned={returned} />;
       }
 
@@ -163,6 +181,9 @@ describe('nion hooks: integration tests', () => {
 
       await P.delay(15); // Wait 15ms for the request reducer to update
 
+      // TODO (legacied no-unused-vars)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-unused-vars
       const [test, _, request] = getProp();
       expect(request.status).toEqual('success');
       expect(test.name).toEqual(name);
@@ -198,6 +219,9 @@ describe('nion hooks: integration tests', () => {
 
       function Container() {
         const returned = useNion({ dataKey: 'test', endpoint });
+        // TODO (legacied react/no-unknown-property)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/no-unknown-property
         return <div returned={returned} />;
       }
 
@@ -248,6 +272,9 @@ describe('nion hooks: integration tests', () => {
 
       function Container() {
         const returned = useNion({ dataKey: 'test', endpoint });
+        // TODO (legacied react/no-unknown-property)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/no-unknown-property
         return <div returned={returned} />;
       }
 
@@ -284,6 +311,9 @@ describe('nion hooks: integration tests', () => {
 
       function Container() {
         const returned = useNion({ dataKey: 'test', endpoint });
+        // TODO (legacied react/no-unknown-property)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/no-unknown-property
         return <div returned={returned} />;
       }
 
@@ -295,8 +325,14 @@ describe('nion hooks: integration tests', () => {
       let waitingFor = actions.get();
 
       await waitingFor.catch((err) => {
+        // TODO (legacied  jest/no-conditional-expect)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line  jest/no-conditional-expect
         expect(err).toBeInstanceOf(Error);
       });
+      // TODO (legacied no-unused-vars)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-unused-vars
       [_test, actions, request] = getProp();
       expect(request.status).toEqual('error');
       expect(request.isError).toEqual(true);
@@ -322,6 +358,9 @@ describe('nion hooks: integration tests', () => {
 
       function Container() {
         const returned = useNion({ dataKey: 'test', endpoint });
+        // TODO (legacied react/no-unknown-property)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/no-unknown-property
         return <div returned={returned} />;
       }
 
@@ -382,9 +421,15 @@ describe('nion hooks: integration tests', () => {
           },
           [props.inputData],
         );
+        // TODO (legacied react/no-unknown-property)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/no-unknown-property
         return <div returned={returned} />;
       }
 
+// TODO (legacied no-unused-vars)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line no-unused-vars
       function Container(props) {
         const [test, actions] = useNion({
           dataKey: 'test',
@@ -436,6 +481,9 @@ describe('hooks re-render performance', () => {
       });
       return React.useMemo(() => {
         numRenders += 1;
+        // TODO (legacied react/no-unknown-property)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/no-unknown-property
         return <div returned={returned} />;
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }, returned);
@@ -485,3 +533,5 @@ describe('hooks re-render performance', () => {
     expect(actions3).toBe(actions2);
   });
 });
+
+/* eslint-enable react/prop-types */

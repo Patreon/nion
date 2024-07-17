@@ -31,6 +31,9 @@ describe('ApiManager', () => {
       });
 
       it('should error out if you try to access an apiType that does not exist', () => {
+        // TODO (legacied jest/require-to-throw-message)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line jest/require-to-throw-message
         expect(() => manager.getApiModule('GuyFieriQL')).toThrow();
       });
     });

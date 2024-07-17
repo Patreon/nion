@@ -1,6 +1,9 @@
 import map from 'lodash/map';
 import { camelizeKeys } from 'humps';
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default class JsonApiError extends Error {
   constructor(status, statusText, response) {
     super();

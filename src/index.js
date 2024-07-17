@@ -1,4 +1,7 @@
 import decorator from './decorator';
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default decorator;
 
 export { default as actions } from './actions';

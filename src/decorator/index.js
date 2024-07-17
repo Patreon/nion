@@ -38,6 +38,9 @@ const getDefaultDeclarationOptions = () => ({
 });
 
 const processDefaultOptions = (declarations) => {
+  // TODO (legacied no-unused-vars)
+  // This failure is legacied in and should be updated. DO NOT COPY.
+  // eslint-disable-next-line no-unused-vars
   forEach(declarations, (declaration, key) => {
     forEach(getDefaultDeclarationOptions(), (defaultState, defaultKey) => {
       const option = get(declaration, defaultKey, defaultState);
@@ -124,6 +127,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
   };
 
   // Construct the dispatch methods to pass action creators to the component
+// TODO (legacied no-unused-vars)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line no-unused-vars
   const mapDispatchToProps = (dispatch, ownProps) => {
     const dispatchProps = {};
 
@@ -195,6 +201,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
       // Exposed, general nion data manipulating actions
       dispatchProps[key].updateRef = (ref) => {
+        // TODO (legacied no-unused-vars)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line no-unused-vars
         return new Promise((resolve, reject) => {
           dispatch({
             type: UPDATE_REF,
@@ -221,6 +230,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
     // Exposed, general nion data manipulating actions
     dispatchProps.updateEntity = ({ type, id }, attributes) => {
+      // TODO (legacied no-unused-vars)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-unused-vars
       return new Promise((resolve, reject) => {
         dispatch(nionActions.updateEntity({ type, id }, attributes));
         resolve();
@@ -234,6 +246,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
   const mergeProps = (stateProps, dispatchProps, ownProps) => {
     const nextProps = { ...stateProps, ...ownProps };
 
+// TODO (legacied no-unused-vars)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line no-unused-vars
     mapDeclarations((declaration, key, dataKey) => {
       const resource = get(stateProps.nion, [key]);
       const data = get(resource, ['data']);
@@ -293,6 +308,9 @@ const nion =
     // change multiple times before the redux store has updated (our nion actions are async)
     const fetchesByDataKey = {};
 
+        // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
     class WithNion extends Component {
       static displayName = `WithNion(${getDisplayName(WrappedComponent)})`;
 
@@ -366,6 +384,9 @@ const nion =
             }
 
             const { dataKey, initialRef } = declaration;
+            // TODO (legacied consistent-return)
+            // This failure is legacied in and should be updated. DO NOT COPY.
+            // eslint-disable-next-line consistent-return
             return nion._initializeDataKey(dataKey, initialRef);
           }
         });
@@ -398,6 +419,9 @@ const nion =
     // Remove nion from the propTypes of the connected component, if it exists,
     // since it will be injected by withNion
     if (connectedComponent.propTypes) {
+      // TODO (legacied no-unused-vars)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-unused-vars
       const { nion: _, ...restProps } = connectedComponent.propTypes;
       connectedComponent.propTypes = restProps;
     }
@@ -405,6 +429,9 @@ const nion =
     return connectedComponent;
   };
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default nion;
 
 // ----------------------------- Helper functions
