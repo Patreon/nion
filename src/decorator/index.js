@@ -127,9 +127,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
   };
 
   // Construct the dispatch methods to pass action creators to the component
-// TODO (legacied no-unused-vars)
-// This failure is legacied in and should be updated. DO NOT COPY.
-// eslint-disable-next-line no-unused-vars
+  // TODO (legacied no-unused-vars)
+  // This failure is legacied in and should be updated. DO NOT COPY.
+  // eslint-disable-next-line no-unused-vars
   const mapDispatchToProps = (dispatch, ownProps) => {
     const dispatchProps = {};
 
@@ -246,9 +246,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
   const mergeProps = (stateProps, dispatchProps, ownProps) => {
     const nextProps = { ...stateProps, ...ownProps };
 
-// TODO (legacied no-unused-vars)
-// This failure is legacied in and should be updated. DO NOT COPY.
-// eslint-disable-next-line no-unused-vars
+    // TODO (legacied no-unused-vars)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-unused-vars
     mapDeclarations((declaration, key, dataKey) => {
       const resource = get(stateProps.nion, [key]);
       const data = get(resource, ['data']);
@@ -308,9 +308,9 @@ const nion =
     // change multiple times before the redux store has updated (our nion actions are async)
     const fetchesByDataKey = {};
 
-        // TODO (legacied react-prefer-function-component/react-prefer-function-component)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
+    // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
     class WithNion extends Component {
       static displayName = `WithNion(${getDisplayName(WrappedComponent)})`;
 

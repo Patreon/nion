@@ -14,9 +14,9 @@ class StoreFragment {
     };
   };
 
-      // TODO (legacied no-unused-vars)
-      // This failure is legacied in and should be updated. DO NOT COPY.
-      // eslint-disable-next-line no-unused-vars
+  // TODO (legacied no-unused-vars)
+  // This failure is legacied in and should be updated. DO NOT COPY.
+  // eslint-disable-next-line no-unused-vars
   toPayload = (dbg) => {
     return this.fragment;
   };

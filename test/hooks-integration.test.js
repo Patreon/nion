@@ -24,13 +24,13 @@ export function useDebug(deps) {
     // This failure is legacied in and should be updated. DO NOT COPY.
     // eslint-disable-next-line no-unused-expressions
     prev.current.length
-    // TODO (legacied no-console)
-    // This failure is legacied in and should be updated. DO NOT COPY.
-    // eslint-disable-next-line no-console
-      ? returned.forEach((r, i) => r !== prev.current[i] && console.log('r !== p[i]', r, prev.current[i], i))
+      ? // TODO (legacied no-console)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line no-console
+        returned.forEach((r, i) => r !== prev.current[i] && console.log('r !== p[i]', r, prev.current[i], i))
       : 'initial render';
     prev.current = returned;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
 
@@ -427,9 +427,9 @@ describe('nion hooks: integration tests', () => {
         return <div returned={returned} />;
       }
 
-// TODO (legacied no-unused-vars)
-// This failure is legacied in and should be updated. DO NOT COPY.
-// eslint-disable-next-line no-unused-vars
+      // TODO (legacied no-unused-vars)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-unused-vars
       function Container(props) {
         const [test, actions] = useNion({
           dataKey: 'test',
