@@ -18,7 +18,7 @@ env:
     jest: true
     node: true
 
-plugins: ['react', 'prettier', 'react-hooks']
+plugins: ['react', 'react-hooks']
 
 rules:
     camelcase: [2, { 'properties': 'never' }]
@@ -45,20 +45,6 @@ rules:
     no-var: 2
     strict: [2, 'never']
     wrap-iife: [2, 'inside']
-
-    #================================
-    # eslint-plugin-prettier
-    #================================
-    prettier/prettier:
-        [
-            'error',
-            {
-                'singleQuote': true,
-                'trailingComma': 'all',
-                'semi': false,
-                'tabWidth': 4,
-            },
-        ]
 
     #====================================
     # eslint-plugin-react

@@ -51,6 +51,8 @@
         "lint:all": "eslint . --ext=js,jsx",
         "lint": "git diff --name-only master... | grep -E '\\.jsx?$' | xargs eslint",
         "test": "NODE_ENV=test jest",
+        "format": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
+        "format:ci": "prettier --check \"**/*.{js,jsx,ts,tsx}\"",
         "typecheck": "tsd"
     },
     "devDependencies": {
@@ -91,7 +93,7 @@
         "install": "^0.10.1",
         "jest": "^24.9.0",
         "nock": "^13.3.2",
-        "prettier": "^1.17.0",
+        "prettier": "^2.8.7",
         "prop-types": "^15.6.0",
         "react": "^16.8.0",
         "react-dom": "^16.8.5",
