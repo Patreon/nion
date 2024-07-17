@@ -1,42 +1,36 @@
-import reducers from '../reducers'
-import ExtensionManager from '../extensions'
-import ApiManager from '../api'
-import Lifecycle from '../lifecycle'
+import reducers from '../reducers';
+import ExtensionManager from '../extensions';
+import ApiManager from '../api';
+import Lifecycle from '../lifecycle';
 
-import map from 'lodash/map'
+import map from 'lodash/map';
 
 export default (options = {}) => {
-    const {
-        apiModules,
-        defaultApi,
-        extensions,
-        lifecycleConfig,
-        apiOptions,
-    } = options
+  const { apiModules, defaultApi, extensions, lifecycleConfig, apiOptions } = options;
 
-    if (apiModules) {
-        map(apiModules, (apiModule, name) => {
-            ApiManager.registerApi(name, apiModule)
-        })
+  if (apiModules) {
+    map(apiModules, (apiModule, name) => {
+      ApiManager.registerApi(name, apiModule);
+    });
 
-        ApiManager.setDefaultApi(defaultApi)
-    }
+    ApiManager.setDefaultApi(defaultApi);
+  }
 
-    if (extensions) {
-        map(extensions, (extension, name) => {
-            ExtensionManager.registerExtension(name, extension)
-        })
-    }
+  if (extensions) {
+    map(extensions, (extension, name) => {
+      ExtensionManager.registerExtension(name, extension);
+    });
+  }
 
-    if (lifecycleConfig) {
-        Lifecycle.registerLifecycleConfig(lifecycleConfig)
-    }
+  if (lifecycleConfig) {
+    Lifecycle.registerLifecycleConfig(lifecycleConfig);
+  }
 
-    if (apiOptions) {
-        ApiManager.setApiOptions(apiOptions)
-    }
+  if (apiOptions) {
+    ApiManager.setApiOptions(apiOptions);
+  }
 
-    return {
-        reducer: reducers,
-    }
-}
+  return {
+    reducer: reducers,
+  };
+};

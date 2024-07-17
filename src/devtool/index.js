@@ -1,22 +1,22 @@
-import { nionHookStats } from './hooks'
+import { nionHookStats } from './hooks';
 
-import { selectData } from '../selectors'
+import { selectData } from '../selectors';
 
-let isInitialized = false
+let isInitialized = false;
 
 export default function initializeNionDevTool(store) {
-    if (window) {
-        window.nion = {
-            hooks: nionHookStats,
-            selectData(key) {
-                return selectData(key)(store.getState())
-            },
-        }
+  if (window) {
+    window.nion = {
+      hooks: nionHookStats,
+      selectData(key) {
+        return selectData(key)(store.getState());
+      },
+    };
 
-        isInitialized = true
-    }
+    isInitialized = true;
+  }
 }
 
 export function isDevtoolEnabled() {
-    return isInitialized
+  return isInitialized;
 }

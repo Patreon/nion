@@ -1,16 +1,16 @@
-import { applyMiddleware, createStore, combineReducers } from 'redux'
-import thunkMiddleware from 'redux-thunk'
+import { applyMiddleware, createStore, combineReducers } from 'redux';
+import thunkMiddleware from 'redux-thunk';
 
-import { configureNion } from '../src'
+import { configureNion } from '../src';
 
 export default function configureTestStore() {
-    const { reducer: nionReducer } = configureNion()
+  const { reducer: nionReducer } = configureNion();
 
-    const reducers = combineReducers({
-        nion: nionReducer,
-    })
+  const reducers = combineReducers({
+    nion: nionReducer,
+  });
 
-    let store = createStore(reducers, applyMiddleware(thunkMiddleware))
+  let store = createStore(reducers, applyMiddleware(thunkMiddleware));
 
-    return store
+  return store;
 }

@@ -1,5 +1,5 @@
-const raf = (global.requestAnimationFrame = cb => {
-    setTimeout(cb, 16.667) // roughly emulating 60fps
-})
+const raf = (global.requestAnimationFrame = (cb) => {
+  setTimeout(cb, 16.667); // roughly emulating 60fps
+});
 
-export default raf
+export default raf;
