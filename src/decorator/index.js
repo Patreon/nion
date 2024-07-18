@@ -38,6 +38,9 @@ const getDefaultDeclarationOptions = () => ({
 });
 
 const processDefaultOptions = (declarations) => {
+  // TODO (legacied no-unused-vars)
+  // This failure is legacied in and should be updated. DO NOT COPY.
+  // eslint-disable-next-line no-unused-vars
   forEach(declarations, (declaration, key) => {
     forEach(getDefaultDeclarationOptions(), (defaultState, defaultKey) => {
       const option = get(declaration, defaultKey, defaultState);
@@ -124,6 +127,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
   };
 
   // Construct the dispatch methods to pass action creators to the component
+  // TODO (legacied no-unused-vars)
+  // This failure is legacied in and should be updated. DO NOT COPY.
+  // eslint-disable-next-line no-unused-vars
   const mapDispatchToProps = (dispatch, ownProps) => {
     const dispatchProps = {};
 
@@ -132,7 +138,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
     mapDeclarations((declaration, key, dataKey) => {
       dispatchProps[key] = {};
 
-      dispatchProps[key]['POST'] = (body = {}, params, actionOptions) => {
+      dispatchProps[key].POST = (body = {}, params, actionOptions) => {
         const endpoint = getUrl(declaration, params);
 
         return nionActions.post(dataKey, {
@@ -146,7 +152,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         })(dispatch);
       };
 
-      dispatchProps[key]['PATCH'] = (body = {}, params) => {
+      dispatchProps[key].PATCH = (body = {}, params) => {
         const endpoint = getUrl(declaration, params);
         return nionActions.patch(dataKey, {
           endpoint,
@@ -155,7 +161,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         })(dispatch);
       };
 
-      dispatchProps[key]['GET'] = (params, actionOptions = {}) => {
+      dispatchProps[key].GET = (params, actionOptions = {}) => {
         const endpoint = getUrl(declaration, params);
         return nionActions.get(dataKey, {
           declaration,
@@ -167,7 +173,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         })(dispatch);
       };
 
-      dispatchProps[key]['PUT'] = (params, actionOptions = {}) => {
+      dispatchProps[key].PUT = (params, actionOptions = {}) => {
         const endpoint = getUrl(declaration, params);
         return nionActions.put(dataKey, {
           declaration,
@@ -179,7 +185,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
         })(dispatch);
       };
 
-      dispatchProps[key]['DELETE'] = (refToDelete = {}, params, options = {}) => {
+      dispatchProps[key].DELETE = (refToDelete = {}, params, options = {}) => {
         // TODO: Refactor ref to delete to not be mutative.
         if (options.refToDelete) {
           refToDelete = options.refToDelete;
@@ -195,6 +201,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
       // Exposed, general nion data manipulating actions
       dispatchProps[key].updateRef = (ref) => {
+        // TODO (legacied no-unused-vars)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line no-unused-vars
         return new Promise((resolve, reject) => {
           dispatch({
             type: UPDATE_REF,
@@ -221,6 +230,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 
     // Exposed, general nion data manipulating actions
     dispatchProps.updateEntity = ({ type, id }, attributes) => {
+      // TODO (legacied no-unused-vars)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-unused-vars
       return new Promise((resolve, reject) => {
         dispatch(nionActions.updateEntity({ type, id }, attributes));
         resolve();
@@ -234,6 +246,9 @@ const processDeclarations = (inputDeclarations, ...rest) => {
   const mergeProps = (stateProps, dispatchProps, ownProps) => {
     const nextProps = { ...stateProps, ...ownProps };
 
+    // TODO (legacied no-unused-vars)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-unused-vars
     mapDeclarations((declaration, key, dataKey) => {
       const resource = get(stateProps.nion, [key]);
       const data = get(resource, ['data']);
@@ -248,7 +263,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
       });
 
       // Handle deletion, where we're passing in the ref attached to the dataKey to be deleted
-      const deleteDispatchFn = dispatchProps[key]['DELETE'];
+      const deleteDispatchFn = dispatchProps[key].DELETE;
       const deleteFn = (props, options) => deleteDispatchFn(ref, props, options);
       set(nextProps.nion, [key, 'actions', 'delete'], deleteFn);
 
@@ -293,6 +308,9 @@ const nion =
     // change multiple times before the redux store has updated (our nion actions are async)
     const fetchesByDataKey = {};
 
+    // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
     class WithNion extends Component {
       static displayName = `WithNion(${getDisplayName(WrappedComponent)})`;
 
@@ -315,7 +333,6 @@ const nion =
         // We want to trigger a fetch when the props change and lead to the creation of a new
         // dataKey, regardless of whether or not that happens as a result of a mount.
         forEach(nion._declarations, (declaration, key) => {
-          // eslint-disable-line no-shadow
           // If not fetching on init, don't do anything
           if (!declaration.fetchOnInit) {
             return;
@@ -355,7 +372,6 @@ const nion =
         // Iterate over the declarations provided to the component, deciding how to manage the
         // load state of each one
         forEach(nion._declarations, (declaration, key) => {
-          // eslint-disable-line no-shadow
           // If we're supplying a ref to be managed by nion, we'll want to attach it to the
           // state tree ahead of time (maybe not? maybe we want to have a "virtual" ref...
           // this is interesting)
@@ -368,6 +384,9 @@ const nion =
             }
 
             const { dataKey, initialRef } = declaration;
+            // TODO (legacied consistent-return)
+            // This failure is legacied in and should be updated. DO NOT COPY.
+            // eslint-disable-next-line consistent-return
             return nion._initializeDataKey(dataKey, initialRef);
           }
         });
@@ -400,6 +419,9 @@ const nion =
     // Remove nion from the propTypes of the connected component, if it exists,
     // since it will be injected by withNion
     if (connectedComponent.propTypes) {
+      // TODO (legacied no-unused-vars)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-unused-vars
       const { nion: _, ...restProps } = connectedComponent.propTypes;
       connectedComponent.propTypes = restProps;
     }
@@ -407,6 +429,9 @@ const nion =
     return connectedComponent;
   };
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default nion;
 
 // ----------------------------- Helper functions

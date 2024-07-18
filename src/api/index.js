@@ -1,4 +1,7 @@
 import map from 'lodash/map';
+// TODO (legacied import/no-namespace)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-namespace
 import * as includedApiModules from '../api-modules';
 
 const DEFAULT_API_TYPE = 'jsonApi';
@@ -81,4 +84,7 @@ export class ApiManager {
   };
 }
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default new ApiManager();

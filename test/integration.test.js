@@ -1,4 +1,3 @@
-/* eslint-disable react/no-multi-comp */
 import React, { Component } from 'react';
 import { withProps } from 'recompose';
 import { mount } from 'enzyme';
@@ -34,6 +33,9 @@ describe('nion : integration tests', () => {
           endpoint: buildUrl('/test'),
         },
       })
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
           return null;
@@ -77,6 +79,9 @@ describe('nion : integration tests', () => {
           endpoint: buildUrl(`test/${id}`),
         },
       }))
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
           return null;
@@ -107,6 +112,9 @@ describe('nion : integration tests', () => {
         });
 
       @nion({ test: { endpoint } })
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
           return null;
@@ -153,6 +161,9 @@ describe('nion : integration tests', () => {
           fetchOnInit: true,
         },
       })
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
           return null;
@@ -165,6 +176,9 @@ describe('nion : integration tests', () => {
 
       await P.delay(15); // Wait 15ms for the request reducer to update
 
+      // TODO (legacied no-global-assign)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-global-assign
       test = getProp();
       expect(test.request.status).toEqual('success');
       expect(test.data.name).toEqual(name);
@@ -189,10 +203,16 @@ describe('nion : integration tests', () => {
 
       @nion((props) => ({
         test: {
+          // TODO (legacied react/prop-types)
+          // This failure is legacied in and should be updated. DO NOT COPY.
+          // eslint-disable-next-line react/prop-types
           endpoint: buildUrl(`${pathname}/${props.id}`),
           fetchOnInit: true,
         },
       }))
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
           return null;
@@ -248,6 +268,9 @@ describe('nion : integration tests', () => {
         });
 
       @nion({ test: { endpoint: buildUrl(pathname) } })
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
           return null;
@@ -304,6 +327,9 @@ describe('nion : integration tests', () => {
       nock(endpoint).delete('').query(true).reply(204);
 
       @nion({ test: { endpoint: buildUrl(pathname) } })
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
           return null;
@@ -345,6 +371,9 @@ describe('nion : integration tests', () => {
       nock(endpoint).get('').delay(2000).query(true).reply(404);
 
       @nion({ test: { endpoint } })
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
           return null;
@@ -359,6 +388,9 @@ describe('nion : integration tests', () => {
       let request = test.actions.get();
 
       await request.catch((err) => {
+        // TODO (legacied  jest/no-conditional-expect)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line  jest/no-conditional-expect
         expect(err).toBeInstanceOf(Error);
       });
 
@@ -386,6 +418,9 @@ describe('nion : integration tests', () => {
         });
 
       @nion({ test: { endpoint: buildUrl(pathname) } })
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
           return null;
@@ -446,9 +481,15 @@ describe('nion : integration tests', () => {
       @nion((props) => ({
         child: {
           endpoint: buildUrl(pathname),
+          // TODO (legacied react/prop-types)
+          // This failure is legacied in and should be updated. DO NOT COPY.
+          // eslint-disable-next-line react/prop-types
           initialRef: makeRef(props.inputData),
         },
       }))
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class ChildContainer extends Component {
         render() {
           return null;
@@ -456,9 +497,18 @@ describe('nion : integration tests', () => {
       }
 
       @nion({ test: { endpoint: buildUrl(pathname) } })
+      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
+          // TODO (legacied react/prop-types)
+          // This failure is legacied in and should be updated. DO NOT COPY.
+          // eslint-disable-next-line react/prop-types
           const { test } = this.props.nion;
+          // TODO (legacied react/prop-types)
+          // This failure is legacied in and should be updated. DO NOT COPY.
+          // eslint-disable-next-line react/prop-types
           return exists(test) ? <ChildContainer inputData={test.data} /> : <span />;
         }
       }

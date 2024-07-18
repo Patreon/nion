@@ -1,4 +1,5 @@
-let counts, hooks;
+let counts;
+let hooks;
 
 function reset() {
   hooks = { dataKeys: [], declarations: [], totalCalls: 0 };
@@ -8,9 +9,13 @@ function reset() {
 reset();
 
 function sortCallsDesc(a, b) {
-  if (a.calls > b.calls) return -1;
+  if (a.calls > b.calls) {
+    return -1;
+  }
 
-  if (b.calls < a.calls) return 1;
+  if (b.calls < a.calls) {
+    return 1;
+  }
 
   return 0;
 }
@@ -19,23 +24,27 @@ function sortDataKeysAsc(a, b) {
   const aKey = typeof a === 'string' ? a : a.dataKey;
   const bKey = typeof b === 'string' ? b : b.dataKey;
 
-  if (aKey > bKey) return 1;
+  if (aKey > bKey) {
+    return 1;
+  }
 
-  if (bKey < aKey) return -1;
+  if (bKey < aKey) {
+    return -1;
+  }
 
   return 0;
 }
 
 function NionHookCall(dataKey) {
-  this['Calls'] = counts[dataKey]?.calls;
+  this.Calls = counts[dataKey]?.calls;
 
   this['Decl (orig)'] = counts[dataKey]?.declOrig;
-  this['Decl'] = counts[dataKey]?.decl;
+  this.Decl = counts[dataKey]?.decl;
 
-  this['Object'] = counts[dataKey]?.obj;
-  this['Actions'] = counts[dataKey]?.actions;
-  this['Request'] = counts[dataKey]?.request;
-  this['Extra'] = counts[dataKey]?.extra;
+  this.Object = counts[dataKey]?.obj;
+  this.Actions = counts[dataKey]?.actions;
+  this.Request = counts[dataKey]?.request;
+  this.Extra = counts[dataKey]?.extra;
 }
 
 function stats(filter, columns) {
@@ -55,6 +64,9 @@ function stats(filter, columns) {
     });
   }
 
+  // TODO (legacied no-console)
+  // This failure is legacied in and should be updated. DO NOT COPY.
+  // eslint-disable-next-line no-console
   console.table(data, columns);
 }
 
@@ -63,14 +75,23 @@ export const nionHookStats = {
   dataKeys: () => {
     hooks.dataKeys.sort(sortDataKeysAsc);
 
+    // TODO (legacied no-console)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-console
     console.log(hooks.dataKeys);
   },
   declarations: () => {
     hooks.declarations.sort(sortDataKeysAsc);
 
+    // TODO (legacied no-console)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-console
     console.log(hooks.declarations);
   },
   info: () => {
+    // TODO (legacied no-console)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-console
     console.table({
       Calls: hooks.totalCalls,
       Declarations: hooks.declarations.length,

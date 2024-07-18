@@ -19,8 +19,8 @@ describe('Generic Request', () => {
 
   describe('before and after request', () => {
     it('should just resolve a promise', async () => {
-      expect(await beforeRequest()).toBeUndefined();
-      expect(await afterRequest()).toBeUndefined();
+      await expect(beforeRequest()).resolves.toBeUndefined();
+      await expect(afterRequest()).resolves.toBeUndefined();
     });
   });
 });

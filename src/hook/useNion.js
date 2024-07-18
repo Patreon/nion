@@ -155,7 +155,9 @@ function useNion(declaration, deps = EMPTY_DEPS) {
   );
 
   useEffect(() => {
-    if (objExists) return;
+    if (objExists) {
+      return;
+    }
 
     dispatch({
       type: INITIALIZE_DATAKEY,
@@ -165,13 +167,16 @@ function useNion(declaration, deps = EMPTY_DEPS) {
   }, [dataKey, dispatch, initialRef, objExists]);
 
   useEffect(() => {
-    if (fetchOnMount) getRes();
+    if (fetchOnMount) {
+      getRes();
+    }
   }, [fetchOnMount, getRes]);
 
   const props = [obj, actions, request, extra];
 
   if (isDevtoolEnabled()) {
-    let calledBy, pst;
+    let calledBy;
+    let pst;
 
     if (SUPPORTS_CAPTURE_STACK_TRACE) {
       const trace = new Error();
@@ -196,4 +201,7 @@ function useNion(declaration, deps = EMPTY_DEPS) {
   return props;
 }
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default useNion;

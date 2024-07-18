@@ -3,9 +3,9 @@ import GenericError from './index';
 describe('GenericError', () => {
   let error;
   beforeEach(() => {
-    const status = 500,
-      statusText = 'Server Error',
-      response = { errors: [{ something_happened: 'boo hoo' }] };
+    const status = 500;
+    const statusText = 'Server Error';
+    const response = { errors: [{ something_happened: 'boo hoo' }] };
     error = new GenericError(status, statusText, response);
   });
   it('should behave consistently', () => {

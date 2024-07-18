@@ -14,6 +14,9 @@ describe('ExtensionManager', () => {
   describe('registerExtension', () => {
     test('should throw a validation error for non-extension objects', () => {
       const badRegistration = () => ExtensionManager.registerExtension('stuff', {});
+      // TODO (legacied jest/require-to-throw-message)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line jest/require-to-throw-message
       expect(badRegistration).toThrow();
     });
 
@@ -25,6 +28,9 @@ describe('ExtensionManager', () => {
       badNames.forEach((name) => {
         const badRegistration = registration.bind(this, name);
 
+        // TODO (legacied jest/require-to-throw-message)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line jest/require-to-throw-message
         expect(badRegistration).toThrow();
       });
     });
@@ -58,6 +64,9 @@ describe('ExtensionManager', () => {
 
     test('should throw an error when called with an unregistered extension', () => {
       const ersatz = () => ExtensionManager.getExtension('ersatz');
+      // TODO (legacied jest/require-to-throw-message)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line jest/require-to-throw-message
       expect(ersatz).toThrow();
     });
   });

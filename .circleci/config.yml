@@ -34,7 +34,7 @@ jobs:
 
             - run:
                   name: Lint
-                  command: npm run lint:all
+                  command: npm run lint
 
             - run:
                   name: Typecheck

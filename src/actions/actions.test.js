@@ -26,7 +26,7 @@ describe('nion: actions', () => {
       nock.cleanAll();
     });
 
-    it('GET api action should create the correct actions ', async () => {
+    it('GET api action should create the correct actions', async () => {
       const apiEndpoint = new ApiEndpoint();
       const jsonPayload = { body: {} };
       const statusCode = 200;
@@ -51,7 +51,7 @@ describe('nion: actions', () => {
             fetchedAt: Date.now(),
             endpoint: apiEndpoint.url,
             method: 'GET',
-            statusCode: statusCode,
+            statusCode,
             isProcessing: false,
           },
           payload: {
@@ -100,7 +100,7 @@ describe('nion: actions', () => {
             fetchedAt: Date.now(),
             endpoint: apiEndpoint.url,
             method: 'GET',
-            statusCode: statusCode,
+            statusCode,
             isProcessing: true,
           },
           payload: {
@@ -124,7 +124,7 @@ describe('nion: actions', () => {
       });
     });
 
-    it('GET api action should handle errors with the correct actions ', async () => {
+    it('GET api action should handle errors with the correct actions', async () => {
       const apiEndpoint = new ApiEndpoint();
       const jsonPayload = { body: {} };
       const statusCode = 500;
@@ -149,7 +149,7 @@ describe('nion: actions', () => {
             fetchedAt: Date.now(),
             endpoint: apiEndpoint.url,
             method: 'GET',
-            statusCode: statusCode,
+            statusCode,
             isProcessing: false,
           },
         },
@@ -165,6 +165,9 @@ describe('nion: actions', () => {
         );
       } catch (err) {
         // TODO: Get this working with the ApiManager.getErrorClass class constructor
+        // TODO (legacied jest/no-conditional-expect)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line jest/no-conditional-expect
         expect(err).toBeInstanceOf(Error);
         // Replace the error in the expectedAction payload with the Error caught here
         // to simulate the logic of the payload construction

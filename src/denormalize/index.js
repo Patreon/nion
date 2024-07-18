@@ -5,6 +5,9 @@ import cache, { mergeManifests } from './cache';
 class GenericData {
   constructor(data) {
     for (const key in data) {
+      // TODO (legacied no-prototype-builtins)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-prototype-builtins
       if (data.hasOwnProperty(key)) {
         this[key] = data[key];
       }
@@ -20,6 +23,9 @@ class Data {
     this.id = id;
 
     for (const key in attributes) {
+      // TODO (legacied no-prototype-builtins)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-prototype-builtins
       if (attributes.hasOwnProperty(key)) {
         this[key] = attributes[key];
       }
@@ -32,7 +38,9 @@ Data.prototype._exists = true;
 const makeGenericData = (obj) => Immutable(new GenericData(obj), { prototype: GenericData.prototype });
 
 export function getGenericRefData(ref) {
-  if (ref === null || ref === undefined) return null;
+  if (ref === null || ref === undefined) {
+    return null;
+  }
 
   return ref instanceof Array ? ref.map(makeGenericData) : makeGenericData(ref);
 }
@@ -142,6 +150,9 @@ function denormalize(ref, entityStore, existingObjects = {}) {
 
       mergeManifests(manifest, related);
     } else {
+      // TODO (legacied no-inner-declarations)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-inner-declarations
       function mapCollection(_ref) {
         const { denormalized, related } = denormalize(_ref, entityStore, existingObjectsCopy);
 
@@ -164,6 +175,9 @@ function denormalize(ref, entityStore, existingObjects = {}) {
 
   if (entity.relationships) {
     for (const key in entity.relationships) {
+      // TODO (legacied no-prototype-builtins)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-prototype-builtins
       if (entity.relationships.hasOwnProperty(key)) {
         mapRelationships(entity.relationships[key], key);
       }
@@ -185,4 +199,7 @@ function denormalize(ref, entityStore, existingObjects = {}) {
 export const denormalizeEntities = (ref, entityStore) =>
   ref.entities.map((entity) => denormalize(entity, entityStore).denormalized);
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default denormalizeEntities;

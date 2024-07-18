@@ -116,7 +116,7 @@ describe('nion: reducers', () => {
 
       const nextAction = makeAction(types.NION_API_SUCCESS, dataKey, {
         entryRef: [{ type: 'message', id: 456 }],
-        appendKey: appendKey,
+        appendKey,
       });
       reducer.applyAction(nextAction);
 

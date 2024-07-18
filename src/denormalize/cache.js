@@ -1,7 +1,13 @@
 export function mergeManifests(a, b) {
   for (const type in b) {
+    // TODO (legacied no-prototype-builtins)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-prototype-builtins
     if (b.hasOwnProperty(type)) {
       for (const id in b[type]) {
+        // TODO (legacied no-prototype-builtins)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line no-prototype-builtins
         if (b[type].hasOwnProperty(id)) {
           a[type] = a[type] || {};
           a[type][id] = b[type][id];
@@ -51,7 +57,9 @@ class DenormalizationCache {
   getManifest = (type, id) => this.manifests[type]?.[id];
 
   hasDataChanged = (ref, entityStore) => {
-    if (!entityStore) return true;
+    if (!entityStore) {
+      return true;
+    }
 
     if (this.getEntity(ref.type, ref.id) !== entityStore[ref.type]?.[ref.id]) {
       return true;
@@ -60,8 +68,14 @@ class DenormalizationCache {
     const manifest = this.getManifest(ref.type, ref.id) || {};
 
     for (const entityType in manifest) {
+      // TODO (legacied no-prototype-builtins)
+      // This failure is legacied in and should be updated. DO NOT COPY.
+      // eslint-disable-next-line no-prototype-builtins
       if (manifest.hasOwnProperty(entityType)) {
         for (const entityId in manifest[entityType]) {
+          // TODO (legacied no-prototype-builtins)
+          // This failure is legacied in and should be updated. DO NOT COPY.
+          // eslint-disable-next-line no-prototype-builtins
           if (manifest[entityType].hasOwnProperty(entityId)) {
             const { type, id } = manifest[entityType][entityId];
 
@@ -79,6 +93,9 @@ class DenormalizationCache {
 
 const denormalizationCache = new DenormalizationCache();
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default denormalizationCache;
 
 export function purgeDenormalizationCache() {

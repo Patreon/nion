@@ -46,4 +46,7 @@ const entitiesReducer = (state = initialState, action) => {
   }
 };
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default entitiesReducer;

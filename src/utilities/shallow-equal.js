@@ -12,8 +12,13 @@ function is(x, y) {
   }
 }
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default function shallowEqual(objA, objB) {
-  if (is(objA, objB)) return true;
+  if (is(objA, objB)) {
+    return true;
+  }
 
   if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
     return false;
@@ -22,7 +27,9 @@ export default function shallowEqual(objA, objB) {
   const keysA = Object.keys(objA);
   const keysB = Object.keys(objB);
 
-  if (keysA.length !== keysB.length) return false;
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
 
   for (let i = 0; i < keysA.length; i++) {
     const key = keysA[i];

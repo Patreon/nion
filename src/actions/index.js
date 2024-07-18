@@ -147,6 +147,9 @@ const apiAction = (method, dataKey, options) => (_dispatch) => {
       } catch (renderError) {
         // We probably want to catch any render errors here, logging them but actually
         // throwing the api error that caused it
+        // TODO (legacied no-console)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line no-console
         console.error(renderError);
       }
       throw error;
@@ -213,6 +216,9 @@ export { deleteAction as delete };
 export const bootstrap = bootstrapAction;
 export const updateEntity = updateEntityAction;
 
+// TODO (legacied import/no-default-export)
+// This failure is legacied in and should be updated. DO NOT COPY.
+// eslint-disable-next-line import/no-default-export
 export default {
   get,
   put,
