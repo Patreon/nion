@@ -1,7 +1,7 @@
 import nion from '../';
 import React from 'react';
 import PropTypes from 'prop-types';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react'
 
 import { Provider } from 'react-redux';
 import configureTestStore from '../../../test/configure-test-store';
@@ -45,7 +45,7 @@ describe('nion', () => {
     });
 
     it('has no propTypes errors', () => {
-      mount(
+      render(
         <Provider store={store}>
           <OuterComponent />
         </Provider>,

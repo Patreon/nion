@@ -1,22 +1,24 @@
 import React, { Component } from 'react';
 import { withProps } from 'recompose';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 import nock from 'nock';
-import P from 'bluebird';
 
 import nion, { exists, makeRef } from '../src/index';
 
 import { Provider } from 'react-redux';
 import configureTestStore from './configure-test-store';
+import { delay, getMockedComponentProps } from './util';
 
-const Wrap = (Wrapped, props) => {
+const StoreWrapper = ({ children }) => {
   const store = configureTestStore();
-  return (
-    <Provider store={store}>
-      <Wrapped {...props} />
-    </Provider>
-  );
+  return <Provider store={store}>{children}</Provider>;
 };
+
+const InnerContainer = jest.fn(() => null);
+
+function getNionProp(mockedComponent = InnerContainer) {
+  return getMockedComponentProps(mockedComponent).nion;
+}
 
 const baseUrl = 'http://api.test.com';
 const buildUrl = (path) => (path.startsWith('/') ? baseUrl + path : baseUrl + '/' + path);
@@ -24,6 +26,7 @@ const buildUrl = (path) => (path.startsWith('/') ? baseUrl + path : baseUrl + '/
 describe('nion : integration tests', () => {
   afterEach(() => {
     nock.cleanAll();
+    InnerContainer.mockClear();
   });
 
   describe('nion decorator', () => {
@@ -33,25 +36,25 @@ describe('nion : integration tests', () => {
           endpoint: buildUrl('/test'),
         },
       })
-      // TODO (legacied react-prefer-function-component/react-prefer-function-component)
-      // This failure is legacied in and should be updated. DO NOT COPY.
+      // We need to use a class component since this is a class component-specific test
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          return null;
+          return <InnerContainer {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container));
-      const Wrapped = Wrapper.find('Container');
+      render(<Container />, {
+        wrapper: StoreWrapper,
+      });
 
-      const props = Wrapped.props();
+      const nionProp = getNionProp();
 
-      expect(props.nion).toBeDefined();
-      expect(props.nion.test).toBeDefined();
+      expect(nionProp).toBeDefined();
+      expect(nionProp.test).toBeDefined();
 
       // Test the expected nion dataProp API interface
-      const { test } = props.nion;
+      const { test } = nionProp;
 
       // Actions
       expect(test.actions.get).toBeDefined();
@@ -69,7 +72,7 @@ describe('nion : integration tests', () => {
 
       // Advanced features
       expect(test.actions.updateRef).toBeDefined();
-      expect(props.nion.updateEntity).toBeDefined();
+      expect(nionProp.updateEntity).toBeDefined();
     });
 
     it('uses input props to populate declarations', async () => {
@@ -84,14 +87,17 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          return null;
+          return <InnerContainer {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container));
-      const Wrapped = Wrapper.find('Container');
+      render(<Container />, {
+        wrapper: StoreWrapper,
+      });
 
-      const declarations = Wrapped.props().nion.getDeclarations();
+      const nionProp = getNionProp();
+
+      const declarations = nionProp.getDeclarations();
       expect(declarations.test.endpoint).toEqual(buildUrl('test/123'));
     });
 
@@ -117,24 +123,24 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          return null;
+          return <InnerContainer {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container));
+      render(<Container />, {
+        wrapper: StoreWrapper,
+      });
 
-      const getProp = () => Wrapper.update().find('Container').props().nion.test;
-
-      let test = getProp();
+      let test = getNionProp().test;
       const request = test.actions.get();
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('pending');
       expect(test.request.isLoading).toEqual(true);
 
       await request;
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('success');
       expect(test.data.name).toEqual(name);
     });
@@ -166,20 +172,17 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          return null;
+          return <InnerContainer {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container));
+      render(<Container />, {
+        wrapper: StoreWrapper,
+      });
 
-      const getProp = () => Wrapper.update().find('Container').props().nion.test;
+      await delay(15); // Wait 15ms for the request reducer to update
 
-      await P.delay(15); // Wait 15ms for the request reducer to update
-
-      // TODO (legacied no-global-assign)
-      // This failure is legacied in and should be updated. DO NOT COPY.
-      // eslint-disable-next-line no-global-assign
-      test = getProp();
+      const { test } = getNionProp();
       expect(test.request.status).toEqual('success');
       expect(test.data.name).toEqual(name);
     });
@@ -215,26 +218,26 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          return null;
+          return <InnerContainer {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container, { id }));
-
-      const getProp = () => Wrapper.update().find('Container').props().nion.test;
+      render(<Container id={id} />, {
+        wrapper: StoreWrapper,
+      });
 
       // Wait until the request reducer has been updated
-      while (getProp().request.status === 'not called') {
-        await P.delay(1); // Wait 1ms for the request reducer to update
+      while (getNionProp().test.request.status === 'not called') {
+        await delay(1); // Wait 1ms for the request reducer to update
       }
 
-      let test = getProp();
+      let test = getNionProp().test;
       expect(test.request.status).toEqual('pending');
       expect(test.request.isLoading).toEqual(true);
 
-      await P.delay(15); // Wait 15ms for the request reducer to update
+      await delay(15); // Wait 15ms for the request reducer to update
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('success');
       expect(test.data.name).toEqual(name);
     });
@@ -273,37 +276,37 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          return null;
+          return <InnerContainer {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container));
+      render(<Container />, {
+        wrapper: StoreWrapper,
+      });
 
-      const getProp = () => Wrapper.update().find('Container').props().nion.test;
-
-      let test = getProp();
+      let test = getNionProp().test;
       let request = test.actions.get();
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('pending');
       expect(test.request.isLoading).toEqual(true);
 
       await request;
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('success');
       expect(test.data.name).toEqual(name);
 
       // Patch request
       request = test.actions.patch();
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('pending');
       expect(test.request.isLoading).toEqual(true);
 
       await request;
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('success');
       expect(test.data.name).toEqual(newName);
     });
@@ -332,24 +335,24 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          return null;
+          return <InnerContainer {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container));
+      render(<Container />, {
+        wrapper: StoreWrapper,
+      });
 
-      const getProp = () => Wrapper.update().find('Container').props().nion.test;
-
-      let test = getProp();
+      let test = getNionProp().test;
       let request = test.actions.get();
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('pending');
       expect(test.request.isLoading).toEqual(true);
 
       await request;
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('success');
       expect(test.data.name).toEqual(name);
 
@@ -358,7 +361,7 @@ describe('nion : integration tests', () => {
 
       await request;
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('success');
 
       expect(exists(test)).toEqual(false);
@@ -376,15 +379,15 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          return null;
+          return <InnerContainer {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container));
+      render(<Container />, {
+        wrapper: StoreWrapper,
+      });
 
-      const getProp = () => Wrapper.update().find('Container').props().nion.test;
-
-      let test = getProp();
+      let test = getNionProp().test;
       let request = test.actions.get();
 
       await request.catch((err) => {
@@ -394,7 +397,7 @@ describe('nion : integration tests', () => {
         expect(err).toBeInstanceOf(Error);
       });
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('error');
       expect(test.request.isError).toEqual(true);
       expect(test.request.isLoading).toEqual(false);
@@ -423,32 +426,31 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          return null;
+          return <InnerContainer {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container));
-      const Wrapped = Wrapper.find('Container');
+      render(<Container />, {
+        wrapper: StoreWrapper,
+      });
 
-      const getProp = () => Wrapper.update().find('Container').props().nion.test;
-
-      let test = getProp();
+      let test = getNionProp().test;
       let request = test.actions.get();
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('pending');
       expect(test.request.isLoading).toEqual(true);
 
       await request;
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.request.status).toEqual('success');
       expect(test.data.name).toEqual(name);
 
       // Optimistic Update
 
-      test = getProp();
-      Wrapped.props().nion.updateEntity(
+      test = getNionProp().test;
+      getNionProp().updateEntity(
         {
           type: 'animal',
           id: 123,
@@ -458,7 +460,7 @@ describe('nion : integration tests', () => {
         },
       );
 
-      test = getProp();
+      test = getNionProp().test;
       expect(test.data.name).toEqual(newName);
     });
 
@@ -492,9 +494,24 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class ChildContainer extends Component {
         render() {
-          return null;
+          return (
+            <div data-testid="child-container">
+              <InnerContainer {...this.props} />
+            </div>
+          );
         }
       }
+
+      const ContainerContents = jest.fn(({ nion }) => {
+        // TODO (legacied react/prop-types)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/prop-types
+        const { test } = nion;
+        // TODO (legacied react/prop-types)
+        // This failure is legacied in and should be updated. DO NOT COPY.
+        // eslint-disable-next-line react/prop-types
+        return exists(test) ? <ChildContainer inputData={test.data} /> : <span />;
+      });
 
       @nion({ test: { endpoint: buildUrl(pathname) } })
       // TODO (legacied react-prefer-function-component/react-prefer-function-component)
@@ -502,43 +519,29 @@ describe('nion : integration tests', () => {
       // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
       class Container extends Component {
         render() {
-          // TODO (legacied react/prop-types)
-          // This failure is legacied in and should be updated. DO NOT COPY.
-          // eslint-disable-next-line react/prop-types
-          const { test } = this.props.nion;
-          // TODO (legacied react/prop-types)
-          // This failure is legacied in and should be updated. DO NOT COPY.
-          // eslint-disable-next-line react/prop-types
-          return exists(test) ? <ChildContainer inputData={test.data} /> : <span />;
+          return <ContainerContents {...this.props} />;
         }
       }
 
-      const Wrapper = mount(Wrap(Container));
+      render(<Container />, {
+        wrapper: StoreWrapper,
+      });
 
-      let getProp = () => Wrapper.update().find('Container').props().nion.test;
-
-      let test = getProp();
+      let test = getNionProp(ContainerContents).test;
       let request = test.actions.get();
 
-      test = getProp();
+      test = getNionProp(ContainerContents).test;
       expect(test.request.status).toEqual('pending');
       expect(test.request.isLoading).toEqual(true);
 
-      let ChildWrapped = Wrapper.update().find('ChildContainer');
-      expect(ChildWrapped.exists()).toEqual(false);
-
       await request;
 
-      test = getProp();
+      test = getNionProp(ContainerContents).test;
       expect(test.request.status).toEqual('success');
       expect(test.data.name).toEqual(name);
 
       // Child component
-      ChildWrapped = Wrapper.update().find('ChildContainer');
-
-      getProp = () => ChildWrapped.props().nion.child;
-
-      let child = getProp();
+      let child = getNionProp().child;
       expect(exists(child)).toEqual(true);
     });
   });

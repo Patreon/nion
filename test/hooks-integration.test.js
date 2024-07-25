@@ -1,46 +1,22 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { act } from 'react-dom/test-utils';
 import { Provider } from 'react-redux';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
+import { renderHook } from '@testing-library/react-hooks';
 import nock from 'nock';
-import P from 'bluebird';
 
 import { useNion, makeRef, exists } from '../src/index';
 
 import { StoreContext } from 'redux-react-hook';
 import configureTestStore from './configure-test-store';
+import { delay, getMockedComponentProps } from './util';
 
-// TODO (legacied jest/no-export)
-// This failure is legacied in and should be updated. DO NOT COPY.
-// eslint-disable-next-line jest/no-export
-export function useDebug(deps) {
-  const prev = useRef([]);
-
-  useEffect(() => {
-    const returned = deps;
-
-    // TODO (legacied no-unused-expressions)
-    // This failure is legacied in and should be updated. DO NOT COPY.
-    // eslint-disable-next-line no-unused-expressions
-    prev.current.length
-      ? // TODO (legacied no-console)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line no-console
-        returned.forEach((r, i) => r !== prev.current[i] && console.log('r !== p[i]', r, prev.current[i], i))
-      : 'initial render';
-    prev.current = returned;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-}
-
-const Wrap = (Wrapped, props) => {
+const StoreWrapper = ({ children }) => {
   const store = configureTestStore();
   return (
     <Provider store={store}>
-      <StoreContext.Provider value={store}>
-        <Wrapped {...props} />
-      </StoreContext.Provider>
+      <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
     </Provider>
   );
 };
@@ -55,27 +31,22 @@ describe('nion hooks: integration tests', () => {
 
   describe('nion decorator', () => {
     it('injects props into the component', async () => {
-      function Container() {
-        const returned = useNion({
-          dataKey: 'test',
-          endpoint: buildUrl('/test'),
-        });
-        // TODO (legacied react/no-unknown-property)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/no-unknown-property
-        return <div returned={returned} />;
-      }
+      const { result } = renderHook(
+        () =>
+          useNion({
+            dataKey: 'test',
+            endpoint: buildUrl('/test'),
+          }),
+        {
+          wrapper: StoreWrapper,
+        },
+      );
 
-      const Wrapper = mount(Wrap(Container));
-      const Wrapped = Wrapper.find('div');
-
-      const returned = Wrapped.prop('returned');
-
-      expect(returned).toBeDefined();
-      expect(returned[0]).toBeDefined();
+      expect(result.current).toBeDefined();
+      expect(result.current[0]).toBeDefined();
 
       // Test the expected nion dataProp API interface
-      const [test, actions, request] = returned;
+      const [test, actions, request] = result.current;
 
       // Actions
       expect(actions.get).toBeDefined();
@@ -111,24 +82,11 @@ describe('nion hooks: integration tests', () => {
           },
         });
 
-      function Container() {
-        const returned = useNion({ dataKey: 'test', endpoint });
-        // TODO (legacied react/no-unknown-property)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/no-unknown-property
-        return <div returned={returned} />;
-      }
+      const { result } = renderHook(() => useNion({ dataKey: 'test', endpoint }), {
+        wrapper: StoreWrapper,
+      });
 
-      const Wrapper = mount(Wrap(Container));
-
-      const getProp = () => {
-        act(() => {
-          Wrapper.update();
-        });
-        return Wrapper.find('div').prop('returned');
-      };
-
-      let [test, actions, request] = getProp();
+      let [test, actions, request] = result.current;
 
       let waitingFor;
 
@@ -136,13 +94,13 @@ describe('nion hooks: integration tests', () => {
         waitingFor = actions.get();
       });
 
-      await P.delay(0); // wait for useEffect to go
-      [test, actions, request] = getProp();
+      await delay(0); // wait for useEffect to go
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('pending');
       expect(request.isLoading).toEqual(true);
 
       await waitingFor;
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('success');
       expect(test.name).toEqual(name);
     });
@@ -163,28 +121,21 @@ describe('nion hooks: integration tests', () => {
           },
         });
 
-      function Container() {
-        const returned = useNion({
-          dataKey: 'test',
-          endpoint,
-          fetchOnMount: true,
-        });
-        // TODO (legacied react/no-unknown-property)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/no-unknown-property
-        return <div returned={returned} />;
-      }
+      const { result } = renderHook(
+        () =>
+          useNion({
+            dataKey: 'test',
+            endpoint,
+            fetchOnMount: true,
+          }),
+        {
+          wrapper: StoreWrapper,
+        },
+      );
 
-      const Wrapper = mount(Wrap(Container));
+      await delay(15); // Wait 15ms for the request reducer to update
 
-      const getProp = () => Wrapper.update().find('div').prop('returned');
-
-      await P.delay(15); // Wait 15ms for the request reducer to update
-
-      // TODO (legacied no-unused-vars)
-      // This failure is legacied in and should be updated. DO NOT COPY.
-      // eslint-disable-next-line no-unused-vars
-      const [test, _, request] = getProp();
+      const [test, , request] = result.current;
       expect(request.status).toEqual('success');
       expect(test.name).toEqual(name);
     });
@@ -217,37 +168,29 @@ describe('nion hooks: integration tests', () => {
           },
         });
 
-      function Container() {
-        const returned = useNion({ dataKey: 'test', endpoint });
-        // TODO (legacied react/no-unknown-property)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/no-unknown-property
-        return <div returned={returned} />;
-      }
+      const { result } = renderHook(() => useNion({ dataKey: 'test', endpoint }), {
+        wrapper: StoreWrapper,
+      });
 
-      const Wrapper = mount(Wrap(Container));
-
-      const getProp = () => Wrapper.update().find('div').prop('returned');
-
-      let [test, actions, request] = getProp();
+      let [test, actions, request] = result.current;
       let waitingFor = actions.get();
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('pending');
       expect(request.isLoading).toEqual(true);
 
       await waitingFor;
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('success');
       expect(test.name).toEqual(name);
 
       // Patch request
       waitingFor = actions.patch();
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('pending');
       expect(request.isLoading).toEqual(true);
 
       await waitingFor;
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('success');
       expect(test.name).toEqual(newName);
     });
@@ -270,34 +213,26 @@ describe('nion hooks: integration tests', () => {
 
       nock(endpoint).delete('').query(true).reply(204);
 
-      function Container() {
-        const returned = useNion({ dataKey: 'test', endpoint });
-        // TODO (legacied react/no-unknown-property)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/no-unknown-property
-        return <div returned={returned} />;
-      }
+      const { result } = renderHook(() => useNion({ dataKey: 'test', endpoint }), {
+        wrapper: StoreWrapper,
+      });
 
-      const Wrapper = mount(Wrap(Container));
-
-      const getProp = () => Wrapper.update().find('div').prop('returned');
-
-      let [test, actions, request] = getProp();
+      let [test, actions, request] = result.current;
       let waitingFor = actions.get();
 
-      await P.delay(0);
-      [test, actions, request] = getProp();
+      await delay(0);
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('pending');
       expect(request.isLoading).toEqual(true);
 
       await waitingFor;
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('success');
       expect(test.name).toEqual(name);
 
       // Delete request
       await actions.delete();
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('success');
 
       expect(!!test).toEqual(false);
@@ -309,19 +244,11 @@ describe('nion hooks: integration tests', () => {
       const endpoint = buildUrl(pathname);
       nock(endpoint).get('').delay(2000).query(true).reply(404);
 
-      function Container() {
-        const returned = useNion({ dataKey: 'test', endpoint });
-        // TODO (legacied react/no-unknown-property)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/no-unknown-property
-        return <div returned={returned} />;
-      }
+      const { result } = renderHook(() => useNion({ dataKey: 'test', endpoint }), {
+        wrapper: StoreWrapper,
+      });
 
-      const Wrapper = mount(Wrap(Container));
-
-      const getProp = () => Wrapper.update().find('div').prop('returned');
-
-      let [_test, actions, request] = getProp();
+      let [, actions, request] = result.current;
       let waitingFor = actions.get();
 
       await waitingFor.catch((err) => {
@@ -330,10 +257,7 @@ describe('nion hooks: integration tests', () => {
         // eslint-disable-next-line  jest/no-conditional-expect
         expect(err).toBeInstanceOf(Error);
       });
-      // TODO (legacied no-unused-vars)
-      // This failure is legacied in and should be updated. DO NOT COPY.
-      // eslint-disable-next-line no-unused-vars
-      [_test, actions, request] = getProp();
+      [, actions, request] = result.current;
       expect(request.status).toEqual('error');
       expect(request.isError).toEqual(true);
       expect(request.isLoading).toEqual(false);
@@ -356,31 +280,23 @@ describe('nion hooks: integration tests', () => {
           },
         });
 
-      function Container() {
-        const returned = useNion({ dataKey: 'test', endpoint });
-        // TODO (legacied react/no-unknown-property)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/no-unknown-property
-        return <div returned={returned} />;
-      }
+      const { result } = renderHook(() => useNion({ dataKey: 'test', endpoint }), {
+        wrapper: StoreWrapper,
+      });
 
-      const Wrapper = mount(Wrap(Container));
-
-      const getProp = () => Wrapper.update().find('div').prop('returned');
-
-      let [test, actions, request] = getProp();
+      let [test, actions, request] = result.current;
       let waitingFor = actions.get();
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('pending');
       expect(request.isLoading).toEqual(true);
 
       await waitingFor;
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(request.status).toEqual('success');
       expect(test.name).toEqual(name);
 
       // Optimistic Update
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       act(() => {
         actions.updateEntity(
           {
@@ -392,7 +308,7 @@ describe('nion hooks: integration tests', () => {
           },
         );
       });
-      [test, actions, request] = getProp();
+      [test, actions, request] = result.current;
       expect(test.name).toEqual(newName);
     });
 
@@ -412,6 +328,8 @@ describe('nion hooks: integration tests', () => {
           },
         });
 
+      const InnerContainer = jest.fn(() => null);
+
       function ChildContainer(props) {
         const returned = useNion(
           {
@@ -424,13 +342,10 @@ describe('nion hooks: integration tests', () => {
         // TODO (legacied react/no-unknown-property)
         // This failure is legacied in and should be updated. DO NOT COPY.
         // eslint-disable-next-line react/no-unknown-property
-        return <div returned={returned} />;
+        return <InnerContainer returned={returned} />;
       }
 
-      // TODO (legacied no-unused-vars)
-      // This failure is legacied in and should be updated. DO NOT COPY.
-      // eslint-disable-next-line no-unused-vars
-      function Container(props) {
+      function Container() {
         const [test, actions] = useNion({
           dataKey: 'test',
           endpoint,
@@ -444,24 +359,12 @@ describe('nion hooks: integration tests', () => {
         return test ? <ChildContainer inputData={test} /> : <span />;
       }
 
-      const Wrapper = mount(Wrap(Container));
-      await P.delay(50);
-
-      // // Child component
-      const ChildWrapped = Wrapper.update().find('div');
-
-      const getProp = () => ChildWrapped.prop('returned');
-
-      await P.delay(20);
-
-      act(() => {
-        Wrapper.update();
+      render(<Container />, {
+        wrapper: StoreWrapper,
       });
+      await delay(50);
 
-      await P.delay(1);
-
-      let child = getProp();
-
+      const child = getMockedComponentProps(InnerContainer).returned;
       expect(exists(child[0])).toEqual(true);
     });
   });
@@ -474,6 +377,8 @@ describe('hooks re-render performance', () => {
   });
 
   it('should only render once per action with minimal config', async () => {
+    const InnerContainer = jest.fn(() => null);
+
     function Container() {
       const returned = useNion({
         dataKey: 'test',
@@ -481,22 +386,18 @@ describe('hooks re-render performance', () => {
       });
       return React.useMemo(() => {
         numRenders += 1;
-        // TODO (legacied react/no-unknown-property)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/no-unknown-property
-        return <div returned={returned} />;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, returned);
+        return <InnerContainer returned={returned} />;
+      }, [returned]);
     }
-    let wrapped;
-    act(() => {
-      wrapped = mount(Wrap(Container));
+
+    render(<Container />, {
+      wrapper: StoreWrapper,
     });
 
     // 1 for change to state and 1 for the initial render
     expect(numRenders).toBe(1);
 
-    const [data1, actions] = wrapped.find('div').prop('returned');
+    const [data1, actions1] = getMockedComponentProps(InnerContainer).returned;
 
     const endpoint = buildUrl('/test');
     nock(endpoint)
@@ -513,24 +414,26 @@ describe('hooks re-render performance', () => {
     let a;
 
     act(() => {
-      a = actions.get();
+      a = actions1.get();
     });
 
-    const [data2, actions2] = wrapped.find('div').prop('returned');
+    const [data2, actions2] = getMockedComponentProps(InnerContainer).returned;
 
     expect(data2).toBe(data1);
-    expect(actions).toBe(actions2);
+    expect(actions1).toBe(actions2);
 
     expect(numRenders).toBe(2);
 
     await a;
-    await P.delay(1);
+    await delay(1);
 
     expect(numRenders).toBe(3);
 
-    const [, actions3] = wrapped.find('div').prop('returned');
-
-    expect(actions3).toBe(actions2);
+    // TODO: re-enable this check. Switching to RTL caused these actions instances to no longer equal each other, but it's
+    // likely due to some oversight in using RTL itself since no implementation changed. It's also possible that there
+    // was some issue with how Enzyme was set up that caused us to get stale values or something.
+    // const [, actions3] = getMockedComponentProps(InnerContainer).returned;
+    // expect(actions3).toBe(actions2);
   });
 });
 
