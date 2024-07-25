@@ -1,7 +1,8 @@
+import { render } from '@testing-library/react';
 import React, { Component } from 'react';
 import { withProps } from 'recompose';
-import { render } from '@testing-library/react';
 import nock from 'nock';
+import PropTypes from 'prop-types';
 
 import nion, { exists, makeRef } from '../src/index';
 
@@ -12,6 +13,9 @@ import { delay, getMockedComponentProps } from './util';
 const StoreWrapper = ({ children }) => {
   const store = configureTestStore();
   return <Provider store={store}>{children}</Provider>;
+};
+StoreWrapper.propTypes = {
+  children: PropTypes.node,
 };
 
 const InnerContainer = jest.fn(() => null);
@@ -502,16 +506,13 @@ describe('nion : integration tests', () => {
         }
       }
 
-      const ContainerContents = jest.fn(({ nion }) => {
-        // TODO (legacied react/prop-types)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/prop-types
-        const { test } = nion;
-        // TODO (legacied react/prop-types)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/prop-types
+      function InternalContainerContents({ nion: { test } }) {
         return exists(test) ? <ChildContainer inputData={test.data} /> : <span />;
-      });
+      }
+      InternalContainerContents.propTypes = {
+        nion: PropTypes.object,
+      };
+      const ContainerContents = jest.fn(InternalContainerContents);
 
       @nion({ test: { endpoint: buildUrl(pathname) } })
       // TODO (legacied react-prefer-function-component/react-prefer-function-component)

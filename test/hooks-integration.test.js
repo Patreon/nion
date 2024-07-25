@@ -339,9 +339,6 @@ describe('nion hooks: integration tests', () => {
           },
           [props.inputData],
         );
-        // TODO (legacied react/no-unknown-property)
-        // This failure is legacied in and should be updated. DO NOT COPY.
-        // eslint-disable-next-line react/no-unknown-property
         return <InnerContainer returned={returned} />;
       }
 
