@@ -1,14 +1,11 @@
 import { useEffect, useCallback, useMemo } from 'react';
-import { useDispatch, useMappedState } from 'redux-react-hook';
-// import { useDispatch, useSelector } from 'react-redux' // TODO: Use hooks from React Redux 7.x instead
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { getUrl } from '../utilities/get-url';
 import { selectObjectWithRequest } from '../selectors';
 import nionActions from '../actions';
 import { INITIALIZE_DATAKEY, UPDATE_REF } from '../actions/types';
 import { makeRef } from '../transforms';
-
-import { areMergedPropsEqual } from '../decorator/should-rerender';
 
 import { isDevtoolEnabled } from '../devtool';
 import { prepareStackTrace, withStats } from '../devtool/hooks';
@@ -80,8 +77,7 @@ function useNion(declaration, deps = EMPTY_DEPS) {
     [dataKey],
   );
 
-  const state = useMappedState(mapStateToProps, areMergedPropsEqual);
-  // const state = useSelector(mapStateToProps, areMergedPropsEqual)
+  const state = useSelector(mapStateToProps, shallowEqual);
 
   const { extra, obj, objExists, objId, objType, request } = useMemo(() => {
     const nionObj = state?.nion?.obj;
