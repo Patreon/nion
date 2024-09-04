@@ -37,7 +37,7 @@ const getDefaultDeclarationOptions = () => ({
   requestParams: {},
 });
 
-const processDefaultOptions = (declarations) => {
+const processDefaultOptions = declarations => {
   // TODO (legacied no-unused-vars)
   // This failure is legacied in and should be updated. DO NOT COPY.
   // eslint-disable-next-line no-unused-vars
@@ -56,7 +56,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
   // params. We need to handle both the component-scoped key (the key of the object passed to
   // the decorator) as well as the dataKey that points to where the ref / request is stored on
   // the state tree
-  const mapDeclarations = (fn) =>
+  const mapDeclarations = fn =>
     map(declarations, (declaration, key) => fn(declaration, key, declaration.dataKey || key));
 
   // Construct the JSON API selector to map to props
@@ -69,7 +69,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
     // create a declaration object
     if (typeof inputDeclarations === 'string') {
       declarations = {};
-      forEach([inputDeclarations, ...rest], (dataKey) => {
+      forEach([inputDeclarations, ...rest], dataKey => {
         declarations[dataKey] = {};
       });
     }
@@ -200,7 +200,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
       };
 
       // Exposed, general nion data manipulating actions
-      dispatchProps[key].updateRef = (ref) => {
+      dispatchProps[key].updateRef = ref => {
         // TODO (legacied no-unused-vars)
         // This failure is legacied in and should be updated. DO NOT COPY.
         // eslint-disable-next-line no-unused-vars
@@ -257,7 +257,7 @@ const processDeclarations = (inputDeclarations, ...rest) => {
       // Add each method's corresponding request handler to the nextProps[key].request
       // object
       const methods = ['GET', 'PATCH', 'PUT', 'POST'];
-      methods.forEach((method) => {
+      methods.forEach(method => {
         const dispatchFn = dispatchProps[key][method];
         set(nextProps.nion, [key, 'actions', method.toLowerCase()], dispatchFn);
       });
@@ -299,135 +299,138 @@ const processDeclarations = (inputDeclarations, ...rest) => {
 };
 
 // JSON API decorator function for wrapping connected components to the new JSON API redux system
-const nion =
-  (declarations = {}, ...rest) =>
-  (WrappedComponent) => {
-    const { mapStateToProps, mapDispatchToProps, mergeProps } = processDeclarations(declarations, ...rest);
+const nion = (declarations = {}, ...rest) => WrappedComponent => {
+  const { mapStateToProps, mapDispatchToProps, mergeProps } = processDeclarations(declarations, ...rest);
 
-    // Track the status of fetch actions to avoid sending out duplicate requests, since props can
-    // change multiple times before the redux store has updated (our nion actions are async)
-    const fetchesByDataKey = {};
+  // Track the status of fetch actions to avoid sending out duplicate requests, since props can
+  // change multiple times before the redux store has updated (our nion actions are async)
+  const fetchesByDataKey = {};
 
-    // TODO (legacied react-prefer-function-component/react-prefer-function-component)
-    // This failure is legacied in and should be updated. DO NOT COPY.
-    // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
-    class WithNion extends Component {
-      static displayName = `WithNion(${getDisplayName(WrappedComponent)})`;
+  // TODO (legacied react-prefer-function-component/react-prefer-function-component)
+  // This failure is legacied in and should be updated. DO NOT COPY.
+  // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
+  class WithNion extends Component {
+    static displayName = `WithNion(${getDisplayName(WrappedComponent)})`;
 
-      static propTypes = {
-        nion: PropTypes.object.isRequired,
-      };
+    static propTypes = {
+      nion: PropTypes.object.isRequired,
+    };
 
-      constructor(props) {
-        super(props);
-        this.initializeDataKeys(props);
-      }
+    constructor(props) {
+      super(props);
+      this.initializeDataKeys(props);
+    }
 
-      UNSAFE_componentWillReceiveProps(nextProps) {
-        this.initializeDataKeys(nextProps);
-      }
+    UNSAFE_componentWillReceiveProps(nextProps) {
+      this.initializeDataKeys(nextProps);
+    }
 
-      fetchOnMount(props) {
-        const { nion } = props; // eslint-disable-line no-shadow
+    fetchOnMount(props) {
+      const { nion } = props; // eslint-disable-line no-shadow
 
-        // We want to trigger a fetch when the props change and lead to the creation of a new
-        // dataKey, regardless of whether or not that happens as a result of a mount.
-        forEach(nion._declarations, (declaration, key) => {
-          // If not fetching on init, don't do anything
-          if (!declaration.fetchOnInit) {
+      // We want to trigger a fetch when the props change and lead to the creation of a new
+      // dataKey, regardless of whether or not that happens as a result of a mount.
+      forEach(nion._declarations, (declaration, key) => {
+        // If not fetching on init, don't do anything
+        if (!declaration.fetchOnInit) {
+          return;
+        }
+
+        const fetch = nion[key].actions.get;
+        const status = nion[key].request.status;
+        const dataKey = declaration.dataKey;
+
+        // We need to manually check the status of the pending fetch action promise, since
+        // parent components may send props multiple times to the wrapped component (ie
+        // during setState). Because our redux actions are async, the redux store will not
+        // be updated before the next componentWillReceiveProps, so looking at the redux
+        // request status will be misleading because it will not have been updated
+        const isFetchPending = !!fetchesByDataKey[dataKey];
+
+        // If the fetch is only to be performed once, don't fetch if already loaded
+        if (declaration.fetchOnce) {
+          if (isNotLoaded(status) && !isFetchPending) {
+            fetchesByDataKey[dataKey] = fetch().then(() => {
+              fetchesByDataKey[dataKey] = null;
+            });
+          }
+        } else {
+          if (isNotLoading(status) && !isFetchPending) {
+            fetchesByDataKey[dataKey] = fetch().then(() => {
+              fetchesByDataKey[dataKey] = null;
+            });
+          }
+        }
+      });
+    }
+
+    initializeDataKeys(props) {
+      const { nion } = props; // eslint-disable-line no-shadow
+
+      // Iterate over the declarations provided to the component, deciding how to manage the
+      // load state of each one
+      forEach(nion._declarations, (declaration, key) => {
+        // If we're supplying a ref to be managed by nion, we'll want to attach it to the
+        // state tree ahead of time (maybe not? maybe we want to have a "virtual" ref...
+        // this is interesting)
+        if (declaration.initialRef) {
+          // If a ref has already been attached to the dataKey, don't dispatch it again...
+          // this triggers a cascading rerender which will cause an infinite loop
+
+          if (exists(nion[key].data)) {
             return;
           }
 
-          const fetch = nion[key].actions.get;
-          const status = nion[key].request.status;
-          const dataKey = declaration.dataKey;
-
-          // We need to manually check the status of the pending fetch action promise, since
-          // parent components may send props multiple times to the wrapped component (ie
-          // during setState). Because our redux actions are async, the redux store will not
-          // be updated before the next componentWillReceiveProps, so looking at the redux
-          // request status will be misleading because it will not have been updated
-          const isFetchPending = !!fetchesByDataKey[dataKey];
-
-          // If the fetch is only to be performed once, don't fetch if already loaded
-          if (declaration.fetchOnce) {
-            if (isNotLoaded(status) && !isFetchPending) {
-              fetchesByDataKey[dataKey] = fetch().then(() => {
-                fetchesByDataKey[dataKey] = null;
-              });
-            }
-          } else {
-            if (isNotLoading(status) && !isFetchPending) {
-              fetchesByDataKey[dataKey] = fetch().then(() => {
-                fetchesByDataKey[dataKey] = null;
-              });
-            }
-          }
-        });
-      }
-
-      initializeDataKeys(props) {
-        const { nion } = props; // eslint-disable-line no-shadow
-
-        // Iterate over the declarations provided to the component, deciding how to manage the
-        // load state of each one
-        forEach(nion._declarations, (declaration, key) => {
-          // If we're supplying a ref to be managed by nion, we'll want to attach it to the
-          // state tree ahead of time (maybe not? maybe we want to have a "virtual" ref...
-          // this is interesting)
-          if (declaration.initialRef) {
-            // If a ref has already been attached to the dataKey, don't dispatch it again...
-            // this triggers a cascading rerender which will cause an infinite loop
-
-            if (exists(nion[key].data)) {
-              return;
-            }
-
-            const { dataKey, initialRef } = declaration;
-            // TODO (legacied consistent-return)
-            // This failure is legacied in and should be updated. DO NOT COPY.
-            // eslint-disable-next-line consistent-return
-            return nion._initializeDataKey(dataKey, initialRef);
-          }
-        });
-      }
-
-      componentDidMount() {
-        this.fetchOnMount(this.props);
-      }
-
-      render() {
-        // Filter out internally used props to not expose them in the wrapped component
-        const nextProps = {
-          ...this.props,
-          nion: finalProcessProps(this.props.nion),
-        };
-
-        return <WrappedComponent {...nextProps} />;
-      }
+          const { dataKey, initialRef } = declaration;
+          // TODO (legacied consistent-return)
+          // This failure is legacied in and should be updated. DO NOT COPY.
+          // eslint-disable-next-line consistent-return
+          return nion._initializeDataKey(dataKey, initialRef);
+        }
+      });
     }
 
-    const connectedComponent = connect(mapStateToProps, mapDispatchToProps, mergeProps, {
+    componentDidMount() {
+      this.fetchOnMount(this.props);
+    }
+
+    render() {
+      // Filter out internally used props to not expose them in the wrapped component
+      const nextProps = {
+        ...this.props,
+        nion: finalProcessProps(this.props.nion),
+      };
+
+      return <WrappedComponent {...nextProps} />;
+    }
+  }
+
+  const connectedComponent = connect(
+    mapStateToProps,
+    mapDispatchToProps,
+    mergeProps,
+    {
       areMergedPropsEqual,
-    })(WithNion);
-    // Take all static properties on the inner Wrapped component and put them on our now-connected
-    // component. // This makes nion transparent and safe to add as a decorator; it does not occlude
-    // the shape of the inner component.
-    difference(Object.keys(WrappedComponent), Object.keys(connectedComponent)).map((key) => {
-      connectedComponent[key] = WrappedComponent[key];
-    });
-    // Remove nion from the propTypes of the connected component, if it exists,
-    // since it will be injected by withNion
-    if (connectedComponent.propTypes) {
-      // TODO (legacied no-unused-vars)
-      // This failure is legacied in and should be updated. DO NOT COPY.
-      // eslint-disable-next-line no-unused-vars
-      const { nion: _, ...restProps } = connectedComponent.propTypes;
-      connectedComponent.propTypes = restProps;
-    }
+    },
+  )(WithNion);
+  // Take all static properties on the inner Wrapped component and put them on our now-connected
+  // component. // This makes nion transparent and safe to add as a decorator; it does not occlude
+  // the shape of the inner component.
+  difference(Object.keys(WrappedComponent), Object.keys(connectedComponent)).map(key => {
+    connectedComponent[key] = WrappedComponent[key];
+  });
+  // Remove nion from the propTypes of the connected component, if it exists,
+  // since it will be injected by withNion
+  if (connectedComponent.propTypes) {
+    // TODO (legacied no-unused-vars)
+    // This failure is legacied in and should be updated. DO NOT COPY.
+    // eslint-disable-next-line no-unused-vars
+    const { nion: _, ...restProps } = connectedComponent.propTypes;
+    connectedComponent.propTypes = restProps;
+  }
 
-    return connectedComponent;
-  };
+  return connectedComponent;
+};
 
 // TODO (legacied import/no-default-export)
 // This failure is legacied in and should be updated. DO NOT COPY.
