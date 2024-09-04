@@ -323,7 +323,7 @@ const nion =
         this.initializeDataKeys(props);
       }
 
-      UNSAFE_componentWillReceiveProps(nextProps) {
+      componentWillReceiveProps(nextProps) {
         this.initializeDataKeys(nextProps);
       }
 
