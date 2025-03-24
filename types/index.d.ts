@@ -61,8 +61,6 @@ export interface NionValue<T> extends NionRefHolder {
 
 export function exists<T>(value?: NionValue<T> | null): value is NionValue<T>;
 
-export function purgeSelectorCache(): void;
-
 export function selectData<T>(key: string, defaultValue?: any): OutputSelector<NionReduxState, T, any>;
 
 export function selectRequest(key: string): OutputSelector<NionReduxState, NionRequest, any>;
