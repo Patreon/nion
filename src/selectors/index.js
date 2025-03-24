@@ -38,53 +38,30 @@ const defaultRequest = Immutable({
   status: 'not called',
 });
 
-// Store dataKey-specific selectors created on demand
-let selectByKey = { data: {}, obj: {}, owr: {}, ref: {}, req: {} };
-
-export const purgeSelectorCache = () => {
-  selectByKey = { data: {}, obj: {}, owr: {}, ref: {}, req: {} };
-};
-
 const selectRef = (key) => {
-  if (!selectByKey.ref[key]) {
-    selectByKey.ref[key] = createSelector(selectReferences, (references) => get(references, key));
-  }
-
-  return selectByKey.ref[key];
+  return createSelector(selectReferences, (references) => get(references, key));
 };
 
 export const selectRequest = (key) => {
-  if (!selectByKey.req[key]) {
-    selectByKey.req[key] = createSelector(selectRequests, (requests) => get(requests, key, defaultRequest));
-  }
-
-  return selectByKey.req[key];
+ return createSelector(selectRequests, (requests) => get(requests, key, defaultRequest));
 };
 
 const selectObj = (key) => {
-  if (!selectByKey.obj[key]) {
-    selectByKey.obj[key] = createSelector([selectRef(key), selectEntities], (ref, entityStore) =>
-      denormalizeRef(ref, entityStore),
-    );
-  }
-
-  return selectByKey.obj[key];
+  return createSelector([selectRef(key), selectEntities], (ref, entityStore) =>
+    denormalizeRef(ref, entityStore),
+  );
 };
 
 // Selects the denormalized object plus all relevant request data from the store
 export const selectObjectWithRequest = (key) => {
-  if (!selectByKey.owr[key]) {
-    selectByKey.owr[key] = createSelector(
-      [selectObj(key), selectRef(key), selectRequest(key)],
-      (obj, ref, request) => ({
-        extra: omit(ref, ['entities', 'isCollection']),
-        obj,
-        request,
-      }),
-    );
-  }
-
-  return selectByKey.owr[key];
+  return createSelector(
+    [selectObj(key), selectRef(key), selectRequest(key)],
+    (obj, ref, request) => ({
+      extra: omit(ref, ['entities', 'isCollection']),
+      obj,
+      request,
+    }),
+  );
 };
 
 // Selects a keyed map of { obj, request } resources from the store taking an array of dataKeys
@@ -100,38 +77,26 @@ export const selectResourcesForKeys = (keys) => (state) =>
 export const selectData = (key, defaultValue) => {
   // If we pass in an object of { type, id } signature, denormalize the corresponding entity
   if (typeof key !== 'string' && !Array.isArray(key)) {
-    const selectorKey = `${key.type}(${key.id})`;
 
-    if (!selectByKey.data[selectorKey]) {
-      selectByKey.data[selectorKey] = createSelector(
-        [selectEntities],
-        (entityStore) =>
-          denormalizeRef(
-            {
-              entities: [{ type: key.type, id: key.id }],
-            },
-            entityStore,
-          ) || defaultValue,
-      );
+    return createSelector(
+      [selectEntities],
+      (entityStore) =>
+        denormalizeRef(
+          {
+            entities: [{ type: key.type, id: key.id }],
+          },
+          entityStore,
+        ) || defaultValue,
+    );
+  }
+
+  const path = Array.isArray(key) ? key : key.replace(']', '').split(/[.|[]/g);
+
+  return createSelector([selectObj(path[0])], (obj) => {
+    if (obj === undefined) {
+      return defaultValue;
     }
 
-    return selectByKey.data[selectorKey];
-  }
-
-  // Otherwise, use the _.get syntax to select the data
-  const selectorKey = Array.isArray(key) ? key.join('.') : key;
-
-  if (!selectByKey.data[selectorKey]) {
-    const path = Array.isArray(key) ? key : key.replace(']', '').split(/[.|[]/g);
-
-    selectByKey.data[selectorKey] = createSelector([selectObj(path[0])], (obj) => {
-      if (obj === undefined) {
-        return defaultValue;
-      }
-
-      return path.length === 1 ? obj : get(obj, path.slice(1, path.length), defaultValue);
-    });
-  }
-
-  return selectByKey.data[selectorKey];
+    return path.length === 1 ? obj : get(obj, path.slice(1, path.length), defaultValue);
+  });
 };
