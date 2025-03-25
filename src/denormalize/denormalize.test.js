@@ -129,7 +129,11 @@ describe('nion/denormalize', () => {
         type: 'other',
         id: 'other1',
       });
-      const [rootNode] = denormalize({ entities: [{ type: 'rootNode', id: 'rootNode1' }] }, entityStoreManager.store, cache);
+      const [rootNode] = denormalize(
+        { entities: [{ type: 'rootNode', id: 'rootNode1' }] },
+        entityStoreManager.store,
+        cache,
+      );
       expect(rootNode.grandchild.rootNode).toEqual({
         type: 'rootNode',
         id: 'rootNode1',
@@ -201,7 +205,11 @@ describe('nion/denormalize', () => {
         type: 'other',
         id: 'other2',
       });
-      const [rootNode] = denormalize({ entities: [{ type: 'rootNode', id: 'rootNode1' }] }, entityStoreManager.store, cache);
+      const [rootNode] = denormalize(
+        { entities: [{ type: 'rootNode', id: 'rootNode1' }] },
+        entityStoreManager.store,
+        cache,
+      );
       expect(rootNode.child.grandchild.rootNode).toEqual({
         type: 'rootNode',
         id: 'rootNode1',
