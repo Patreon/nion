@@ -1,6 +1,6 @@
 import Immutable from 'seamless-immutable';
 import { camelize, camelizeKeys } from 'humps';
-import cache, { mergeManifests } from './cache';
+import { mergeManifests } from './cache';
 
 class GenericData {
   constructor(data) {
@@ -72,7 +72,7 @@ export const hasEntityReference = (obj) => Boolean(getEntityReference(obj));
 // Since all denormalized objects in the cache are immutable, we can very easily compare them
 // in downstream selectors, redux connect functions, or componentShouldUpdate methods to optimize
 // re-render performance
-function denormalize(ref, entityStore, existingObjects = {}) {
+function denormalize(ref, entityStore, cache, existingObjects = {}) {
   if (!(ref?.type && ref?.id)) {
     return { denormalized: undefined };
   }
@@ -144,7 +144,7 @@ function denormalize(ref, entityStore, existingObjects = {}) {
     const existingObjectsCopy = Object.assign({}, existingObjects);
 
     if (!Array.isArray(refOrRefs)) {
-      const { denormalized, related } = denormalize(refOrRefs, entityStore, existingObjectsCopy);
+      const { denormalized, related } = denormalize(refOrRefs, entityStore, cache, existingObjectsCopy);
 
       toSet = denormalized;
 
@@ -154,7 +154,7 @@ function denormalize(ref, entityStore, existingObjects = {}) {
       // This failure is legacied in and should be updated. DO NOT COPY.
       // eslint-disable-next-line no-inner-declarations
       function mapCollection(_ref) {
-        const { denormalized, related } = denormalize(_ref, entityStore, existingObjectsCopy);
+        const { denormalized, related } = denormalize(_ref, entityStore, cache, existingObjectsCopy);
 
         mergeManifests(manifest, related);
 
@@ -196,8 +196,8 @@ function denormalize(ref, entityStore, existingObjects = {}) {
   return { denormalized: obj, related: manifest };
 }
 
-export const denormalizeEntities = (ref, entityStore) =>
-  ref.entities.map((entity) => denormalize(entity, entityStore).denormalized);
+export const denormalizeEntities = (ref, entityStore, cache) =>
+  ref.entities.map((entity) => denormalize(entity, entityStore, cache).denormalized);
 
 // TODO (legacied import/no-default-export)
 // This failure is legacied in and should be updated. DO NOT COPY.

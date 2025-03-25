@@ -87,8 +87,6 @@ export function initializeNionDevTool(store: NionReduxState): void;
 
 export function titleFormatter(action: symbol, time: any, took: number): string;
 
-export function purgeDenormalizationCache(): void;
-
 export const actions: Actions<any>;
 
 export interface CommonDeclarationValues {

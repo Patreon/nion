@@ -15,7 +15,9 @@ const selectReferences = createSelector([selectNion], (nion) => nion && nion.ref
 
 const selectRequests = createSelector([selectNion], (nion) => nion && nion.requests);
 
-const denormalizeRef = (ref, entityStore) => {
+const selectDenormalizedCache = (state) => state?.nion?.__dCache;
+
+const denormalizeRef = (ref, entityStore, dCache) => {
   // If the ref is a generic (eg a primitive from a non-json-api response), return the ref
 
   // JB (in ref to the comment above)
@@ -25,7 +27,7 @@ const denormalizeRef = (ref, entityStore) => {
     return getGenericRefData(ref);
   }
 
-  const denormalized = denormalizeEntities(ref, entityStore);
+  const denormalized = denormalizeEntities(ref, entityStore, dCache);
 
   return ref.isCollection ? denormalized : denormalized[0];
 };
@@ -63,8 +65,9 @@ export const selectRequest = (key) => {
 
 const selectObj = (key) => {
   if (!selectByKey.obj[key]) {
-    selectByKey.obj[key] = createSelector([selectRef(key), selectEntities], (ref, entityStore) =>
-      denormalizeRef(ref, entityStore),
+    selectByKey.obj[key] = createSelector(
+      [selectRef(key), selectEntities, selectDenormalizedCache],
+      (ref, entityStore, dCache) => denormalizeRef(ref, entityStore, dCache),
     );
   }
 
