@@ -6,6 +6,10 @@ import entities from './entities';
 
 import { DenormalizationCache } from '../denormalize/cache';
 
+// We're storing a singleton instance of the denormlization cache in
+// the redux store (behind the nested __dCache key). This is admittedly
+// odd, but a means to make the cache request-local rather than global
+// during server-side execution.
 function denormalizationCacheReducer(state) {
   if (!state) {
     return new DenormalizationCache();
