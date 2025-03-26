@@ -118,13 +118,14 @@ export const selectData = (key, defaultValue) => {
 
     if (!selectByKey.data[selectorKey]) {
       const selector = createSelector(
-        [selectEntities],
-        (entityStore) =>
+        [selectEntities, selectDenormalizedCache],
+        (entityStore, dCache) =>
           denormalizeRef(
             {
               entities: [{ type: key.type, id: key.id }],
             },
             entityStore,
+            dCache,
           ) || defaultValue,
       );
       if (isServer) {
