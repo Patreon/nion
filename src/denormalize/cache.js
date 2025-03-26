@@ -24,12 +24,6 @@ class DenormalizationCache {
   manifests = {};
   entities = {};
 
-  purge = () => {
-    this.denorm = {};
-    this.manifests = {};
-    this.entities = {};
-  };
-
   initializeManifest = (ref) => ({ [ref.type]: { [ref.id]: ref } });
 
   addDenormalized = (type, id, data) => {
