@@ -123,6 +123,8 @@ export interface InferableComponentEnhancerWithProps<TNeedsProps, TInferProps> {
   >;
 }
 
+export class DenormalizationCache {}
+
 export type HOCProps = {
   nion: { [dataKey: string]: NionValue<any> };
 };

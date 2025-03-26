@@ -8,7 +8,7 @@ export { default as actions } from './actions';
 export { default as bootstrapNion } from './bootstrap';
 export { default as configureNion } from './configure';
 export { exists } from './decorator';
-export { purgeDenormalizationCache } from './denormalize/cache';
+export { DenormalizationCache } from './denormalize/cache';
 export { default as initializeNionDevTool } from './devtool';
 export { default as useNion } from './hook/useNion';
 export { titleFormatter } from './logger';
