@@ -32,6 +32,8 @@ const denormalizeRef = (ref, entityStore, dCache) => {
   return ref.isCollection ? denormalized : denormalized[0];
 };
 
+const isServer = typeof window === 'undefined';
+
 // We need to make a simple singleton default immutable request so that areRequestsEqual comparisons
 // are super simple and straightforward in the areMergedPropsEqual comparison function
 // TODO: We might want to refactor this so that each request dataKey in the requests reducer is
@@ -43,13 +45,13 @@ const defaultRequest = Immutable({
 // Store dataKey-specific selectors created on demand
 let selectByKey = { data: {}, obj: {}, owr: {}, ref: {}, req: {} };
 
-export const purgeSelectorCache = () => {
-  selectByKey = { data: {}, obj: {}, owr: {}, ref: {}, req: {} };
-};
-
 const selectRef = (key) => {
   if (!selectByKey.ref[key]) {
-    selectByKey.ref[key] = createSelector(selectReferences, (references) => get(references, key));
+    const selector = createSelector(selectReferences, (references) => get(references, key));
+    if (isServer) {
+      return selector;
+    }
+    selectByKey.ref[key] = selector;
   }
 
   return selectByKey.ref[key];
@@ -57,7 +59,11 @@ const selectRef = (key) => {
 
 export const selectRequest = (key) => {
   if (!selectByKey.req[key]) {
-    selectByKey.req[key] = createSelector(selectRequests, (requests) => get(requests, key, defaultRequest));
+    const selector = createSelector(selectRequests, (requests) => get(requests, key, defaultRequest));
+    if (isServer) {
+      return selector;
+    }
+    selectByKey.req[key] = selector;
   }
 
   return selectByKey.req[key];
@@ -65,10 +71,14 @@ export const selectRequest = (key) => {
 
 const selectObj = (key) => {
   if (!selectByKey.obj[key]) {
-    selectByKey.obj[key] = createSelector(
+    const selector = createSelector(
       [selectRef(key), selectEntities, selectDenormalizedCache],
       (ref, entityStore, dCache) => denormalizeRef(ref, entityStore, dCache),
     );
+    if (isServer) {
+      return selector;
+    }
+    selectByKey.obj[key] = selector;
   }
 
   return selectByKey.obj[key];
@@ -77,14 +87,15 @@ const selectObj = (key) => {
 // Selects the denormalized object plus all relevant request data from the store
 export const selectObjectWithRequest = (key) => {
   if (!selectByKey.owr[key]) {
-    selectByKey.owr[key] = createSelector(
-      [selectObj(key), selectRef(key), selectRequest(key)],
-      (obj, ref, request) => ({
-        extra: omit(ref, ['entities', 'isCollection']),
-        obj,
-        request,
-      }),
-    );
+    const selector = createSelector([selectObj(key), selectRef(key), selectRequest(key)], (obj, ref, request) => ({
+      extra: omit(ref, ['entities', 'isCollection']),
+      obj,
+      request,
+    }));
+    if (isServer) {
+      return selector;
+    }
+    selectByKey.owr[key] = selector;
   }
 
   return selectByKey.owr[key];
@@ -106,7 +117,7 @@ export const selectData = (key, defaultValue) => {
     const selectorKey = `${key.type}(${key.id})`;
 
     if (!selectByKey.data[selectorKey]) {
-      selectByKey.data[selectorKey] = createSelector(
+      const selector = createSelector(
         [selectEntities],
         (entityStore) =>
           denormalizeRef(
@@ -116,6 +127,10 @@ export const selectData = (key, defaultValue) => {
             entityStore,
           ) || defaultValue,
       );
+      if (isServer) {
+        return selector;
+      }
+      selectByKey.data[selectorKey] = selector;
     }
 
     return selectByKey.data[selectorKey];
@@ -127,13 +142,17 @@ export const selectData = (key, defaultValue) => {
   if (!selectByKey.data[selectorKey]) {
     const path = Array.isArray(key) ? key : key.replace(']', '').split(/[.|[]/g);
 
-    selectByKey.data[selectorKey] = createSelector([selectObj(path[0])], (obj) => {
+    const selector = createSelector([selectObj(path[0])], (obj) => {
       if (obj === undefined) {
         return defaultValue;
       }
 
       return path.length === 1 ? obj : get(obj, path.slice(1, path.length), defaultValue);
     });
+    if (isServer) {
+      return selector;
+    }
+    selectByKey.data[selectorKey] = selector;
   }
 
   return selectByKey.data[selectorKey];
