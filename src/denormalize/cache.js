@@ -18,16 +18,11 @@ export function mergeManifests(a, b) {
 
   return a;
 }
+
 class DenormalizationCache {
   denorm = {};
   manifests = {};
   entities = {};
-
-  purge = () => {
-    this.denorm = {};
-    this.manifests = {};
-    this.entities = {};
-  };
 
   initializeManifest = (ref) => ({ [ref.type]: { [ref.id]: ref } });
 
@@ -91,13 +86,4 @@ class DenormalizationCache {
   };
 }
 
-const denormalizationCache = new DenormalizationCache();
-
-// TODO (legacied import/no-default-export)
-// This failure is legacied in and should be updated. DO NOT COPY.
-// eslint-disable-next-line import/no-default-export
-export default denormalizationCache;
-
-export function purgeDenormalizationCache() {
-  denormalizationCache.purge();
-}
+export { DenormalizationCache };

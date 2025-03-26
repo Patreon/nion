@@ -1,24 +1,27 @@
 import { EntityStoreManager, makeUserEntity, makeFriendEntity, makeFriendsEntity } from './test.helpers';
 import denormalize from './index';
-import cache from './cache';
+import { DenormalizationCache } from './cache';
 
 describe('nion/denormalize', () => {
   describe('simple denormalization', () => {
     it('an empty ref returns an empty array', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const ref = { entities: [] };
-      const object = denormalize(ref, entityStoreManager.store);
+      const object = denormalize(ref, entityStoreManager.store, cache);
       expect(object.length).toEqual(0);
     });
 
     it('an undefined ref returns undefined', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const ref = { entities: [undefined] };
-      const [object] = denormalize(ref, entityStoreManager.store);
+      const [object] = denormalize(ref, entityStoreManager.store, cache);
       expect(object).toEqual(undefined);
     });
 
     it('simple entity with no relationships is denormalized', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       entityStoreManager.addEntity(userEntity);
@@ -26,7 +29,7 @@ describe('nion/denormalize', () => {
       const { type, id } = userEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [object] = denormalize(ref, entityStoreManager.store);
+      const [object] = denormalize(ref, entityStoreManager.store, cache);
 
       expect(object.type).toEqual(userEntity.type);
       expect(object.id).toEqual(userEntity.id);
@@ -34,6 +37,7 @@ describe('nion/denormalize', () => {
     });
 
     it('A simple entity with a relationship is denormalized', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const friendEntity = makeFriendEntity(userEntity.id);
@@ -44,7 +48,7 @@ describe('nion/denormalize', () => {
       const { type, id } = friendEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [object] = denormalize(ref, entityStoreManager.store);
+      const [object] = denormalize(ref, entityStoreManager.store, cache);
 
       expect(object.type).toEqual(friendEntity.type);
       expect(object.id).toEqual(friendEntity.id);
@@ -55,6 +59,7 @@ describe('nion/denormalize', () => {
     });
 
     it('A simple entity with plural relationships is denormalized', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const userEntity2 = makeUserEntity();
@@ -67,7 +72,7 @@ describe('nion/denormalize', () => {
       const { type, id } = friendsEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [object] = denormalize(ref, entityStoreManager.store);
+      const [object] = denormalize(ref, entityStoreManager.store, cache);
 
       expect(object.type).toEqual(friendsEntity.type);
       expect(object.id).toEqual(friendsEntity.id);
@@ -85,6 +90,7 @@ describe('nion/denormalize', () => {
 
   describe('complex denormalization', () => {
     it('An entity with a child that is also a grandchild and a parent (A->C->G->A, A->G->A)', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       entityStoreManager.addEntity({
         type: 'rootNode',
@@ -123,7 +129,11 @@ describe('nion/denormalize', () => {
         type: 'other',
         id: 'other1',
       });
-      const [rootNode] = denormalize({ entities: [{ type: 'rootNode', id: 'rootNode1' }] }, entityStoreManager.store);
+      const [rootNode] = denormalize(
+        { entities: [{ type: 'rootNode', id: 'rootNode1' }] },
+        entityStoreManager.store,
+        cache,
+      );
       expect(rootNode.grandchild.rootNode).toEqual({
         type: 'rootNode',
         id: 'rootNode1',
@@ -137,6 +147,7 @@ describe('nion/denormalize', () => {
     });
 
     it('An entity with a child and an array of grandchildren, and the grandchildren are also a parents (A->C->G[0]->A, A->G[*]->A)', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       entityStoreManager.addEntity({
         type: 'rootNode',
@@ -194,7 +205,11 @@ describe('nion/denormalize', () => {
         type: 'other',
         id: 'other2',
       });
-      const [rootNode] = denormalize({ entities: [{ type: 'rootNode', id: 'rootNode1' }] }, entityStoreManager.store);
+      const [rootNode] = denormalize(
+        { entities: [{ type: 'rootNode', id: 'rootNode1' }] },
+        entityStoreManager.store,
+        cache,
+      );
       expect(rootNode.child.grandchild.rootNode).toEqual({
         type: 'rootNode',
         id: 'rootNode1',
@@ -230,6 +245,7 @@ describe('nion/denormalize', () => {
 
   describe('denormalization caching', () => {
     it('Denormalizing adds the immutable entity to the cache', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const entity = entityStoreManager.addEntity(userEntity);
@@ -237,12 +253,13 @@ describe('nion/denormalize', () => {
       const { type, id } = userEntity;
       const ref = { entities: [{ type, id }] };
 
-      denormalize(ref, entityStoreManager.store);
+      denormalize(ref, entityStoreManager.store, cache);
       const cachedEntity = cache.getEntity(type, id);
       expect(entity).toEqual(cachedEntity);
     });
 
     it('Denormalizing adds the immutable object to the cache', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       entityStoreManager.addEntity(userEntity);
@@ -250,12 +267,13 @@ describe('nion/denormalize', () => {
       const { type, id } = userEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [object] = denormalize(ref, entityStoreManager.store);
+      const [object] = denormalize(ref, entityStoreManager.store, cache);
       const cachedObject = cache.getDenormalized(type, id);
       expect(object).toEqual(cachedObject);
     });
 
     it('Denormalizing a ref with relationships adds manifest to the cache', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const friendEntity = makeFriendEntity(userEntity.id);
@@ -265,7 +283,7 @@ describe('nion/denormalize', () => {
       const { type, id } = friendEntity;
       const ref = { entities: [{ type, id }] };
 
-      denormalize(ref, entityStoreManager.store);
+      denormalize(ref, entityStoreManager.store, cache);
 
       const manifest = cache.getManifest(type, id);
 
@@ -277,6 +295,7 @@ describe('nion/denormalize', () => {
     });
 
     it('If entities in the manifest have not changed, it returns the cached object', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const friendEntity = makeFriendEntity(userEntity.id);
@@ -286,18 +305,19 @@ describe('nion/denormalize', () => {
       const { type, id } = friendEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [firstObject] = denormalize(ref, entityStoreManager.store);
+      const [firstObject] = denormalize(ref, entityStoreManager.store, cache);
 
       // Add another, unrelated entity to the store
       const userEntity2 = makeUserEntity();
       entityStoreManager.addEntity(userEntity2);
 
       // Fetch the denormalized object again - it should be cached
-      const [secondObject] = denormalize(ref, entityStoreManager.store);
+      const [secondObject] = denormalize(ref, entityStoreManager.store, cache);
       expect(firstObject).toEqual(secondObject);
     });
 
     it('If entities in the manifest have changed, it returns a new denormalized object', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const friendEntity = makeFriendEntity(userEntity.id);
@@ -307,7 +327,7 @@ describe('nion/denormalize', () => {
       const { type, id } = friendEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [firstObject] = denormalize(ref, entityStoreManager.store);
+      const [firstObject] = denormalize(ref, entityStoreManager.store, cache);
 
       // Update the related entity, which should force a re-denormalization
       entityStoreManager.updateEntity({
@@ -319,12 +339,13 @@ describe('nion/denormalize', () => {
       });
 
       // Fetch the denormalized object again, it should be reconstructed
-      const [secondObject] = denormalize(ref, entityStoreManager.store);
+      const [secondObject] = denormalize(ref, entityStoreManager.store, cache);
       expect(firstObject === secondObject).toEqual(false);
       expect(secondObject.friend.favoriteColor).toEqual('blue');
     });
 
     it('If an entity is added to the relationship, it returns a new denormalized object', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const userEntity2 = makeUserEntity();
@@ -339,7 +360,7 @@ describe('nion/denormalize', () => {
       const { type, id } = friendsEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [firstObject] = denormalize(ref, entityStoreManager.store);
+      const [firstObject] = denormalize(ref, entityStoreManager.store, cache);
 
       // Now add a new entity to the store and add it as a relationship to the target object
       const userEntity3 = makeUserEntity();
@@ -364,7 +385,7 @@ describe('nion/denormalize', () => {
 
       // Fetch the denormalized object again, it should be reconstructed, but the previously
       // cached objects should remain the same
-      const [secondObject] = denormalize(ref, entityStoreManager.store);
+      const [secondObject] = denormalize(ref, entityStoreManager.store, cache);
       expect(firstObject === secondObject).toEqual(false);
       expect(secondObject.friends).toHaveLength(3);
 
@@ -373,6 +394,7 @@ describe('nion/denormalize', () => {
     });
 
     it('If an entity is removed from the relationship, it returns a new denormalized object', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const userEntity2 = makeUserEntity();
@@ -389,7 +411,7 @@ describe('nion/denormalize', () => {
       const { type, id } = friendsEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [firstObject] = denormalize(ref, entityStoreManager.store);
+      const [firstObject] = denormalize(ref, entityStoreManager.store, cache);
 
       // Update the target entity, which should force a re-denormalization
       const { data } = friendsEntity.relationships.friends;
@@ -406,7 +428,7 @@ describe('nion/denormalize', () => {
 
       // Fetch the denormalized object again, it should be reconstructed, but the previously
       // cached objects should remain the same
-      const [secondObject] = denormalize(ref, entityStoreManager.store);
+      const [secondObject] = denormalize(ref, entityStoreManager.store, cache);
       expect(firstObject === secondObject).toEqual(false);
       expect(secondObject.friends).toHaveLength(2);
 
@@ -415,6 +437,7 @@ describe('nion/denormalize', () => {
     });
 
     it('If a related entity is deleted from the store, it returns a new denormalized object', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const userEntity2 = makeUserEntity();
@@ -431,13 +454,13 @@ describe('nion/denormalize', () => {
       const { type, id } = friendsEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [firstObject] = denormalize(ref, entityStoreManager.store);
+      const [firstObject] = denormalize(ref, entityStoreManager.store, cache);
 
       entityStoreManager.removeEntity(userEntity3);
 
       // Fetch the denormalized object again, it should be reconstructed, but the previously
       // cached objects should remain the same
-      const [secondObject] = denormalize(ref, entityStoreManager.store);
+      const [secondObject] = denormalize(ref, entityStoreManager.store, cache);
       expect(firstObject === secondObject).toEqual(false);
       expect(secondObject.friends).toHaveLength(3);
 
@@ -447,6 +470,7 @@ describe('nion/denormalize', () => {
     });
 
     it('Handles updates to deeply nested entities', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
 
       // Set up this relationship:
@@ -469,7 +493,7 @@ describe('nion/denormalize', () => {
       const { type, id } = friendsEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [firstObject] = denormalize(ref, entityStoreManager.store);
+      const [firstObject] = denormalize(ref, entityStoreManager.store, cache);
 
       entityStoreManager.updateEntity({
         type: userEntity3.type,
@@ -481,7 +505,7 @@ describe('nion/denormalize', () => {
 
       // Fetch the denormalized object again, it should be reconstructed, but the previously
       // cached objects should remain the same
-      const [secondObject] = denormalize(ref, entityStoreManager.store);
+      const [secondObject] = denormalize(ref, entityStoreManager.store, cache);
       expect(firstObject === secondObject).toEqual(false);
       expect(secondObject.friends).toHaveLength(3);
 
@@ -494,6 +518,7 @@ describe('nion/denormalize', () => {
 
   describe('extra properties', () => {
     it('adds an _exists property the denormalized data', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       entityStoreManager.addEntity(userEntity);
@@ -501,11 +526,12 @@ describe('nion/denormalize', () => {
       const { type, id } = userEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [object] = denormalize(ref, entityStoreManager.store);
+      const [object] = denormalize(ref, entityStoreManager.store, cache);
       expect(object._exists).toEqual(true);
     });
 
     it('adds a _ref property of to the original ref being denormalized', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       entityStoreManager.addEntity(userEntity);
@@ -513,11 +539,12 @@ describe('nion/denormalize', () => {
       const { type, id } = userEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [object] = denormalize(ref, entityStoreManager.store);
+      const [object] = denormalize(ref, entityStoreManager.store, cache);
       expect(object._ref).toMatchObject({ data: { type, id } });
     });
 
     it('adds a _ref property of a relationship being denormalized', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const friendEntity = makeFriendEntity(userEntity.id);
@@ -527,7 +554,7 @@ describe('nion/denormalize', () => {
       const { type, id } = friendEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [object] = denormalize(ref, entityStoreManager.store);
+      const [object] = denormalize(ref, entityStoreManager.store, cache);
 
       expect(object.friend._ref).toMatchObject({
         data: {
@@ -538,6 +565,7 @@ describe('nion/denormalize', () => {
     });
 
     it('adds a _ref property to a plural relationship being denormalized', () => {
+      const cache = new DenormalizationCache();
       const entityStoreManager = new EntityStoreManager();
       const userEntity = makeUserEntity();
       const friendsEntity = makeFriendsEntity([userEntity.id]);
@@ -547,7 +575,7 @@ describe('nion/denormalize', () => {
       const { type, id } = friendsEntity;
       const ref = { entities: [{ type, id }] };
 
-      const [object] = denormalize(ref, entityStoreManager.store);
+      const [object] = denormalize(ref, entityStoreManager.store, cache);
 
       expect(object.friends._ref).toMatchObject({
         data: [
