@@ -115,7 +115,10 @@ export interface ExpandedHOCDeclaration extends CommonDeclarationValues {
 
 export type DataKey = string;
 
-export type HOCDeclaration<Props> = Record<DataKey, ExpandedHOCDeclaration> | DataKey | ((props: Props) => Record<DataKey, ExpandedHOCDeclaration>);
+export type HOCDeclaration<Props> =
+  | Record<DataKey, ExpandedHOCDeclaration>
+  | DataKey
+  | ((props: Props) => Record<DataKey, ExpandedHOCDeclaration>);
 
 export interface InferableComponentEnhancerWithProps<TNeedsProps, TInferProps> {
   <P extends TInferProps>(component: React.ComponentType<P>): React.ComponentClass<
