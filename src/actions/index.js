@@ -1,4 +1,3 @@
-import fetch from 'isomorphic-fetch';
 import ApiManager from '../api';
 import {
   NION_API_REQUEST,
