@@ -101,6 +101,7 @@
     "eslint-plugin-react-prefer-function-component": "^3.0.0",
     "eslint-plugin-testing-library": "^6.1.2",
     "install": "^0.10.1",
+    "isomorphic-fetch": "^3.0.0",
     "jest": "^24.9.0",
     "nock": "^13.3.2",
     "prettier": "^2.8.7",
@@ -135,6 +136,9 @@
     ],
     "collectCoverageFrom": [
       "src/**/*.js"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/jest.setup.js"
     ]
   }
 }
