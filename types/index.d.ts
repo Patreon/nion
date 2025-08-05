@@ -88,8 +88,8 @@ export function titleFormatter(action: symbol, time: any, took: number): string;
 export const actions: Actions<any>;
 
 export interface CommonDeclarationValues {
-  endpoint: string;
-  initialRef?: NionRef;
+  endpoint?: string;
+  initialRef?: ReturnType<typeof makeRef>;
   extensions?: any;
   apiType?: string;
   requestParams?: any;
