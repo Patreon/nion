@@ -88,7 +88,6 @@ export function titleFormatter(action: symbol, time: any, took: number): string;
 export const actions: Actions<any>;
 
 export interface CommonDeclarationValues {
-  endpoint: string;
   initialRef?: NionRef;
   extensions?: any;
   apiType?: string;
@@ -96,6 +95,7 @@ export interface CommonDeclarationValues {
 }
 
 export interface HookDeclaration extends CommonDeclarationValues {
+  endpoint: string;
   dataKey: string;
   fetchOnMount?: boolean;
 }
@@ -107,7 +107,10 @@ export function useNion<T>(
   dependencyArray?: any[],
 ): [T | null, Actions<T>, NionRequest, NionMeta];
 
+export class DenormalizationCache {}
+
 export interface ExpandedHOCDeclaration extends CommonDeclarationValues {
+  endpoint?: string;
   dataKey?: string;
   fetchOnInit?: boolean;
   fetchOnce?: boolean;
@@ -115,24 +118,40 @@ export interface ExpandedHOCDeclaration extends CommonDeclarationValues {
 
 export type DataKey = string;
 
-export type HOCDeclaration<Props> =
-  | Record<DataKey, ExpandedHOCDeclaration>
-  | DataKey
-  | ((props: Props) => Record<DataKey, ExpandedHOCDeclaration>);
+export type HOCDeclaration<TDataKey extends DataKey, TProps> =
+  | Record<TDataKey, ExpandedHOCDeclaration>
+  | TDataKey
+  | ((props: TProps) => Record<TDataKey, ExpandedHOCDeclaration>);
 
 export interface InferableComponentEnhancerWithProps<TNeedsProps, TInferProps> {
-  <P extends TInferProps>(component: React.ComponentType<P>): React.ComponentClass<
+  <P extends TInferProps>(component: React.ComponentType<P>): React.ComponentType<
     Omit<P, keyof TInferProps> & TNeedsProps
   >;
 }
 
-export class DenormalizationCache {}
+export type HOCDeclarations<TDataKey extends DataKey, TProps> = [
+  HOCDeclaration<TDataKey, TProps>,
+  ...HOCDeclaration<TDataKey, TProps>[],
+];
 
-export type HOCProps = {
-  nion: { [dataKey: string]: NionValue<any> };
+// Extract DataKeys from a single HOCDeclaration.
+export type ExtractDataKeys<T> = T extends string
+  ? T
+  : T extends Record<infer K, any>
+  ? K & string
+  : T extends (props: any) => Record<infer K, any>
+  ? K & string
+  : never;
+
+// Union of DataKeys from multiple declarations.
+export type ExtractAllKeys<T extends HOCDeclaration<any, any>[]> = ExtractDataKeys<T[number]>;
+
+// Build HOCProps from extracted keys.
+export type HOCProps<TDeclarations extends HOCDeclarations<any, any>> = {
+  nion: { [K in ExtractAllKeys<TDeclarations>]: NionValue<any> };
 };
 
-declare function nion<Props>(
-  ...declarations: [HOCDeclaration<Props>, ...Array<HOCDeclaration<Props>>]
-): InferableComponentEnhancerWithProps<Props, HOCProps>;
+declare function nion<TProps, TDeclarations extends HOCDeclarations<any, TProps>>(
+  ...declarations: TDeclarations
+): InferableComponentEnhancerWithProps<TProps, HOCProps<TDeclarations>>;
 export default nion;
