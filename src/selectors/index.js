@@ -7,13 +7,21 @@ import omit from 'lodash/omit';
 
 import { denormalizeEntities, getGenericRefData } from '../denormalize';
 
+const isServer = typeof window === 'undefined';
+
 const selectNion = (state) => state && state.nion;
 
-const selectEntities = createSelector([selectNion], (nion) => nion && nion.entities);
+const selectEntities = isServer
+  ? (state) => state?.nion?.entities
+  : createSelector([selectNion], (nion) => nion && nion.entities);
 
-const selectReferences = createSelector([selectNion], (nion) => nion && nion.references);
+const selectReferences = isServer
+  ? (state) => state?.nion?.references
+  : createSelector([selectNion], (nion) => nion && nion.references);
 
-const selectRequests = createSelector([selectNion], (nion) => nion && nion.requests);
+const selectRequests = isServer
+  ? (state) => state?.nion?.requests
+  : createSelector([selectNion], (nion) => nion && nion.requests);
 
 const selectDenormalizedCache = (state) => state?.nion?.__dCache;
 
@@ -31,8 +39,6 @@ const denormalizeRef = (ref, entityStore, dCache) => {
 
   return ref.isCollection ? denormalized : denormalized[0];
 };
-
-const isServer = typeof window === 'undefined';
 
 // We need to make a simple singleton default immutable request so that areRequestsEqual comparisons
 // are super simple and straightforward in the areMergedPropsEqual comparison function
