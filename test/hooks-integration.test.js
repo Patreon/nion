@@ -8,7 +8,6 @@ import nock from 'nock';
 
 import { useNion, makeRef, exists } from '../src/index';
 
-import { StoreContext } from 'redux-react-hook';
 import configureTestStore from './configure-test-store';
 import { delay, getMockedComponentProps } from './util';
 
@@ -16,7 +15,7 @@ const StoreWrapper = ({ children }) => {
   const store = configureTestStore();
   return (
     <Provider store={store}>
-      <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
+      {children}
     </Provider>
   );
 };
