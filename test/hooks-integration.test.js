@@ -13,11 +13,7 @@ import { delay, getMockedComponentProps } from './util';
 
 const StoreWrapper = ({ children }) => {
   const store = configureTestStore();
-  return (
-    <Provider store={store}>
-      {children}
-    </Provider>
-  );
+  return <Provider store={store}>{children}</Provider>;
 };
 
 const baseUrl = 'http://api.test.com';
