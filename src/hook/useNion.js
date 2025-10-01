@@ -70,11 +70,14 @@ function useNion(declaration, deps = EMPTY_DEPS) {
     return [coerced, coerced?.dataKey, coerced?.fetchOnMount, coerced?.initialRef];
   }, deps); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Memoize the selector function itself to prevent recreation on server
+  const selector = useMemo(() => (dataKey ? selectObjectWithRequest(dataKey) : null), [dataKey]);
+
   const mapStateToProps = useCallback(
     (state) => ({
-      nion: selectObjectWithRequest(dataKey)(state),
+      nion: selector ? selector(state) : null,
     }),
-    [dataKey],
+    [selector],
   );
 
   const state = useSelector(mapStateToProps, shallowEqual);
