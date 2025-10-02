@@ -1,7 +1,6 @@
 import configureNion from '../';
 import ApiManager from '../../api';
 import ExtensionManager from '../../extensions';
-import Lifecycle from '../../lifecycle';
 import reducers from '../../reducers';
 
 const fakeApiModule = {
@@ -19,8 +18,6 @@ const fakeExtension = {
   composeMeta: jest.fn(),
 };
 
-const fakeRequestMethod = jest.fn();
-
 describe('configuration', () => {
   let result;
   beforeEach(() => {
@@ -28,9 +25,6 @@ describe('configuration', () => {
       apiModules: { fakeApiModule },
       defaultApi: 'fakeApiModule',
       extensions: { fakeExtension },
-      lifecycleConfig: {
-        onRequest: fakeRequestMethod,
-      },
     });
   });
 
@@ -44,10 +38,6 @@ describe('configuration', () => {
 
   it('adds provided extensions to ExtensionManager', () => {
     expect(ExtensionManager.extensionMap).toHaveProperty('fakeExtension', fakeExtension);
-  });
-
-  it('adds provided lifecycle methods to Lifecycle', () => {
-    expect(Lifecycle).toHaveProperty('_onRequest', fakeRequestMethod);
   });
 
   it('returns reducers', () => {

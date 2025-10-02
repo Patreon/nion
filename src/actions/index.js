@@ -8,7 +8,6 @@ import {
   UPDATE_ENTITY,
 } from './types';
 import { selectData } from '../selectors';
-import Lifecycle from '../lifecycle';
 
 const isNetworkAction = (method) => {
   switch (method) {
@@ -71,14 +70,6 @@ const apiAction = (method, dataKey, options) => (_dispatch) => {
 
       const requestParams = await ApiManager.getRequestParameters(apiType, method, options);
 
-      Lifecycle.onRequest({
-        method,
-        dataKey,
-        requestParams,
-        meta,
-        declaration,
-      });
-
       // Add the request body if present
       if (body) {
         requestParams.body = JSON.stringify(body);
@@ -88,15 +79,6 @@ const apiAction = (method, dataKey, options) => (_dispatch) => {
         method,
         ...requestParams,
         ...declaration.requestParams,
-      });
-
-      Lifecycle.onSuccess({
-        method,
-        dataKey,
-        requestParams,
-        response,
-        meta,
-        declaration,
       });
 
       // Handle the case that calling response.json() on null responses throws a syntax error
@@ -131,7 +113,6 @@ const apiAction = (method, dataKey, options) => (_dispatch) => {
 
       return selectData(dataKey)(getState());
     } catch (error) {
-      Lifecycle.onFailure({ method, dataKey, error, meta, declaration });
       try {
         await dispatch({
           type: NION_API_FAILURE,
