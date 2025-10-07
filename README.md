@@ -87,7 +87,6 @@ export default function configureStore() {
 -   [Extensions](docs/extensions.md)
 -   [Glossary](docs/glossary.md)
 -   [How it Works](docs/howitworks.md)
--   Lifecycle (documentation coming soon 😳)
 
 ## Licensing 🍴
 

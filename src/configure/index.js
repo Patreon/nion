@@ -1,7 +1,6 @@
 import reducers from '../reducers';
 import ExtensionManager from '../extensions';
 import ApiManager from '../api';
-import Lifecycle from '../lifecycle';
 
 import map from 'lodash/map';
 
@@ -9,7 +8,7 @@ import map from 'lodash/map';
 // This failure is legacied in and should be updated. DO NOT COPY.
 // eslint-disable-next-line import/no-default-export
 export default (options = {}) => {
-  const { apiModules, defaultApi, extensions, lifecycleConfig, apiOptions } = options;
+  const { apiModules, defaultApi, extensions, apiOptions } = options;
 
   if (apiModules) {
     map(apiModules, (apiModule, name) => {
@@ -23,10 +22,6 @@ export default (options = {}) => {
     map(extensions, (extension, name) => {
       ExtensionManager.registerExtension(name, extension);
     });
-  }
-
-  if (lifecycleConfig) {
-    Lifecycle.registerLifecycleConfig(lifecycleConfig);
   }
 
   if (apiOptions) {
