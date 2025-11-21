@@ -330,9 +330,6 @@ const nion =
             }
 
             const { dataKey, initialRef } = declaration;
-            // TODO (legacied consistent-return)
-            // This failure is legacied in and should be updated. DO NOT COPY.
-            // eslint-disable-next-line consistent-return
             nion._initializeDataKey(dataKey, initialRef);
           }
         });
