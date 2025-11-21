@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import difference from 'lodash/difference';
 import forEach from 'lodash/forEach';
@@ -301,71 +301,20 @@ const nion =
   (WrappedComponent) => {
     const { mapStateToProps, mapDispatchToProps, mergeProps } = processDeclarations(declarations, ...rest);
 
-    // Track the status of fetch actions to avoid sending out duplicate requests, since props can
-    // change multiple times before the redux store has updated (our nion actions are async)
-    const fetchesByDataKey = {};
+    function WithNion(props) {
+      // Track the status of fetch actions to avoid sending out duplicate requests, since props can
+      // change multiple times before the redux store has updated (our nion actions are async)
+      // Use a ref to maintain this across renders without causing re-renders
+      const fetchesByDataKeyRef = useRef({});
 
-    // TODO (legacied react-prefer-function-component/react-prefer-function-component)
-    // This failure is legacied in and should be updated. DO NOT COPY.
-    // eslint-disable-next-line react-prefer-function-component/react-prefer-function-component
-    class WithNion extends Component {
-      static displayName = `WithNion(${getDisplayName(WrappedComponent)})`;
-
-      static propTypes = {
-        nion: PropTypes.object.isRequired,
-      };
-
-      constructor(props) {
-        super(props);
-        this.initializeDataKeys(props);
-      }
-
-      UNSAFE_componentWillReceiveProps(nextProps) {
-        this.initializeDataKeys(nextProps);
-      }
-
-      fetchOnMount(props) {
+      // Initialize data keys and fetch when declarations change (including on mount)
+      // This replaces constructor + UNSAFE_componentWillReceiveProps + componentDidMount
+      // We use useLayoutEffect to run synchronously after render, similar to constructor behavior
+      useLayoutEffect(() => {
+        const fetchesByDataKey = fetchesByDataKeyRef.current;
         const { nion } = props; // eslint-disable-line no-shadow
 
-        // We want to trigger a fetch when the props change and lead to the creation of a new
-        // dataKey, regardless of whether or not that happens as a result of a mount.
-        forEach(nion._declarations, (declaration, key) => {
-          // If not fetching on init, don't do anything
-          if (!declaration.fetchOnInit) {
-            return;
-          }
-
-          const fetch = nion[key].actions.get;
-          const status = nion[key].request.status;
-          const dataKey = declaration.dataKey;
-
-          // We need to manually check the status of the pending fetch action promise, since
-          // parent components may send props multiple times to the wrapped component (ie
-          // during setState). Because our redux actions are async, the redux store will not
-          // be updated before the next componentWillReceiveProps, so looking at the redux
-          // request status will be misleading because it will not have been updated
-          const isFetchPending = !!fetchesByDataKey[dataKey];
-
-          // If the fetch is only to be performed once, don't fetch if already loaded
-          if (declaration.fetchOnce) {
-            if (isNotLoaded(status) && !isFetchPending) {
-              fetchesByDataKey[dataKey] = fetch().then(() => {
-                fetchesByDataKey[dataKey] = null;
-              });
-            }
-          } else {
-            if (isNotLoading(status) && !isFetchPending) {
-              fetchesByDataKey[dataKey] = fetch().then(() => {
-                fetchesByDataKey[dataKey] = null;
-              });
-            }
-          }
-        });
-      }
-
-      initializeDataKeys(props) {
-        const { nion } = props; // eslint-disable-line no-shadow
-
+        // Initialize data keys
         // Iterate over the declarations provided to the component, deciding how to manage the
         // load state of each one
         forEach(nion._declarations, (declaration, key) => {
@@ -384,25 +333,61 @@ const nion =
             // TODO (legacied consistent-return)
             // This failure is legacied in and should be updated. DO NOT COPY.
             // eslint-disable-next-line consistent-return
-            return nion._initializeDataKey(dataKey, initialRef);
+            nion._initializeDataKey(dataKey, initialRef);
           }
         });
-      }
 
-      componentDidMount() {
-        this.fetchOnMount(this.props);
-      }
+        // Fetch on mount
+        // We want to trigger a fetch when the props change and lead to the creation of a new
+        // dataKey, regardless of whether or not that happens as a result of a mount.
+        forEach(nion._declarations, (declaration, key) => {
+          // If not fetching on init, don't do anything
+          if (!declaration.fetchOnInit) {
+            return;
+          }
 
-      render() {
-        // Filter out internally used props to not expose them in the wrapped component
-        const nextProps = {
-          ...this.props,
-          nion: finalProcessProps(this.props.nion),
-        };
+          const fetch = nion[key].actions.get;
+          const status = nion[key].request.status;
+          const dataKey = declaration.dataKey;
 
-        return <WrappedComponent {...nextProps} />;
-      }
+          // We need to manually check the status of the pending fetch action promise, since
+          // parent components may send props multiple times to the wrapped component (ie
+          // during setState). Because our redux actions are async, the redux store will not
+          // be updated before the next render, so looking at the redux request status will
+          // be misleading because it will not have been updated
+          const isFetchPending = !!fetchesByDataKey[dataKey];
+
+          // If the fetch is only to be performed once, don't fetch if already loaded
+          if (declaration.fetchOnce) {
+            if (isNotLoaded(status) && !isFetchPending) {
+              fetchesByDataKey[dataKey] = fetch().then(() => {
+                fetchesByDataKey[dataKey] = null;
+              });
+            }
+          } else {
+            if (isNotLoading(status) && !isFetchPending) {
+              fetchesByDataKey[dataKey] = fetch().then(() => {
+                fetchesByDataKey[dataKey] = null;
+              });
+            }
+          }
+        });
+      }, [props, props.nion, props.nion._declarations]);
+
+      // Filter out internally used props to not expose them in the wrapped component
+      const nextProps = {
+        ...props,
+        nion: finalProcessProps(props.nion),
+      };
+
+      return <WrappedComponent {...nextProps} />;
     }
+
+    WithNion.displayName = `WithNion(${getDisplayName(WrappedComponent)})`;
+
+    WithNion.propTypes = {
+      nion: PropTypes.object.isRequired,
+    };
 
     const connectedComponent = connect(mapStateToProps, mapDispatchToProps, mergeProps, {
       areMergedPropsEqual,
