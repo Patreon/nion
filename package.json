@@ -20,9 +20,8 @@
     }
   },
   "dependencies": {
-    "@babel/runtime-corejs3": "^7.0.0",
+    "@babel/runtime": "^7.0.0",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
-    "core-js": "^3.2.1",
     "deep-equal": "^1.0.1",
     "humps": "^2.0.1",
     "is-equal-shallow": "^0.1.3",
