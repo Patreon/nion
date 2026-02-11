@@ -120,11 +120,9 @@ export type HOCDeclaration<Props> =
   | DataKey
   | ((props: Props) => Record<DataKey, ExpandedHOCDeclaration>);
 
-export interface InferableComponentEnhancerWithProps<TNeedsProps, TInferProps> {
-  <P extends TInferProps>(component: React.ComponentType<P>): React.ComponentClass<
-    Omit<P, keyof TInferProps> & TNeedsProps
-  >;
-}
+export type InferableComponentEnhancerWithProps<TInjectedProps, TNeedsProps> = <P extends TInjectedProps>(
+  component: React.ComponentType<P>,
+) => React.ComponentType<Omit<P, keyof TInjectedProps> & TNeedsProps>;
 
 export class DenormalizationCache {}
 
@@ -132,7 +130,7 @@ export type HOCProps = {
   nion: { [dataKey: string]: NionValue<any> };
 };
 
-declare function nion<Props>(
+declare function nion<Props = {}>(
   ...declarations: [HOCDeclaration<Props>, ...Array<HOCDeclaration<Props>>]
-): InferableComponentEnhancerWithProps<Props, HOCProps>;
+): InferableComponentEnhancerWithProps<HOCProps, Props>;
 export default nion;
